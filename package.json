@@ -1,0 +1,20 @@
+{
+	"name": "@acme/bun",
+	"description": "Bun security provider for Acme",
+	"version": "1.0.0",
+	"author": "Acme",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/acme/bun"
+	},
+	"keywords": [
+		"bun",
+		"security",
+		"provider"
+	],
+	"devDependencies": {
+		"@types/bun": "latest",
+		"typescript": "^5.9.2"
+	}
+}
