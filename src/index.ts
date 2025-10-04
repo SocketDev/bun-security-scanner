@@ -1,6 +1,32 @@
 import type Bun from "bun"
+import path from 'path'
+import os from 'os'
+import fs from 'fs'
 
-const SOCKET_API_KEY = process.env.SOCKET_API_KEY
+let SOCKET_API_KEY = process.env.SOCKET_API_KEY
+if (typeof SOCKET_API_KEY !== 'string') {
+	// load from default settings path
+	let dataHome = process.platform === 'win32'
+		? process.env['LOCALAPPDATA']
+		: process.env['XDG_DATA_HOME']
+
+	if (!dataHome) {
+		if (process.platform === 'win32') throw new Error('missing %LOCALAPPDATA%')
+		const home = os.homedir()
+		dataHome = path.join(home, ...(process.platform === 'darwin'
+			? ['Library', 'Application Support']
+			: ['.local', 'share']
+		))
+	}
+
+	let defaultSettingsPath = path.join(dataHome, 'socket', 'settings')
+	try {
+		const rawContent = fs.readFileSync(defaultSettingsPath).toString()
+		// rawContent is base64, must decode
+		SOCKET_API_KEY = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
+	} catch {
+	}
+}
 
 type SocketBatchEndpointBody = {
 	components: {

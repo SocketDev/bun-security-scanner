@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  check-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI to pass
+        id: wait-for-ci
+        uses: fountainhead/action-wait-for-check@5a908a24814494009c4bb27c242ea38c93c593be
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: test
+          ref: ${{ github.sha }}
+          timeoutSeconds: 1800
+
+      - name: Cancel the release if CI fails
+        if: steps.wait-for-ci.outputs.conclusion == 'failure'
+        run: exit 1
+
+  release:
+    needs: check-ci
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@22457c87c1b161cf7dde222c3e82b2b5f8d2bed2
+
+      - name: Update npm to latest just to get --provenance
+        run: bun install -g npm@latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Publish to NPM
+        run: npm publish --provenance

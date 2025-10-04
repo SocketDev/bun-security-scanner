@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { scanner } from './src/index.ts';
+import { scanner } from '@socketsecurity/bun-security-scanner';
 
 const mockInstallInfo: Bun.Security.Package[] = [
 	{
