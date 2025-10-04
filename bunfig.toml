@@ -1,2 +1,2 @@
 [install.security]
-scanner = "@socketsecurity/bun-security-scanner"
+scanner = "./src/index.ts"
