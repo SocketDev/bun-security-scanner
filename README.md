@@ -30,14 +30,9 @@ provider = "@socketsecurity/bun-security-scanner"
 For enhanced scanning with your Socket organization settings, set the `SOCKET_CLI_API_TOKEN` environment variable:
 
 ```bash
-export SOCKET_CLI_API_TOKEN="your-token-here"
-```
+export SOCKET_CLI_API_TOKEN="xyz"
 
-Or add to your shell configuration:
-
-```bash
-# ~/.bashrc or ~/.zshrc
-export SOCKET_CLI_API_TOKEN="your-token-here"
+bun install
 ```
 
 The scanner will automatically read your token from:
