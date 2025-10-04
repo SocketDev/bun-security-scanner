@@ -44,5 +44,6 @@ Without a token, the scanner runs in free mode using Socket's public API.
 
 ## Support
 
-- 📚 [Socket Documentation](https://socket.dev/docs)
-- 🐛 [Report Issues](https://github.com/SocketDev/bun-security-scanner/issues)
+- [Socket Documentation](https://socket.dev/docs)
+- [Bun Scanner API](https://bun.com/docs/install/security-scanner-api)
+- [Report Issues](https://github.com/SocketDev/bun-security-scanner/issues)
