@@ -1,4 +1,4 @@
-import { expect, test, describe } from 'bun:test'
+import { expect, test, spyOn, describe, afterEach } from 'bun:test'
 
 const packages: Bun.Security.Package[] = [
   {
@@ -10,6 +10,12 @@ const packages: Bun.Security.Package[] = [
 ]
 
 describe('live', () => {
+  const fetchSpy = spyOn(global, 'fetch')
+
+  afterEach(() => {
+    fetchSpy.mockClear()
+  })
+
   test('authenticated', async () => {
     // Only run if token is available
     if (!process.env.SOCKET_CLI_API_TOKEN) {
@@ -28,6 +34,10 @@ describe('live', () => {
       package: 'pkg:npm/lodahs@0.0.1-security',
       url: null
     })
+
+    // Verify authenticated API was called
+    expect(fetchSpy).toHaveBeenCalled()
+    expect(fetchSpy.mock.lastCall[0]).toMatch('api.socket.dev')
   })
 
   test('unauthenticated', async () => {
@@ -50,6 +60,10 @@ describe('live', () => {
       package: 'pkg:npm/lodahs@0.0.1-security',
       url: null
     })
+
+    // Verify firewall API was called
+    expect(fetchSpy).toHaveBeenCalled()
+    expect(fetchSpy.mock.lastCall[0]).toMatch('firewall-api.socket.dev')
   })
 })
 
