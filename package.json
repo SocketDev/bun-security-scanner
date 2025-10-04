@@ -1,20 +1,24 @@
 {
-	"name": "@acme/bun",
-	"description": "Bun security provider for Acme",
+	"name": "@socketsecurity/bun-security-scanner",
+	"description": "Bun security scanner for SocketDev",
 	"version": "1.0.0",
-	"author": "Acme",
+	"author": "SocketDev <eng@socket.dev>",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/acme/bun"
+		"url": "https://github.com/SocketDev/bun-security-scanner"
+	},
+	"scripts": {
+		"test": "bun test"
 	},
 	"keywords": [
 		"bun",
-		"security",
-		"provider"
+		"security"
 	],
-	"devDependencies": {
-		"@types/bun": "latest",
-		"typescript": "^5.9.2"
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@types/bun": "^1.2.23"
 	}
 }
