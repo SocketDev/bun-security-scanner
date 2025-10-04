@@ -35,6 +35,8 @@ export SOCKET_CLI_API_TOKEN="xyz"
 bun install
 ```
 
+> **Note**: required scope `pacakges`
+
 The scanner will automatically read your token from:
 
 1. `SOCKET_CLI_API_TOKEN` environment variable
