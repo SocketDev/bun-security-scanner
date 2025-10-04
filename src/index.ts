@@ -1,92 +1,196 @@
-export const provider: Bun.Security.Provider = {
-	version: '1',
-	async scan({ packages }) {
-		const response = await fetch('https://api.example.com/scan', {
-			method: 'POST',
-			body: JSON.stringify({
-				packages: packages.map(p => ({
-					name: p.name,
-					version: p.version,
-				})),
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
+import type Bun from "bun"
 
-		const json = await response.json();
-		validateThreatFeed(json);
+const SOCKET_API_KEY = process.env.SOCKET_API_KEY
 
-		// Iterate over reported threats and return an array of advisories. This
-		// could longer, shorter or equal length to the input packages. Whatever
-		// you return will be shown to the user.#
-
-		const results: Bun.Security.Advisory[] = [];
-
-		for (const item of json) {
-			// Advisory levels control installation behavior:
-			// - All advisories are always shown to the user regardless of level
-			// - Fatal: Installation stops immediately (e.g., backdoors, botnets)
-			// - Warning: User prompted in TTY, auto-cancelled in non-TTY (e.g., protestware, adware)
-
-			const isFatal = item.categories.includes('backdoor') || item.categories.includes('botnet');
-
-			const isWarning =
-				item.categories.includes('protestware') || item.categories.includes('adware');
-
-			if (!isFatal && !isWarning) continue;
-
-			// Besides the .level property, the other properties are just here
-			// for display to the user.
-			results.push({
-				level: isFatal ? 'fatal' : 'warn',
-				package: item.package,
-				url: item.url,
-				description: item.description,
-			});
-		}
-
-		// Return an empty array if there are no advisories!
-		return results;
-	},
-};
-
-type ThreatFeedItemCategory =
-	| 'protestware'
-	| 'adware'
-	| 'backdoor'
-	| 'botnet'; /* ...maybe you have some others */
-
-interface ThreatFeedItem {
-	package: string;
-	version: string;
-	url: string | null;
-	description: string | null;
-	categories: Array<ThreatFeedItemCategory>;
+type SocketBatchEndpointBody = {
+	components: {
+		purl: string
+	}[]
 }
-
-// You should really use a schema validation library like Zod here to validate
-// the feed. This code needs to be defensive rather than fast, so it's sensible
-// to check just to be sure.
-function validateThreatFeed(json: unknown): asserts json is ThreatFeedItem[] {
-	if (!Array.isArray(json)) {
-		throw new Error('Invalid threat feed');
+type SocketArtifact = {
+	inputPurl: string
+	alerts: {
+		action: 'error' | 'warn'
+		type: string,
+		props: {
+			note?: string,
+			didYouMean?: string,
+		} & Record<string, any>
+		fix?: {
+			description: string
+		}
+	}[]
+}
+let flightImplementation: FlightImplementation
+if (SOCKET_API_KEY) {
+	flightImplementation = async function*(packages) {
+		let artifacts: SocketArtifact[] = []
+		let batch: Bun.Security.Package[] = []
+		let max_sending = 30
+		let max_batch_length = 1
+		let in_flight = 0
+		let pending: Set<Promise<void>> = new Set()
+		async function startFlight() {
+			const purls = batch.map(p => `pkg:npm/${p.name}@${p.version}`)
+			batch = []
+			in_flight += purls.length
+			if (in_flight >= max_sending) {
+				if (pending.size !== 0) {
+					await Promise.race([...pending])
+				} else {
+					// bug here
+				}
+			}
+			const body = JSON.stringify({
+				components: purls.map(purl => {
+					return {
+						purl
+					}
+				})
+			} satisfies SocketBatchEndpointBody)
+			const flight = fetch(`https://api.socket.dev/v0/purl?actions=error,warn`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${SOCKET_API_KEY}`
+				},
+				body,
+			}).then(
+				async (res) => {
+					if (!res.ok) {
+						throw new Error(`Socket Security Scanner: Received ${res.status} from server`)
+					}
+					const data = await res.text()
+					artifacts.push(...data.split('\n').filter(Boolean).map(line => JSON.parse(line)))
+				}
+			)
+			pending.add(flight)
+			flight.finally(() => {
+				in_flight -= purls.length
+				pending.delete(flight)
+			})
+		}
+		while (packages.length > 0) {
+			const item = packages.shift()!
+			if (!item) {
+				break
+			}
+			batch.push(item)
+			if (batch.length >= max_batch_length) {
+				await startFlight()
+				if (artifacts.length > 0) {
+					let tmp = artifacts
+					artifacts = []
+					yield tmp
+				}
+			}
+		}
+		await startFlight()
+		await Promise.all([...pending])
+		if (artifacts.length > 0) {
+			yield artifacts
+		}
 	}
-
-	for (const item of json) {
-		if (
-			typeof item !== 'object' ||
-			item === null ||
-			!('package' in item) ||
-			!('version' in item) ||
-			!('url' in item) ||
-			!('description' in item) ||
-			typeof item.package !== 'string' ||
-			typeof item.version !== 'string' ||
-			(typeof item.url !== 'string' && item.url !== null) ||
-			(typeof item.description !== 'string' && item.description !== null)
-		) {
-			throw new Error('Invalid threat feed item');
+} else {
+	console.log(
+		`Socket Security Scanner results using free configuration. Provide SOCKET_API_KEY to Socket for granular controls.`
+	)
+	flightImplementation = async function*(packages) {
+		let artifacts: SocketArtifact[] = []
+		let batch: Bun.Security.Package[] = []
+		let max_sending = 20
+		let max_batch_length = 50
+		let in_flight = 0
+		let pending: Set<Promise<void>> = new Set()
+		async function startFlight() {
+			const purls = batch.map(p => `pkg:npm/${p.name}@${p.version}`)
+			batch = []
+			in_flight += purls.length
+			if (in_flight >= max_sending) {
+				if (pending.size !== 0) {
+					await Promise.race([...pending])
+				} else {
+					// bug here
+				}
+			}
+			const urls = purls.map(purl => `https://firewall-api.socket.dev/purl/${encodeURIComponent(purl)}`)
+			const flights = Promise.all(urls.map(async url => {
+				const res = await fetch(url)
+				if (!res.ok) {
+					throw new Error(`Socket Security Scanner: Received ${res.status} from server`)
+				}
+				const data = await res.text()
+				artifacts.push(...data.split('\n').filter(Boolean).map(line => JSON.parse(line)))
+			})).then(()=>{})
+			flights.finally(() => {
+				in_flight -= purls.length
+				pending.delete(flights)
+			})
+			pending.add(flights)
+		}
+		while (packages.length > 0) {
+			const item = packages.shift()!
+			if (!item) {
+				break
+			}
+			batch.push(item)
+			if (batch.length >= max_batch_length) {
+				await startFlight()
+				if (artifacts.length > 0) {
+					let tmp = artifacts
+					artifacts = []
+					yield tmp
+				}
+			}
+		}
+		await startFlight()
+		await Promise.all([...pending])
+		if (artifacts.length > 0) {
+			yield artifacts
 		}
 	}
 }
+type FlightImplementation = (packages: Array<Bun.Security.Package>) => AsyncIterable<SocketArtifact[]>
+class SocketSecurityScan implements Bun.Security.Scanner {
+	version: '1' = '1'
+	flightImplementation: FlightImplementation
+	constructor(flightImplementation: FlightImplementation) {
+		this.flightImplementation = flightImplementation
+	}
+	async scan({ packages }: { packages: Array<Bun.Security.Package> }) {
+		let results: Bun.Security.Advisory[] = []
+		while (packages.length) {
+			let flightResults = this.flightImplementation(packages)
+			for await (const artifacts of flightResults) {
+				for (const artifact of artifacts) {
+					if (artifact.alerts && artifact.alerts.length > 0) {
+						for (const alert of artifact.alerts) {
+							let description = ''
+							if (alert.type === 'didYouMean') {
+								description = `This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`
+							}
+							if (alert.props.description) {
+								description = description ? `${description}\n\n${alert.props.description}` : alert.props.description
+							}
+							if (alert.props.note) {
+								description = description ? `${description}\n\n${alert.props.note}` : alert.props.note
+							}
+							const fix = alert.fix?.description
+							if (fix) {
+								description = description ? `${description}\n\nFix: ${fix}` : `Fix: ${fix}`
+							}
+							results.push({
+								level: alert.action === 'error' ? 'fatal' : 'warn',
+								package: artifact.inputPurl,
+								url: null,
+								description
+							})
+						}
+					}
+				}
+			}
+		}
+		return results
+	}
+}
+export const scanner: Bun.Security.Scanner = new SocketSecurityScan(flightImplementation);
