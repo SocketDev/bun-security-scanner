@@ -1,30 +1,41 @@
-import type Bun from "bun"
-import path from 'path'
-import os from 'os'
-import fs from 'fs'
+import type Bun from 'bun'
+import path from 'node:path'
+import os from 'node:os'
 
 let SOCKET_API_KEY = process.env.SOCKET_API_KEY
-if (typeof SOCKET_API_KEY !== 'string') {
-	// load from default settings path
-	let dataHome = process.platform === 'win32'
-		? process.env['LOCALAPPDATA']
-		: process.env['XDG_DATA_HOME']
 
+if (typeof SOCKET_API_KEY !== 'string') {
+	// get OS app data directory
+	let dataHome = process.platform === 'win32'
+			? Bun.env.LOCALAPPDATA
+			: Bun.env.XDG_DATA_HOME
+
+	// fallback
 	if (!dataHome) {
 		if (process.platform === 'win32') throw new Error('missing %LOCALAPPDATA%')
+
 		const home = os.homedir()
+
 		dataHome = path.join(home, ...(process.platform === 'darwin'
 			? ['Library', 'Application Support']
 			: ['.local', 'share']
 		))
 	}
 
-	let defaultSettingsPath = path.join(dataHome, 'socket', 'settings')
-	try {
-		const rawContent = fs.readFileSync(defaultSettingsPath).toString()
+	// append `socket/settings`
+	const defaultSettingsPath = path.join(dataHome, 'socket', 'settings')
+	const file = Bun.file(defaultSettingsPath)
+
+	// attempt to read token from socket settings
+	if (await file.exists()) {
+		const rawContent = await file.text()
 		// rawContent is base64, must decode
-		SOCKET_API_KEY = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
-	} catch {
+
+		try {
+			SOCKET_API_KEY = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
+		} catch {
+			throw new Error('error reading Socket settings')
+		}
 	}
 }
 
@@ -33,6 +44,7 @@ type SocketBatchEndpointBody = {
 		purl: string
 	}[]
 }
+
 type SocketArtifact = {
 	inputPurl: string
 	alerts: {
@@ -47,15 +59,17 @@ type SocketArtifact = {
 		}
 	}[]
 }
+
 let flightImplementation: FlightImplementation
+
 if (SOCKET_API_KEY) {
 	flightImplementation = async function*(packages) {
 		let artifacts: SocketArtifact[] = []
 		let batch: Bun.Security.Package[] = []
-		let max_sending = 30
-		let max_batch_length = 1
+		const max_sending = 30
+		const max_batch_length = 1
 		let in_flight = 0
-		let pending: Set<Promise<void>> = new Set()
+		const pending: Set<Promise<void>> = new Set()
 		async function startFlight() {
 			const purls = batch.map(p => `pkg:npm/${p.name}@${p.version}`)
 			batch = []
@@ -74,6 +88,7 @@ if (SOCKET_API_KEY) {
 					}
 				})
 			} satisfies SocketBatchEndpointBody)
+
 			const flight = fetch(`https://api.socket.dev/v0/purl?actions=error,warn`, {
 				method: 'POST',
 				headers: {
@@ -96,6 +111,7 @@ if (SOCKET_API_KEY) {
 				pending.delete(flight)
 			})
 		}
+
 		while (packages.length > 0) {
 			const item = packages.shift()!
 			if (!item) {
@@ -105,7 +121,7 @@ if (SOCKET_API_KEY) {
 			if (batch.length >= max_batch_length) {
 				await startFlight()
 				if (artifacts.length > 0) {
-					let tmp = artifacts
+					const tmp = artifacts
 					artifacts = []
 					yield tmp
 				}
@@ -124,10 +140,10 @@ if (SOCKET_API_KEY) {
 	flightImplementation = async function*(packages) {
 		let artifacts: SocketArtifact[] = []
 		let batch: Bun.Security.Package[] = []
-		let max_sending = 20
-		let max_batch_length = 50
+		const max_sending = 20
+		const max_batch_length = 50
 		let in_flight = 0
-		let pending: Set<Promise<void>> = new Set()
+		const pending: Set<Promise<void>> = new Set()
 		async function startFlight() {
 			const purls = batch.map(p => `pkg:npm/${p.name}@${p.version}`)
 			batch = []
@@ -163,7 +179,7 @@ if (SOCKET_API_KEY) {
 			if (batch.length >= max_batch_length) {
 				await startFlight()
 				if (artifacts.length > 0) {
-					let tmp = artifacts
+					const tmp = artifacts
 					artifacts = []
 					yield tmp
 				}
@@ -176,6 +192,7 @@ if (SOCKET_API_KEY) {
 		}
 	}
 }
+
 type FlightImplementation = (packages: Array<Bun.Security.Package>) => AsyncIterable<SocketArtifact[]>
 class SocketSecurityScan implements Bun.Security.Scanner {
 	version: '1' = '1'
@@ -184,9 +201,9 @@ class SocketSecurityScan implements Bun.Security.Scanner {
 		this.flightImplementation = flightImplementation
 	}
 	async scan({ packages }: { packages: Array<Bun.Security.Package> }) {
-		let results: Bun.Security.Advisory[] = []
+		const results: Bun.Security.Advisory[] = []
 		while (packages.length) {
-			let flightResults = this.flightImplementation(packages)
+			const flightResults = this.flightImplementation(packages)
 			for await (const artifacts of flightResults) {
 				for (const artifact of artifacts) {
 					if (artifact.alerts && artifact.alerts.length > 0) {
