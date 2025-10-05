@@ -4,9 +4,9 @@ import os from 'node:os'
 import authenticated from './modes/authenticated'
 import unauthenticated from './modes/unauthenticated'
 
-let SOCKET_CLI_API_TOKEN = process.env.SOCKET_CLI_API_TOKEN
+let SOCKET_API_KEY = process.env.SOCKET_API_KEY
 
-if (typeof SOCKET_CLI_API_TOKEN !== 'string') {
+if (typeof SOCKET_API_KEY !== 'string') {
   // get OS app data directory
   let dataHome = process.platform === 'win32'
       ? Bun.env.LOCALAPPDATA
@@ -34,18 +34,18 @@ if (typeof SOCKET_CLI_API_TOKEN !== 'string') {
     // rawContent is base64, must decode
 
     try {
-      SOCKET_CLI_API_TOKEN = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
+      SOCKET_API_KEY = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
     } catch {
       throw new Error('error reading Socket settings')
     }
   }
 }
 
-if (!SOCKET_CLI_API_TOKEN) {
-  console.log(`⚠ Socket Security Scanner free mode. Set SOCKET_CLI_API_TOKEN to use your Socket org settings.`)
+if (!SOCKET_API_KEY) {
+  console.log(`⚠ Socket Security Scanner free mode. Set SOCKET_API_KEY to use your Socket org settings.`)
 }
 
-const scannerImplementation = SOCKET_CLI_API_TOKEN ? authenticated(SOCKET_CLI_API_TOKEN) : unauthenticated()
+const scannerImplementation = SOCKET_API_KEY ? authenticated(SOCKET_API_KEY) : unauthenticated()
 
 export const scanner: Bun.Security.Scanner = {
   version: '1',

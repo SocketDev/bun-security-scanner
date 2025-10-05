@@ -18,8 +18,8 @@ describe('live', () => {
 
   test('authenticated', async () => {
     // Only run if token is available
-    if (!process.env.SOCKET_CLI_API_TOKEN) {
-      throw new Error('test requires a `SOCKET_CLI_API_TOKEN`')
+    if (!process.env.SOCKET_API_KEY) {
+      throw new Error('test requires a `SOCKET_API_KEY`')
     }
 
     const { scanner } = await import('../src/index')
@@ -42,7 +42,7 @@ describe('live', () => {
 
   test('unauthenticated', async () => {
     // temporarily remove token to test unauthenticated mode
-    delete process.env.SOCKET_CLI_API_TOKEN
+    delete process.env.SOCKET_API_KEY
 
     // Need to re-import to get fresh module with no token
     const modulePath = '../src/index'

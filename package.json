@@ -1,24 +1,24 @@
 {
-	"name": "@socketsecurity/bun-security-scanner",
-	"description": "Bun security scanner for SocketDev",
-	"version": "1.0.0",
-	"author": "SocketDev <eng@socket.dev>",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/SocketDev/bun-security-scanner"
-	},
-	"scripts": {
-		"test": "bun test"
-	},
-	"keywords": [
-		"bun",
-		"security"
-	],
-	"exports": {
-		".": "./src/index.ts"
-	},
-	"devDependencies": {
-		"@types/bun": "^1.2.23"
-	}
+  "name": "@socketsecurity/bun-security-scanner",
+  "description": "Bun security scanner for SocketDev",
+  "version": "1.0.0",
+  "author": "SocketDev <eng@socket.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SocketDev/bun-security-scanner"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "keywords": [
+    "bun",
+    "security"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23"
+  }
 }

@@ -27,10 +27,10 @@ provider = "@socketsecurity/bun-security-scanner"
 
 ### Authentication (Optional)
 
-For enhanced scanning with your Socket organization settings, set the `SOCKET_CLI_API_TOKEN` environment variable:
+For enhanced scanning with your Socket organization settings, set the `SOCKET_API_KEY` environment variable:
 
 ```bash
-export SOCKET_CLI_API_TOKEN="xyz"
+export SOCKET_API_KEY="xyz"
 
 bun install
 ```
@@ -39,7 +39,7 @@ bun install
 
 The scanner will automatically read your token from:
 
-1. `SOCKET_CLI_API_TOKEN` environment variable
+1. `SOCKET_API_KEY` environment variable
 2. Socket CLI settings file (if available)
 
 Without a token, the scanner runs in free mode using Socket's public API.

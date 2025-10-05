@@ -25,7 +25,7 @@ jobs:
       - name: Run tests
         run: bun test
         env:
-          SOCKET_CLI_API_TOKEN: ${{ secrets.SOCKET_CLI_API_TOKEN }}
+          SOCKET_API_KEY: ${{ secrets.SOCKET_API_KEY }}
 
       - name: Test blocking on install
         shell: bash
