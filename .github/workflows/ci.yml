@@ -28,6 +28,7 @@ jobs:
           SOCKET_CLI_API_TOKEN: ${{ secrets.SOCKET_CLI_API_TOKEN }}
 
       - name: Test blocking on install
+        shell: bash
         run: |
           if bun add lodahs; then
             echo "ERROR: Scanner failed to block malicious package"
