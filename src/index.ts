@@ -46,6 +46,7 @@ if (!SOCKET_API_KEY) {
 }
 
 const scannerImplementation = SOCKET_API_KEY ? authenticated(SOCKET_API_KEY) : unauthenticated()
+const purlRegex = /^pkg:npm\/((?:@[^/]+\/)?(?:[^@]+))@(.+)$/
 
 export const scanner: Bun.Security.Scanner = {
   version: '1',
@@ -59,27 +60,38 @@ export const scanner: Bun.Security.Scanner = {
         for (const artifact of artifacts) {
           if (artifact.alerts && artifact.alerts.length > 0) {
             for (const alert of artifact.alerts) {
-              let description = ''
+              const description = ['']
 
               if (alert.type === 'didYouMean') {
-                description = `This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`
+                description.push(`This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`)
               }
+
               if (alert.props.description) {
-                description = description ? `${description}\n\n${alert.props.description}` : alert.props.description
+                description.push(alert.props.description)
               }
+
               if (alert.props.note) {
-                description = description ? `${description}\n\n${alert.props.note}` : alert.props.note
+                description.push(alert.props.note)
               }
+
               const fix = alert.fix?.description
+              
               if (fix) {
-                description = description ? `${description}\n\nFix: ${fix}` : `Fix: ${fix}`
+                description.push(`Fix: ${fix}`)
               }
+
+              const match = artifact.inputPurl.match(purlRegex);
+
+              const name = match[1];
+              const version = match[2];
+
+              const url = `\nhttps://socket.dev/npm/package/${name}/overview/${version}`
 
               results.push({
                 level: alert.action === 'error' ? 'fatal' : 'warn',
                 package: artifact.inputPurl,
-                url: null,
-                description
+                url,
+                description: description.join('\n\n')
               })
             }
           }
