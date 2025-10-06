@@ -14,7 +14,7 @@ jobs:
         uses: fountainhead/action-wait-for-check@5a908a24814494009c4bb27c242ea38c93c593be
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: test
+          checkName: Test
           ref: ${{ github.sha }}
           timeoutSeconds: 1800
 
