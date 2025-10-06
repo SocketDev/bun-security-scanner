@@ -2,12 +2,14 @@ name: CI
 
 on:
   push:
+    branches: ["*"]
+    tags-ignore: ["*"]
   pull_request:
     branches: [main]
+  workflow_call:
 
 jobs:
   test:
-    name: "Test"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

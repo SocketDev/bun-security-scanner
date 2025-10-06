@@ -3,28 +3,18 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
-  check-ci:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for CI to pass
-        id: wait-for-ci
-        uses: fountainhead/action-wait-for-check@5a908a24814494009c4bb27c242ea38c93c593be
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Test
-          ref: ${{ github.sha }}
-          timeoutSeconds: 1800
-
-      - name: Cancel the release if CI fails
-        if: steps.wait-for-ci.outputs.conclusion == 'failure'
-        run: exit 1
+  test:
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
 
   release:
-    needs: check-ci
     runs-on: ubuntu-latest
+
+    needs: test
+
     permissions:
       id-token: write
       contents: read
