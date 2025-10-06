@@ -85,13 +85,13 @@ export const scanner: Bun.Security.Scanner = {
               const name = match[1];
               const version = match[2];
 
-              const url = `\nhttps://socket.dev/npm/package/${name}/overview/${version}`
+              const url = `https://socket.dev/npm/package/${name}/overview/${version}`
 
               results.push({
                 level: alert.action === 'error' ? 'fatal' : 'warn',
                 package: artifact.inputPurl,
                 url,
-                description: description.join('\n\n')
+                description: description.join('\n\n') + '\n'
               })
             }
           }
