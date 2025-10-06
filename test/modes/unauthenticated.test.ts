@@ -48,7 +48,10 @@ describe('unauthenticated', () => {
     }
 
     expect(fetchSpy).toHaveBeenCalledTimes(1)
-    expect(fetchSpy).toHaveBeenCalledWith('https://firewall-api.socket.dev/purl/pkg%3Anpm%2Flodahs%400.0.1-security')
+    expect(fetchSpy).toHaveBeenCalledWith('https://firewall-api.socket.dev/purl/pkg%3Anpm%2Flodahs%400.0.1-security', {
+      "headers": {
+       "User-Agent": "SocketBunSecurityScanner/0.1.0 (linux x64) Bun/1.2.23",
+     }})
   })
 
   test('unauthenticated scanner should batch requests correctly', async () => {
@@ -114,8 +117,13 @@ describe('unauthenticated', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     // Check that special characters are properly encoded
     expect(fetchSpy).toHaveBeenCalledWith(
-      expect.stringContaining('pkg%3Anpm%2F%40scope%2Fpackage-name%401.0.0-beta.1')
-    )
+      'https://firewall-api.socket.dev/purl/pkg%3Anpm%2F%40scope%2Fpackage-name%401.0.0-beta.1',
+        {
+          "headers": {
+            "User-Agent": "SocketBunSecurityScanner/0.1.0 (linux x64) Bun/1.2.23",
+          }
+        }
+      )
   })
 
   test('unauthenticated scanner should parse NDJSON responses', async () => {

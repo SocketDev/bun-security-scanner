@@ -56,7 +56,8 @@ const mockArtifact: SocketArtifact = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`,
+          'User-Agent': 'SocketBunSecurityScanner/0.1.0 (linux x64) Bun/1.2.23'
         },
         body: JSON.stringify({
           components: [{ purl: 'pkg:npm/lodahs@0.0.1-security' }]
