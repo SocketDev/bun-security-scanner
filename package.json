@@ -1,7 +1,7 @@
 {
   "name": "@socketsecurity/bun-security-scanner",
   "description": "Bun security scanner for SocketDev",
-  "version": "0.0.0-prerelease",
+  "version": "0.0.0",
   "author": "SocketDev <eng@socket.dev>",
   "license": "MIT",
   "repository": {
