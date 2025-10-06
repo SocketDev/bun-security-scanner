@@ -32,7 +32,7 @@ describe('live', () => {
       description: expect.any(String),
       level: 'fatal',
       package: 'pkg:npm/lodahs@0.0.1-security',
-      url: null
+      url: '\nhttps://socket.dev/npm/package/lodahs/overview/0.0.1-security'
     })
 
     // Verify authenticated API was called
@@ -58,7 +58,7 @@ describe('live', () => {
       description: expect.any(String),
       level: 'fatal',
       package: 'pkg:npm/lodahs@0.0.1-security',
-      url: null
+      url: '\nhttps://socket.dev/npm/package/lodahs/overview/0.0.1-security'
     })
 
     // Verify firewall API was called
