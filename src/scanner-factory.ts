@@ -23,7 +23,7 @@ export function createScanner({ maxSending, maxBatchLength, fetchStrategy }: Sca
         if (pending.size !== 0) {
           await Promise.race([...pending])
         } else {
-          // bug here
+          // bug if we get here
         }
       }
 

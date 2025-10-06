@@ -1,5 +1,6 @@
 import type { ScannerImplementation } from '../types'
 import { createScanner } from '../scanner-factory'
+import { userAgent } from './user-agent'
 
 type SocketBatchEndpointBody = {
   components: {
@@ -20,7 +21,8 @@ export default function (apiKey: string): ScannerImplementation {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`,
+          'User-Agent': userAgent
         },
         body,
       })

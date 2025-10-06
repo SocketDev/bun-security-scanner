@@ -1,4 +1,4 @@
-import type Bun from 'bun'
+import Bun from 'bun'
 import path from 'node:path'
 import os from 'node:os'
 import authenticated from './modes/authenticated'
