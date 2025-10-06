@@ -1,4 +1,6 @@
-# @socketsecurity/bun-security-scanner
+<img src="https://bun.com/logo.png" height="36" />
+
+# Socket's Bun Security Scanner
 
 Official Socket Security scanner for Bun's package installation process. Protects your projects from malicious packages, typosquatting, and other supply chain attacks.
 
