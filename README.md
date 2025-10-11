@@ -24,7 +24,7 @@ Add to your `bunfig.toml`:
 
 ```toml
 [install.security]
-provider = "@socketsecurity/bun-security-scanner"
+scanner = "@socketsecurity/bun-security-scanner"
 ```
 
 ### Authentication (Optional)
