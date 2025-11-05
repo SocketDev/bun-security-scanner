@@ -37,7 +37,7 @@ export SOCKET_API_KEY="xyz"
 bun install
 ```
 
-> **Note**: required scope `pacakges`
+> **Note**: required scope `packages`
 
 The scanner will automatically read your token from:
 
