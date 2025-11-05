@@ -82,6 +82,8 @@ export const scanner: Bun.Security.Scanner = {
 
               const match = artifact.inputPurl.match(purlRegex);
 
+              if (!match) continue;
+
               const name = match[1];
               const version = match[2];
 
