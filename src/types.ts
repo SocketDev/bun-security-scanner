@@ -5,7 +5,7 @@ export type SocketArtifact = {
   alerts: {
     action: 'error' | 'warn'
     type: string,
-    props: {
+    props?: {
       note?: string,
       didYouMean?: string,
     } & Record<string, any>
