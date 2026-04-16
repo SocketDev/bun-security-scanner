@@ -12,7 +12,7 @@ export default function (apiKey: string): ScannerImplementation {
   return createScanner({
     maxSending: 30,
     maxBatchLength: 1,
-    fetchStrategy: async (purls, artifacts) => {
+    fetchStrategy: async (purls) => {
       const body = JSON.stringify({
         components: purls.map(purl => ({ purl }))
       } satisfies SocketBatchEndpointBody)
@@ -33,7 +33,7 @@ export default function (apiKey: string): ScannerImplementation {
 
       const data = await res.text()
 
-      artifacts.push(...data.split('\n').filter(Boolean).map(line => JSON.parse(line)))
+      return data.split('\n').filter(Boolean).map(line => JSON.parse(line))
     }
   })
 }

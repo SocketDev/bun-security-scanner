@@ -1,4 +1,4 @@
-import type { ScannerImplementation } from '../types'
+import type { ScannerImplementation, SocketArtifact } from '../types'
 import { createScanner } from '../scanner-factory'
 import { userAgent } from './user-agent'
 
@@ -6,8 +6,9 @@ export default function (): ScannerImplementation {
   return createScanner({
     maxSending: 20,
     maxBatchLength: 50,
-    fetchStrategy: async (purls, artifacts) => {
+    fetchStrategy: async (purls) => {
       const urls = purls.map(purl => `https://firewall-api.socket.dev/purl/${encodeURIComponent(purl)}`)
+      const results: SocketArtifact[] = []
       await Promise.all(urls.map(async url => {
         const res = await fetch(url, {
           headers: {
@@ -18,8 +19,9 @@ export default function (): ScannerImplementation {
           throw new Error(`Socket Security Scanner: Received ${res.status} from server`)
         }
         const data = await res.text()
-        artifacts.push(...data.split('\n').filter(Boolean).map(line => JSON.parse(line)))
+        results.push(...data.split('\n').filter(Boolean).map(line => JSON.parse(line)))
       }))
+      return results
     }
   })
 }
