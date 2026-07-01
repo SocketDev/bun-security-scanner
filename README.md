@@ -37,9 +37,7 @@ export SOCKET_API_KEY="xyz"
 bun install
 ```
 
-> [!IMPORTANT]
->
-> Required API token scopes:
+> **Important:** Required API token scopes:
 > - `packages:list`
 > - `entitlements:list`
 
