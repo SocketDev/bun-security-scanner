@@ -5,10 +5,13 @@ on:
     tags:
       - "v*.*.*"
 
+permissions: {}
+
 jobs:
   test:
     uses: ./.github/workflows/test.yml
-    secrets: inherit
+    secrets:
+      SOCKET_API_KEY: ${{ secrets.SOCKET_API_KEY }}
 
   release:
     runs-on: ubuntu-latest
@@ -21,10 +24,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@22457c87c1b161cf7dde222c3e82b2b5f8d2bed2
+        with:
+          no-cache: true
 
       - name: Update npm to latest just to get --provenance
         run: bun install -g npm@latest
