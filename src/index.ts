@@ -1,45 +1,9 @@
 import Bun from 'bun'
-import path from 'node:path'
-import os from 'node:os'
 import authenticated from './modes/authenticated'
 import unauthenticated from './modes/unauthenticated'
+import { resolveApiKey } from './resolve-api-key'
 
-let SOCKET_API_KEY = process.env.SOCKET_API_KEY
-
-if (typeof SOCKET_API_KEY !== 'string') {
-  // get OS app data directory
-  let dataHome = process.platform === 'win32'
-      ? Bun.env.LOCALAPPDATA
-      : Bun.env.XDG_DATA_HOME
-
-  // fallback
-  if (!dataHome) {
-    if (process.platform === 'win32') throw new Error('missing %LOCALAPPDATA%')
-
-    const home = os.homedir()
-
-    dataHome = path.join(home, ...(process.platform === 'darwin'
-      ? ['Library', 'Application Support']
-      : ['.local', 'share']
-    ))
-  }
-
-  // append `socket/settings`
-  const defaultSettingsPath = path.join(dataHome, 'socket', 'settings')
-  const file = Bun.file(defaultSettingsPath)
-
-  // attempt to read token from socket settings
-  if (await file.exists()) {
-    const rawContent = await file.text()
-    // rawContent is base64, must decode
-
-    try {
-      SOCKET_API_KEY = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
-    } catch {
-      throw new Error('error reading Socket settings')
-    }
-  }
-}
+const SOCKET_API_KEY = await resolveApiKey()
 
 if (!SOCKET_API_KEY) {
   console.log(`⚠ Socket Security Scanner free mode. Set SOCKET_API_KEY to use your Socket org settings.`)
