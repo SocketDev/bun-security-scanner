@@ -1,29 +1,94 @@
 {
   "name": "@socketsecurity/bun-security-scanner",
-  "description": "Bun security scanner for SocketDev",
   "version": "1.1.1",
-  "author": "SocketDev <eng@socket.dev>",
+  "description": "Bun security scanner for SocketDev",
+  "keywords": [
+    "bun",
+    "security"
+  ],
   "license": "MIT",
+  "author": "SocketDev <eng@socket.dev>",
   "repository": {
     "type": "git",
     "url": "https://github.com/SocketDev/bun-security-scanner"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "check": "node scripts/fleet/check.mts",
+    "check:paths": "node scripts/fleet/check/paths-are-canonical.mts",
+    "ci:local": "node scripts/fleet/agent-ci-skip-locks.mts run --all --quiet --pause-on-failure --github-token",
+    "clean": "node -e \"require('node:fs').rmSync('node_modules/.cache', { recursive: true, force: true })\"",
+    "cover": "node scripts/fleet/cover.mts",
+    "doctor:auth": "node scripts/fleet/check/setup-is-prompt-less.mts",
+    "fix": "node scripts/fleet/fix.mts",
+    "format": "node scripts/fleet/format.mts",
+    "format:check": "node scripts/fleet/format.mts --check",
+    "lockstep": "node scripts/fleet/lockstep.mts",
+    "lockstep:emit-schema": "node scripts/fleet/lockstep-emit-schema.mts",
+    "prepare": "node scripts/fleet/install-git-hooks.mts && node scripts/fleet/prepare.mts",
+    "security": "node scripts/fleet/security.mts",
+    "setup-security-tools": "node .claude/hooks/fleet/setup-security-tools/install.mts",
+    "sync-oxlint-rules": "node scripts/fleet/sync-oxlint-rules.mts",
+    "sync-package-manager-pins": "node scripts/fleet/sync-package-manager-pins.mts",
+    "update": "node scripts/fleet/update.mts",
+    "weekly-update": "node scripts/fleet/weekly-update.mts",
+    "weekly-update:ci": "node scripts/fleet/weekly-update-workflow.mts run",
+    "doctor": "node scripts/fleet/doctor.mts",
+    "gen:llms-txt": "node scripts/fleet/make-llms-txt.mts --no-ai",
+    "setup:brew": "node scripts/fleet/setup/setup-brew.mts",
+    "setup:go": "node scripts/fleet/setup/setup-go.mts",
+    "setup:mcp": "node scripts/fleet/setup/setup-mcp.mts",
+    "setup:python": "node scripts/fleet/setup/setup-python.mts",
+    "setup:refero": "node scripts/fleet/setup/setup-refero.mts",
+    "setup:rust": "node scripts/fleet/setup/setup-rust.mts"
+  },
+  "devDependencies": {
+    "@redwoodjs/agent-ci": "catalog:",
+    "@sinclair/typebox": "catalog:",
+    "@socketregistry/packageurl-js": "catalog:",
+    "@socketregistry/packageurl-js-stable": "catalog:",
+    "@socketsecurity/lib": "catalog:",
+    "@socketsecurity/lib-stable": "catalog:",
+    "@socketsecurity/sdk": "catalog:",
+    "@socketsecurity/sdk-stable": "catalog:",
+    "@types/bun": "^1.2.23",
+    "@types/mdast": "catalog:",
+    "@types/node": "catalog:",
+    "@types/semver": "catalog:",
+    "@types/shell-quote": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
+    "c8": "catalog:",
+    "chrome-devtools-mcp": "catalog:",
+    "fast-check": "catalog:",
+    "magic-string": "catalog:",
+    "markdownlint-cli2": "catalog:",
+    "mdast-util-from-markdown": "catalog:",
+    "micromark": "catalog:",
+    "neosanitize": "catalog:",
+    "nock": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "playwright-core": "catalog:",
+    "portless": "catalog:",
+    "regjsparser": "catalog:",
+    "semver": "catalog:",
+    "shell-quote": "catalog:",
+    "taze": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "devEngines": {
     "packageManager": {
       "name": "pnpm"
     }
   },
-  "scripts": {
-    "test": "bun test"
+  "engines": {
+    "pnpm": ">=11.0.5",
+    "node": ">=24"
   },
-  "keywords": [
-    "bun",
-    "security"
-  ],
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.2.23"
-  }
+  "allowScripts": {}
 }

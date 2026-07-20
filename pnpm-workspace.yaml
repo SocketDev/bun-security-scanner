@@ -1,0 +1,115 @@
+catalog:
+  '@redwoodjs/agent-ci': 0.17.1
+  '@sinclair/typebox': 0.34.52
+  '@socketregistry/packageurl-js': 1.4.4
+  '@socketregistry/packageurl-js-stable': npm:@socketregistry/packageurl-js@1.4.4
+  '@socketsecurity/lib': 6.1.0
+  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.1.0
+  '@socketsecurity/registry': 2.0.2
+  '@socketsecurity/registry-stable': npm:@socketsecurity/registry@2.0.2
+  '@socketsecurity/sdk': 4.0.1
+  '@socketsecurity/sdk-stable': npm:@socketsecurity/sdk@4.0.1
+  '@types/mdast': 4.0.4
+  '@types/node': 26.1.1
+  '@types/semver': 7.7.1
+  '@types/shell-quote': 1.7.5
+  '@ultrathink/acorn.wasm': npm:@ultrathink/acorn-wasm@0.0.1
+  '@vitest/coverage-v8': 4.1.10
+  '@vitest/ui': 4.1.10
+  'c8': 11.0.0
+  'chrome-devtools-mcp': 1.5.0
+  'compromise': 14.15.1
+  'dtu-github-actions': 0.17.1
+  'fast-check': 4.9.0
+  'magic-string': 1.0.0
+  'markdownlint-cli2': 0.23.0
+  'mdast-util-from-markdown': 2.0.3
+  'micromark': 4.0.2
+  'neosanitize': 0.3.0
+  'nock': 15.0.0
+  'oxfmt': 0.58.0
+  'oxlint': 1.73.0
+  'playwright-core': 1.61.1
+  'portless': 0.15.4
+  'regjsparser': 0.13.2
+  'semver': 7.8.5
+  'shell-quote': 1.10.0
+  'taze': 19.14.1
+  'typescript': 7.0.2
+  'vitest': 4.1.10
+
+overrides:
+  # Fleet-canonical overrides (managed by socket-wheelhouse sync; do not edit).
+  '@socketregistry/packageurl-js': 'catalog:'
+  '@socketsecurity/lib': 'catalog:'
+  '@socketsecurity/registry': 'catalog:'
+  '@socketsecurity/sdk': 'catalog:'
+  'chalk@>=5': '5.6.2'
+  'es-define-property': 'npm:@socketregistry/es-define-property@1.0.7'
+  'es-set-tostringtag': 'npm:@socketregistry/es-set-tostringtag@1.0.10'
+  'function-bind': 'npm:@socketregistry/function-bind@1.0.7'
+  'glob': '13.0.6'
+  'gopd': 'npm:@socketregistry/gopd@1.0.7'
+  'has-symbols': 'npm:@socketregistry/has-symbols@1.0.7'
+  'has-tostringtag': 'npm:@socketregistry/has-tostringtag@1.0.7'
+  'hasown': 'npm:@socketregistry/hasown@1.0.7'
+  'iconv-lite': '0.7.2'
+  'isexe@>=3': '4.0.0'
+  'lru-cache@>=10': '11.3.6'
+  'magic-string': '1.0.0'
+  'mime-db': '1.54.0'
+  'mime-types@>=3': '3.0.2'
+  'minipass@>=4': '7.1.3'
+  'safe-buffer': 'npm:@socketregistry/safe-buffer@1.0.9'
+  'safer-buffer': 'npm:@socketregistry/safer-buffer@1.0.10'
+  'semver@>=5.0.0 <7.6.0': '7.8.1'
+  'side-channel': 'npm:@socketregistry/side-channel@1.0.10'
+  'ssri@>=12': '13.0.1'
+  'string-width@>=5': '8.1.0'
+  'update-notifier@>=4.0.0': '7.3.1'
+  'uuid': '11.1.1'
+  'which': '7.0.0'
+  'wrap-ansi@>=8': '9.0.2'
+  'yaml@2': '2.9.0'
+
+packages:
+  - .claude/hooks/fleet/*
+  - .config/fleet/oxlint-plugin
+  - .config/fleet/oxlint-plugin/fleet/*
+autoInstallPeers: true
+managePackageManagerVersions: false
+pmOnFail: 'warn'
+blockExoticSubdeps: true
+confirmModulesPurge: false
+enablePrePostScripts: true
+minimumReleaseAge: 10080
+resolutionMode: 'highest'
+saveExact: true
+trustPolicy: 'no-downgrade'
+minimumReleaseAgeExclude:
+  - '@sdxgen/*'
+  - '@socketaddon/*'
+  - '@socketbin/*'
+  - '@socketoverride/*'
+  - '@socketregistry/*'
+  - '@socketsecurity/*'
+  - '@stuie/*'
+  - '@ultrathink/*'
+  - 'sdxgen'
+  - 'sfw'
+  - 'socket'
+  - 'stuie'
+  # published: 2026-07-14 | removable: 2026-07-21
+  - '@redwoodjs/agent-ci@0.17.1'
+  # published: 2026-07-14 | removable: 2026-07-21
+  - 'dtu-github-actions@0.17.1'
+  # published: 2026-07-16 | removable: 2026-07-23
+  - 'magic-string@1.0.0'
+  # published: 2026-07-16 | removable: 2026-07-23
+  - 'portless@0.15.4'
+
+allowBuilds:
+  cpu-features: false
+  protobufjs: false
+  puppeteer: false
+  ssh2: false

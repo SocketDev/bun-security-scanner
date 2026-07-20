@@ -1,0 +1,103 @@
+# Fleet-canonical catalog — the single source of truth for catalog deps that
+# EVERY fleet repo carries. The cascade splices this `catalog:` block into each
+# repo's real pnpm-workspace.yaml (the wheelhouse's own included, via dogfood).
+#
+# NOT a pnpm config file — the `.fleet` infix keeps it from colliding with the
+# real `pnpm-workspace.yaml` (pnpm's own discovery, the cascade's pnpm-workspace
+# handling, and find-by-name tooling all key on the bare name). Same reason
+# `vitest.coverage.fleet.config.mts` is infixed.
+#
+# Fleet vs repo: deps HERE are fleet-wide (present in every repo's catalog).
+# Repo-specific catalog deps stay in that repo's own pnpm-workspace.yaml and are
+# never cascaded. That split is the whole point of this file.
+#
+# Versions live here; the human-readable purpose for each lives alongside the
+# name in FLEET_CANONICAL_CATALOG_NAMES (scripts/repo/sync-scaffolding/manifest.mts).
+# loadExpectedCatalogEntries() reads versions from this file + merges the purpose.
+catalog:
+  '@redwoodjs/agent-ci': 0.17.1
+  'dtu-github-actions': 0.17.1
+  '@sinclair/typebox': 0.34.52
+  '@socketregistry/packageurl-js': 1.4.4
+  '@socketsecurity/lib': 6.1.0
+  '@socketsecurity/registry': 2.0.2
+  '@socketsecurity/sdk': 4.0.1
+  '@socketregistry/packageurl-js-stable': 'npm:@socketregistry/packageurl-js@1.4.4'
+  '@socketsecurity/lib-stable': 'npm:@socketsecurity/lib@6.1.0'
+  '@socketsecurity/registry-stable': 'npm:@socketsecurity/registry@2.0.2'
+  '@socketsecurity/sdk-stable': 'npm:@socketsecurity/sdk@4.0.1'
+  '@types/mdast': 4.0.4
+  '@types/node': 26.1.1
+  '@types/semver': 7.7.1
+  '@types/shell-quote': 1.7.5
+  # Aliased to the published pre-rename artifact until @ultrathink/acorn.wasm
+  # ships; then flip to a plain version + npm deprecate the old name.
+  '@ultrathink/acorn.wasm': 'npm:@ultrathink/acorn-wasm@0.0.1'
+  # istanbul-org converter for raw NODE_V8_COVERAGE output — cover.mts turns
+  # spawned-child coverage into the children merge tier with `c8 report`.
+  # Soaked (11.0.0 published 2026-02-22).
+  c8: 11.0.0
+  # chrome-devtools-mcp — Puppeteer-based browser-automation MCP server. Drives
+  # Chrome for HTML/design-system rendering + page-JS/console/network inspection
+  # and MV3 extension load+eval (socket-webext). Enabled by default via .mcp.json
+  # (`pnpm exec chrome-devtools-mcp`). Soaked (1.5.0 published 2026-07-03; 1.6.0
+  # published 2026-07-14 is still inside the 7-day cooldown).
+  'chrome-devtools-mcp': 1.5.0
+  # compromise.js NLP — the judgment-nudge hook's modal-verb (POS) detector.
+  # 14.15.1 is the attested re-publish that cleared the 14.15.0
+  # trust-downgrade flag.
+  'compromise': 14.15.1
+  # fast-check — property-based testing (QuickCheck for JS) for pure fleet-script
+  # logic; runs standalone in vitest. Soaked (4.9.0 published 2026-07-08). See
+  # .claude/skills/fleet/property-and-fuzz-testing.
+  'fast-check': 4.9.0
+  'magic-string': 1.0.0
+  'markdownlint-cli2': 0.23.0
+  'mdast-util-from-markdown': 2.0.3
+  'micromark': 4.0.2
+  'neosanitize': 0.3.0
+  # 15.0.0 is the fleet-wide migrated version (the @mswjs/interceptors rewrite;
+  # suites use static replies or scope.on('request') capture — no 2-arity reply
+  # functions, no this.req). Upstream marks 15.0.0 deprecated ("released
+  # accidentally"); bump to the stabilized 15.x when it ships.
+  'nock': 15.0.0
+  'npm-run-all2': 9.0.2
+  'oxfmt': 0.58.0
+  'oxlint': 1.73.0
+  # playwright-core — headless Chromium driver for the rendering-chromium-to-png
+  # skill (render a page or a real unpacked MV3 extension popup to PNG so an
+  # agent can SEE it). Browser binary via `node_modules/.bin/playwright install chromium`.
+  'playwright-core': 1.61.1
+  # portless — stable HTTPS `.localhost` URLs for local page tests and rendered UI checks.
+  'portless': 0.15.4
+  'regjsparser': 0.13.2
+  'semver': 7.8.5
+  'shell-quote': 1.10.0
+  'taze': 19.14.1
+  # TypeScript 7 NATIVE (the Go `tsc`). Track the highest available 7.x
+  # PRE-RELEASE — the RC line is intentional. npm's `latest` dist-tag points at
+  # 6.x stable, so "latest" is a DOWNGRADE off the native compiler: never follow
+  # it. Bump only to a newer `7.x-rc`/`7.x` (7 > 6, and a real 7.x release when
+  # it ships outranks the rc). Pinned-toolchain, excluded from taze
+  # (UPDATE_PINNED_TOOLCHAIN) so it is never auto-bumped — always a deliberate bump.
+  'typescript': 7.0.2
+  'vitest': 4.1.10
+  '@vitest/coverage-v8': 4.1.10
+  '@vitest/ui': 4.1.10
+
+# Optional fleet catalog — present in repos that use these tools; absent is
+# fine (the cascade never injects these). Read by loadOptionalCatalogEntries()
+# (manifest/catalog.mts) and the fleet doctor (scripts/fleet/doctor.mts) to
+# resolve versions for catalog: refs that are missing their catalog entry.
+catalogOptional:
+  'rolldown': 1.1.4
+  'svgo': 4.0.1
+  # vitiate — coverage-guided fuzzer (SWC-instrumented, native @vitiate/engine).
+  # Optional tier: adopted only in repos that fuzz an input boundary (parsers,
+  # decoders, native addons), so its native @swc/core engine never installs
+  # fleet-wide. Pinned to the published 0.3.1 (soaked 2026-06-22). NOTE: 0.4.0
+  # changes the crash exit code 1→77 (timeout→70) — pin -error_exitcode /
+  # -timeout_exitcode in the runner. See .claude/skills/fleet/property-and-fuzz-testing.
+  '@vitiate/core': 0.3.1
+  'vite': 8.1.0
+  'vitiate': 0.3.1
