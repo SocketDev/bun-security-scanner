@@ -8,6 +8,11 @@
     "type": "git",
     "url": "https://github.com/SocketDev/bun-security-scanner"
   },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm"
+    }
+  },
   "scripts": {
     "test": "bun test"
   },
