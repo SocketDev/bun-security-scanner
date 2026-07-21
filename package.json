@@ -43,7 +43,8 @@
     "setup:mcp": "node scripts/fleet/setup/setup-mcp.mts",
     "setup:python": "node scripts/fleet/setup/setup-python.mts",
     "setup:refero": "node scripts/fleet/setup/setup-refero.mts",
-    "setup:rust": "node scripts/fleet/setup/setup-rust.mts"
+    "setup:rust": "node scripts/fleet/setup/setup-rust.mts",
+    "lint": "node scripts/fleet/lint.mts"
   },
   "devDependencies": {
     "@redwoodjs/agent-ci": "catalog:",
