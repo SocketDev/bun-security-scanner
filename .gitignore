@@ -51,6 +51,7 @@ node_modules
 # fleet files, so only its generated adapter file is named.
 /.agents/
 /.clinerules/
+/.codex/
 /.cursor/
 /.github/copilot-instructions.md
 /.janus/
