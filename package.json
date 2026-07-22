@@ -91,5 +91,10 @@
     "pnpm": ">=11.0.5",
     "node": ">=24"
   },
-  "allowScripts": {}
+  "allowScripts": {
+    "cpu-features": false,
+    "protobufjs": false,
+    "puppeteer": false,
+    "ssh2": false
+  }
 }
