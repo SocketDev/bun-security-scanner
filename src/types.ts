@@ -7,7 +7,9 @@ export type SocketArtifact = {
     type: string
     props: {
       note?: string | undefined
+      description?: string | undefined
       didYouMean?: string | undefined
+      alternatePackage?: string | undefined
     } & Record<string, unknown>
     fix?:
       | {

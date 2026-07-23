@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import type { Mock } from 'bun:test'
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { authenticated } from '../../src/modes/authenticated'
 import type { SocketArtifact } from '../../src/types'
 
@@ -25,12 +27,16 @@ describe('authenticated', () => {
     ],
   }
 
-  let fetchSpy
+  let fetchSpy: Mock<typeof fetch>
 
   beforeEach(() => {
-    fetchSpy = spyOn(global, 'fetch').mockImplementation(() =>
-      Promise.resolve(new Response(JSON.stringify(mockArtifact))),
+    // `typeof fetch` carries the `preconnect` property, so the mock
+    // implementation needs the full callable-with-preconnect shape.
+    const mockFetch: typeof fetch = Object.assign(
+      () => Promise.resolve(new Response(JSON.stringify(mockArtifact))),
+      { preconnect: () => undefined },
     )
+    fetchSpy = spyOn(global, 'fetch').mockImplementation(mockFetch)
   })
 
   afterEach(() => {
@@ -106,10 +112,20 @@ describe('authenticated', () => {
 
     const results = scanner([...mockPackages])
 
-    await expect(async () => {
+    // try/catch instead of `await expect(…).rejects.toThrow(…)` — bun-types
+    // declares the rejects matchers as returning void, so awaiting them trips
+    // typescript/await-thenable even though Bun's runtime hands back a promise.
+    let thrown: unknown
+    try {
       for await (const artifacts of results) {
         // Should throw before getting here
       }
-    }).toThrow('Socket Security Scanner: Received 500 from server')
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown).toBeInstanceOf(Error)
+    expect(errorMessage(thrown)).toContain(
+      'Socket Security Scanner: Received 500 from server',
+    )
   })
 })

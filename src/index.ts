@@ -80,7 +80,7 @@ export const scanner: Bun.Security.Scanner = {
             for (const alert of artifact.alerts) {
               const description = ['']
 
-              if (alert.type === 'didYouMean') {
+              if (alert.type === 'didYouMean' && alert.props.alternatePackage) {
                 description.push(
                   `This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`,
                 )

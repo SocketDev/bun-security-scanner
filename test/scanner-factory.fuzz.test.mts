@@ -1,3 +1,4 @@
+// socket-lint: mirror-exempt — fast-check fuzz suite complementing the unit mirror scanner-factory.test.ts; renaming to the source basename would collide with it
 /**
  * @file Property/fuzz tests for src/scanner-factory (Tier-1 fast-check).
  *   `createScanner` returns an async generator that batches an input list of

@@ -1,3 +1,4 @@
+// socket-lint: mirror-exempt — exercises the live Socket API end-to-end (token-gated), a feature suite spanning both scanner modes, not a mirror of one source file
 import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 
 const packages: Bun.Security.Package[] = [
@@ -38,7 +39,7 @@ describe('live', () => {
 
     // Verify authenticated API was called
     expect(fetchSpy).toHaveBeenCalled()
-    expect(fetchSpy.mock.lastCall[0]).toMatch('api.socket.dev')
+    expect(fetchSpy.mock.lastCall?.[0]).toMatch('api.socket.dev')
   })
 
   test('unauthenticated', async () => {
@@ -65,6 +66,6 @@ describe('live', () => {
 
     // Verify firewall API was called
     expect(fetchSpy).toHaveBeenCalled()
-    expect(fetchSpy.mock.lastCall[0]).toMatch('firewall-api.socket.dev')
+    expect(fetchSpy.mock.lastCall?.[0]).toMatch('firewall-api.socket.dev')
   })
 })
