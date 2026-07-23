@@ -1,37 +1,36 @@
-import { expect, test, describe, spyOn, beforeEach, afterEach } from 'bun:test'
-import authenticated from '../../src/modes/authenticated'
+import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import { authenticated } from '../../src/modes/authenticated'
 import type { SocketArtifact } from '../../src/types'
-
 
 describe('authenticated', () => {
   const mockPackages: Bun.Security.Package[] = [
-  {
-    name: 'lodahs',
-    version: '0.0.1-security',
-    requestedRange: '^0.0.0',
-    tarball: 'https://registry.npmjs.org/lodahs/-/lodahs-0.0.1-security.tgz',
-  }
-]
+    {
+      name: 'lodahs',
+      version: '0.0.1-security',
+      requestedRange: '^0.0.0',
+      tarball: 'https://registry.npmjs.org/lodahs/-/lodahs-0.0.1-security.tgz',
+    },
+  ]
 
-const mockArtifact: SocketArtifact = {
-  inputPurl: 'pkg:npm/lodahs@0.0.1-security',
+  const mockArtifact: SocketArtifact = {
+    inputPurl: 'pkg:npm/lodahs@0.0.1-security',
     alerts: [
       {
         action: 'error',
         type: 'malware',
         props: {
-          description: 'Known malicious package'
-        }
-      }
-    ]
+          description: 'Known malicious package',
+        },
+      },
+    ],
   }
 
   let fetchSpy
 
   beforeEach(() => {
-    fetchSpy = spyOn(global, 'fetch').mockImplementation(() => Promise.resolve(
-      new Response(JSON.stringify(mockArtifact))
-    ))
+    fetchSpy = spyOn(global, 'fetch').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify(mockArtifact))),
+    )
   })
 
   afterEach(() => {
@@ -56,13 +55,13 @@ const mockArtifact: SocketArtifact = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'User-Agent': expect.stringContaining('SocketBunSecurityScanner')
+          Authorization: `Bearer ${apiKey}`,
+          'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
         },
         body: JSON.stringify({
-          components: [{ purl: 'pkg:npm/lodahs@0.0.1-security' }]
-        })
-      }
+          components: [{ purl: 'pkg:npm/lodahs@0.0.1-security' }],
+        }),
+      },
     )
   })
 
@@ -82,7 +81,7 @@ const mockArtifact: SocketArtifact = {
         version: '2.0.0',
         requestedRange: '^2.0.0',
         tarball: 'https://registry.npmjs.org/package2/-/package2-2.0.0.tgz',
-      }
+      },
     ]
 
     fetchSpy
@@ -103,9 +102,7 @@ const mockArtifact: SocketArtifact = {
     const apiKey = 'test-api-key-123'
     const scanner = authenticated(apiKey)
 
-    fetchSpy.mockResolvedValueOnce(
-      new Response('Error', { status: 500 })
-    )
+    fetchSpy.mockResolvedValueOnce(new Response('Error', { status: 500 }))
 
     const results = scanner([...mockPackages])
 

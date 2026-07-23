@@ -1,5 +1,5 @@
-import { expect, test, describe, spyOn, beforeEach, afterEach } from 'bun:test'
-import unauthenticated from '../../src/modes/unauthenticated'
+import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import { unauthenticated } from '../../src/modes/unauthenticated'
 import type { SocketArtifact } from '../../src/types'
 
 describe('unauthenticated', () => {
@@ -9,7 +9,7 @@ describe('unauthenticated', () => {
       version: '0.0.1-security',
       requestedRange: '^0.0.0',
       tarball: 'https://registry.npmjs.org/lodahs/-/lodahs-0.0.1-security.tgz',
-    }
+    },
   ]
 
   const mockArtifact: SocketArtifact = {
@@ -19,18 +19,18 @@ describe('unauthenticated', () => {
         action: 'error',
         type: 'malware',
         props: {
-          description: 'Known malicious package'
-        }
-      }
-    ]
+          description: 'Known malicious package',
+        },
+      },
+    ],
   }
 
   let fetchSpy
 
   beforeEach(() => {
-    fetchSpy = spyOn(global, 'fetch').mockImplementation(() => Promise.resolve(
-      new Response(JSON.stringify(mockArtifact))
-    ))
+    fetchSpy = spyOn(global, 'fetch').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify(mockArtifact))),
+    )
   })
 
   afterEach(() => {
@@ -49,24 +49,27 @@ describe('unauthenticated', () => {
 
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     expect(fetchSpy).toHaveBeenCalledWith(
-      'https://firewall-api.socket.dev/purl/pkg%3Anpm%2Flodahs%400.0.1-security', 
+      'https://firewall-api.socket.dev/purl/pkg%3Anpm%2Flodahs%400.0.1-security',
       {
-        'headers': {
+        headers: {
           'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
-        }
-      }
+        },
+      },
     )
   })
 
   test('unauthenticated scanner should batch requests correctly', async () => {
     const scanner = unauthenticated()
 
-    const multiplePackages: Bun.Security.Package[] = Array.from({ length: 100 }, (_, i) => ({
-      name: `package${i}`,
-      version: '1.0.0',
-      requestedRange: '^1.0.0',
-      tarball: `https://registry.npmjs.org/package${i}/-/package${i}-1.0.0.tgz`,
-    }))
+    const multiplePackages: Bun.Security.Package[] = Array.from(
+      { length: 100 },
+      (_, i) => ({
+        name: `package${i}`,
+        version: '1.0.0',
+        requestedRange: '^1.0.0',
+        tarball: `https://registry.npmjs.org/package${i}/-/package${i}-1.0.0.tgz`,
+      }),
+    )
 
     // Mock 100 responses for 100 packages
     for (let i = 0; i < 100; i++) {
@@ -87,9 +90,7 @@ describe('unauthenticated', () => {
   test('unauthenticated scanner should handle API errors', async () => {
     const scanner = unauthenticated()
 
-    fetchSpy.mockResolvedValueOnce(
-      new Response('Error', { status: 404 })
-    )
+    fetchSpy.mockResolvedValueOnce(new Response('Error', { status: 404 }))
 
     const results = scanner([...mockPackages])
 
@@ -108,8 +109,9 @@ describe('unauthenticated', () => {
         name: '@scope/package-name',
         version: '1.0.0-beta.1',
         requestedRange: '^1.0.0',
-        tarball: 'https://registry.npmjs.org/@scope/package-name/-/package-name-1.0.0-beta.1.tgz',
-      }
+        tarball:
+          'https://registry.npmjs.org/@scope/package-name/-/package-name-1.0.0-beta.1.tgz',
+      },
     ]
 
     const results = scanner([...specialPackage])
@@ -121,13 +123,15 @@ describe('unauthenticated', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     // Check that special characters are properly encoded
     expect(fetchSpy).toHaveBeenCalledWith(
-      expect.stringContaining('pkg%3Anpm%2F%40scope%2Fpackage-name%401.0.0-beta.1'), 
-        {
-          'headers': {
-            'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
-          }
-        }
-      )
+      expect.stringContaining(
+        'pkg%3Anpm%2F%40scope%2Fpackage-name%401.0.0-beta.1',
+      ),
+      {
+        headers: {
+          'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
+        },
+      },
+    )
   })
 
   test('unauthenticated scanner should parse NDJSON responses', async () => {
@@ -135,12 +139,12 @@ describe('unauthenticated', () => {
 
     const artifact1: SocketArtifact = {
       inputPurl: 'pkg:npm/package1@1.0.0',
-      alerts: [{ action: 'warn', type: 'deprecation', props: {} }]
+      alerts: [{ action: 'warn', type: 'deprecation', props: {} }],
     }
 
     const artifact2: SocketArtifact = {
       inputPurl: 'pkg:npm/package2@2.0.0',
-      alerts: [{ action: 'error', type: 'malware', props: {} }]
+      alerts: [{ action: 'error', type: 'malware', props: {} }],
     }
 
     const ndjson = `${JSON.stringify(artifact1)}\n${JSON.stringify(artifact2)}`

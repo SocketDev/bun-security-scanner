@@ -1,40 +1,53 @@
 import Bun from 'bun'
 import path from 'node:path'
 import os from 'node:os'
-import authenticated from './modes/authenticated'
-import unauthenticated from './modes/unauthenticated'
+import { authenticated } from './modes/authenticated'
+import { unauthenticated } from './modes/unauthenticated'
+import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
-let SOCKET_API_KEY = process.env.SOCKET_API_KEY
+const logger = getDefaultLogger()
+
+// Bootstrap: this module resolves the token itself, with a Socket settings
+// file fallback below. socket-api-token-getter: allow direct-env
+let SOCKET_API_KEY = process.env.SOCKET_API_TOKEN
 
 if (typeof SOCKET_API_KEY !== 'string') {
   // get OS app data directory
-  let dataHome = process.platform === 'win32'
-      ? Bun.env.LOCALAPPDATA
-      : Bun.env.XDG_DATA_HOME
+  let dataHome =
+    process.platform === 'win32' ? Bun.env.LOCALAPPDATA : Bun.env.XDG_DATA_HOME
 
   // fallback
   if (!dataHome) {
-    if (process.platform === 'win32') throw new Error('missing %LOCALAPPDATA%')
+    if (process.platform === 'win32') {
+      throw new Error('missing %LOCALAPPDATA%')
+    }
 
     const home = os.homedir()
 
-    dataHome = path.join(home, ...(process.platform === 'darwin'
-      ? ['Library', 'Application Support']
-      : ['.local', 'share']
-    ))
+    dataHome = path.join(
+      home,
+      ...(process.platform === 'darwin'
+        ? ['Library', 'Application Support']
+        : ['.local', 'share']),
+    )
   }
 
   // append `socket/settings`
   const defaultSettingsPath = path.join(dataHome, 'socket', 'settings')
   const file = Bun.file(defaultSettingsPath)
 
-  // attempt to read token from socket settings
+  // attempt to read token from socket settings. This module is a Bun-only
+  // ESM plugin entry point and never bundles to CJS.
+  // socket-lint: allow top-level-await
   if (await file.exists()) {
+    // socket-lint: allow top-level-await
     const rawContent = await file.text()
     // rawContent is base64, must decode
 
     try {
-      SOCKET_API_KEY = JSON.parse(Buffer.from(rawContent, 'base64').toString().trim()).apiToken
+      SOCKET_API_KEY = JSON.parse(
+        Buffer.from(rawContent, 'base64').toString().trim(),
+      ).apiToken
     } catch {
       throw new Error('error reading Socket settings')
     }
@@ -42,15 +55,20 @@ if (typeof SOCKET_API_KEY !== 'string') {
 }
 
 if (!SOCKET_API_KEY) {
-  console.log(`⚠ Socket Security Scanner free mode. Set SOCKET_API_KEY to use your Socket org settings.`)
+  logger.warn(
+    `Socket Security Scanner free mode. Set SOCKET_API_TOKEN to use your Socket org settings.`,
+  )
 }
 
-const scannerImplementation = SOCKET_API_KEY ? authenticated(SOCKET_API_KEY) : unauthenticated()
+const scannerImplementation = SOCKET_API_KEY
+  ? authenticated(SOCKET_API_KEY)
+  : unauthenticated()
+// npm purl: `pkg:npm/` prefix, capture 1 = package name (optional `@scope/`
+// then a name with no `@`), literal `@`, capture 2 = version (rest of string).
 const purlRegex = /^pkg:npm\/((?:@[^/]+\/)?(?:[^@]+))@(.+)$/
 
 export const scanner: Bun.Security.Scanner = {
-  version: '1',
-  async scan({ packages }: { packages: Array<Bun.Security.Package> }) {
+  async scan({ packages }: { packages: Bun.Security.Package[] }) {
     const results: Bun.Security.Advisory[] = []
 
     while (packages.length) {
@@ -63,7 +81,9 @@ export const scanner: Bun.Security.Scanner = {
               const description = ['']
 
               if (alert.type === 'didYouMean') {
-                description.push(`This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`)
+                description.push(
+                  `This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`,
+                )
               }
 
               if (alert.props.description) {
@@ -75,17 +95,19 @@ export const scanner: Bun.Security.Scanner = {
               }
 
               const fix = alert.fix?.description
-              
+
               if (fix) {
                 description.push(`Fix: ${fix}`)
               }
 
-              const match = artifact.inputPurl.match(purlRegex);
+              const match = artifact.inputPurl.match(purlRegex)
 
-              if (!match) continue;
+              if (!match) {
+                continue
+              }
 
-              const name = match[1];
-              const version = match[2];
+              const name = match[1]
+              const version = match[2]
 
               const url = `https://socket.dev/npm/package/${name}/overview/${version}`
 
@@ -93,7 +115,7 @@ export const scanner: Bun.Security.Scanner = {
                 level: alert.action === 'error' ? 'fatal' : 'warn',
                 package: artifact.inputPurl,
                 url,
-                description: description.join('\n\n') + '\n'
+                description: description.join('\n\n') + '\n',
               })
             }
           }
@@ -101,5 +123,6 @@ export const scanner: Bun.Security.Scanner = {
       }
     }
     return results
-  }
+  },
+  version: '1',
 }

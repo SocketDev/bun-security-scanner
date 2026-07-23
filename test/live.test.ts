@@ -1,4 +1,4 @@
-import { expect, test, spyOn, describe, afterEach } from 'bun:test'
+import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 
 const packages: Bun.Security.Package[] = [
   {
@@ -6,7 +6,7 @@ const packages: Bun.Security.Package[] = [
     version: '0.0.1-security',
     requestedRange: '^0.0.0',
     tarball: 'https://registry.npmjs.org/lodahs/-/lodahs-0.0.1-security.tgz',
-  }
+  },
 ]
 
 describe('live', () => {
@@ -17,9 +17,10 @@ describe('live', () => {
   })
 
   test('authenticated', async () => {
-    // Only run if token is available
-    if (!process.env.SOCKET_API_KEY) {
-      throw new Error('test requires a `SOCKET_API_KEY`')
+    // Only run if token is available; test setup checks the raw env on
+    // purpose. socket-api-token-getter: allow direct-env
+    if (!process.env.SOCKET_API_TOKEN) {
+      throw new Error('test requires a `SOCKET_API_TOKEN`')
     }
 
     const { scanner } = await import('../src/index')
@@ -32,7 +33,7 @@ describe('live', () => {
       description: expect.any(String),
       level: 'fatal',
       package: 'pkg:npm/lodahs@0.0.1-security',
-      url: 'https://socket.dev/npm/package/lodahs/overview/0.0.1-security'
+      url: 'https://socket.dev/npm/package/lodahs/overview/0.0.1-security',
     })
 
     // Verify authenticated API was called
@@ -42,7 +43,8 @@ describe('live', () => {
 
   test('unauthenticated', async () => {
     // temporarily remove token to test unauthenticated mode
-    delete process.env.SOCKET_API_KEY
+    // socket-api-token-getter: allow direct-env
+    delete process.env.SOCKET_API_TOKEN
 
     // Need to re-import to get fresh module with no token
     const modulePath = '../src/index'
@@ -58,7 +60,7 @@ describe('live', () => {
       description: expect.any(String),
       level: 'fatal',
       package: 'pkg:npm/lodahs@0.0.1-security',
-      url: 'https://socket.dev/npm/package/lodahs/overview/0.0.1-security'
+      url: 'https://socket.dev/npm/package/lodahs/overview/0.0.1-security',
     })
 
     // Verify firewall API was called
@@ -66,4 +68,3 @@ describe('live', () => {
     expect(fetchSpy.mock.lastCall[0]).toMatch('firewall-api.socket.dev')
   })
 })
-

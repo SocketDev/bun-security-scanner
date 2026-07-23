@@ -1,4 +1,4 @@
-import { expect, test, describe } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { createScanner } from '../src/scanner-factory'
 import type { SocketArtifact } from '../src/types'
 
@@ -20,20 +20,23 @@ const mockPackages: Bun.Security.Package[] = [
     version: '3.0.0',
     requestedRange: '^3.0.0',
     tarball: 'https://registry.npmjs.org/package3/-/package3-3.0.0.tgz',
-  }
+  },
 ]
 
 describe('scanner-factory', () => {
   test('should call fetchStrategy with correct purls', async () => {
     const capturedPurls: string[] = []
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       capturedPurls.push(...purls)
     }
 
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 5,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const results = scanner([...mockPackages])
@@ -45,20 +48,23 @@ describe('scanner-factory', () => {
     expect(capturedPurls).toEqual([
       'pkg:npm/package1@1.0.0',
       'pkg:npm/package2@2.0.0',
-      'pkg:npm/package3@3.0.0'
+      'pkg:npm/package3@3.0.0',
     ])
   })
 
   test('should respect maxBatchLength', async () => {
     const batchSizes: number[] = []
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       batchSizes.push(purls.length)
     }
 
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 2,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const results = scanner([...mockPackages])
@@ -75,22 +81,25 @@ describe('scanner-factory', () => {
     const mockArtifacts: SocketArtifact[] = [
       {
         inputPurl: 'pkg:npm/package1@1.0.0',
-        alerts: [{ action: 'error', type: 'malware', props: {} }]
+        alerts: [{ action: 'error', type: 'malware', props: {} }],
       },
       {
         inputPurl: 'pkg:npm/package2@2.0.0',
-        alerts: [{ action: 'warn', type: 'deprecation', props: {} }]
-      }
+        alerts: [{ action: 'warn', type: 'deprecation', props: {} }],
+      },
     ]
 
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       artifacts.push(...mockArtifacts)
     }
 
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 5,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const results = scanner([...mockPackages])
@@ -105,7 +114,10 @@ describe('scanner-factory', () => {
 
   test('should not call fetchStrategy with empty batch', async () => {
     let callCount = 0
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       callCount++
       expect(purls.length).toBeGreaterThan(0)
     }
@@ -113,7 +125,7 @@ describe('scanner-factory', () => {
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 3,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const results = scanner([...mockPackages])
@@ -128,14 +140,17 @@ describe('scanner-factory', () => {
 
   test('should handle empty package list', async () => {
     let callCount = 0
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       callCount++
     }
 
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 5,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const results = scanner([])
@@ -150,9 +165,12 @@ describe('scanner-factory', () => {
   test('should respect maxSending with concurrent requests', async () => {
     let maxConcurrent = 0
     let currentInFlight = 0
-    const delays: Promise<void>[] = []
+    const delays: Array<Promise<void>> = []
 
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       currentInFlight += purls.length
       maxConcurrent = Math.max(maxConcurrent, currentInFlight)
 
@@ -174,7 +192,7 @@ describe('scanner-factory', () => {
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 1,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const results = scanner(manyPackages)
@@ -189,17 +207,20 @@ describe('scanner-factory', () => {
 
   test('should yield artifacts progressively with maxBatchLength', async () => {
     let batchIndex = 0
-    const fetchStrategy = async (purls: string[], artifacts: SocketArtifact[]) => {
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
       artifacts.push({
         inputPurl: `batch-${batchIndex++}`,
-        alerts: []
+        alerts: [],
       })
     }
 
     const scanner = createScanner({
       maxSending: 10,
       maxBatchLength: 1,
-      fetchStrategy
+      fetchStrategy,
     })
 
     const packages = [mockPackages[0]!, mockPackages[1]!]

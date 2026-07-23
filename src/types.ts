@@ -2,17 +2,21 @@ import type Bun from 'bun'
 
 export type SocketArtifact = {
   inputPurl: string
-  alerts: {
+  alerts: Array<{
     action: 'error' | 'warn'
-    type: string,
+    type: string
     props: {
-      note?: string,
-      didYouMean?: string,
-    } & Record<string, any>
-    fix?: {
-      description: string
-    }
-  }[]
+      note?: string | undefined
+      didYouMean?: string | undefined
+    } & Record<string, unknown>
+    fix?:
+      | {
+          description: string
+        }
+      | undefined
+  }>
 }
 
-export type ScannerImplementation = (packages: Array<Bun.Security.Package>) => AsyncIterable<SocketArtifact[]>
+export type ScannerImplementation = (
+  packages: Bun.Security.Package[],
+) => AsyncIterable<SocketArtifact[]>
