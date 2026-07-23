@@ -15,6 +15,10 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "test": "bun test",
     "check": "node scripts/fleet/check.mts",
@@ -81,10 +85,6 @@
     "taze": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   },
   "devEngines": {
     "packageManager": {
