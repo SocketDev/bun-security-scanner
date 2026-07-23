@@ -42,10 +42,15 @@ export function createScanner({
 
       pending.add(flight)
 
-      flight.finally(() => {
+      // Cleanup runs on BOTH settle paths (like `.finally`), but via
+      // `.then(cleanup, cleanup)` so the derived chain never rejects — a bare
+      // `.finally` re-rejects into an unhandled rejection. The flight's own
+      // rejection still surfaces through `pending` at the final drain.
+      const cleanup = () => {
         in_flight -= purls.length
         pending.delete(flight)
-      })
+      }
+      void flight.then(cleanup, cleanup)
     }
 
     while (packages.length > 0) {
