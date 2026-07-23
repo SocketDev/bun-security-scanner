@@ -81,6 +81,7 @@
     "playwright-core": "catalog:",
     "portless": "catalog:",
     "regjsparser": "catalog:",
+    "rolldown": "catalog:",
     "semver": "catalog:",
     "shell-quote": "catalog:",
     "taze": "catalog:",

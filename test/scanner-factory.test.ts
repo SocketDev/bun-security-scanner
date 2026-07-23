@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { createScanner } from '../src/scanner-factory'
 import type { SocketArtifact } from '../src/types'
+import { tolerantSleep } from './fleet/_shared/lib/timing.mts'
 
 const mockPackages: Bun.Security.Package[] = [
   {
@@ -175,7 +176,9 @@ describe('scanner-factory', () => {
       maxConcurrent = Math.max(maxConcurrent, currentInFlight)
 
       // Simulate async work
-      const delay = new Promise<void>(resolve => setTimeout(resolve, 10))
+      const delay = new Promise<void>(resolve =>
+        setTimeout(resolve, tolerantSleep(10)),
+      )
       delays.push(delay)
       await delay
 

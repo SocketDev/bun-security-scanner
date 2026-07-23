@@ -283,7 +283,7 @@ export function createLintRunners(context: LintRunnerContext): LintRunners {
   // FORMAT_MAX_PASSES), so a one-pass non-idempotency residual never reaches the
   // verify gate; fail LOUD on genuine oscillation (a real oxfmt bug, not a
   // silent re-run). Returns 0 on success, 1 on a format error or non-convergence.
-  function runOxfmt(files?: readonly string[]): number {
+  function runOxfmt(files?: readonly string[] | undefined): number {
     const fileArgs = files === undefined ? {} : { files: [...files] }
     if (!fix) {
       const res = spawnSync(

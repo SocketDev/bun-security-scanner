@@ -162,7 +162,12 @@
     ],
     "typescript/consistent-type-imports": "error",
     "typescript/no-duplicate-enum-values": "error",
-    "typescript/no-duplicate-type-constituents": "error",
+    "typescript/no-duplicate-type-constituents": [
+      "error",
+      {
+        "ignoreUnions": true
+      }
+    ],
     "typescript/no-explicit-any": "error",
     "typescript/no-extra-non-null-assertion": "error",
     "typescript/no-misused-new": "error",

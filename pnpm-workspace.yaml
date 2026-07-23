@@ -33,6 +33,7 @@ catalog:
   'playwright-core': 1.61.1
   'portless': 0.15.4
   'regjsparser': 0.13.2
+  'rolldown': 1.1.4
   'semver': 7.8.5
   'shell-quote': 1.10.0
   'taze': 19.14.1
