@@ -29,6 +29,7 @@ catalog:
   'nock': 15.0.0
   'oxfmt': 0.59.0
   'oxlint': 1.74.0
+  'oxlint-tsgolint': 7.0.2001
   'playwright-core': 1.61.1
   'portless': 0.15.4
   'regjsparser': 0.13.2
@@ -103,6 +104,24 @@ minimumReleaseAgeExclude:
   - 'portless@0.15.4'
   # published: 2026-07-17 | removable: 2026-07-24
   - 'markdownlint-cli2@0.23.1'
+  # oxlint-tsgolint — the type-aware lint sidecar oxlint's `--type-aware` flag
+  # drives; first-party oxc tooling, same trust rationale as oxlint itself.
+  # Main package + per-platform binding family exact-pinned so a future
+  # version re-soaks.
+  # published: 2026-07-21 | removable: 2026-07-28
+  - 'oxlint-tsgolint@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/darwin-arm64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/darwin-x64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/linux-arm64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/linux-x64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/win32-arm64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/win32-x64@7.0.2001'
 
 allowBuilds:
   cpu-features: false

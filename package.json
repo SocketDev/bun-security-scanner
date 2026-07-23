@@ -77,6 +77,7 @@
     "nock": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "playwright-core": "catalog:",
     "portless": "catalog:",
     "regjsparser": "catalog:",
