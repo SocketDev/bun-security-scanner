@@ -4,14 +4,17 @@ import os from 'node:os'
 import { authenticated } from './modes/authenticated'
 import { unauthenticated } from './modes/unauthenticated'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
+import { readSocketApiTokenSync } from '@socketsecurity/lib-stable/secrets/socket-api-token'
 
 const logger = getDefaultLogger()
 
-// Bootstrap: this module resolves the token itself, with a Socket settings
-// file fallback below. socket-api-token-getter: allow direct-env
-let SOCKET_API_KEY = process.env.SOCKET_API_TOKEN
+// Bootstrap: env aliases first (SOCKET_API_TOKEN canonical, SOCKET_API_KEY
+// legacy — the release workflows export the org secret under the legacy
+// name), then the Socket settings file fallback below. Env-only: a keychain
+// prompt is unacceptable inside `bun install`.
+let socketApiToken = readSocketApiTokenSync({ allowEnvOnly: true })
 
-if (typeof SOCKET_API_KEY !== 'string') {
+if (typeof socketApiToken !== 'string') {
   // get OS app data directory
   let dataHome =
     process.platform === 'win32' ? Bun.env.LOCALAPPDATA : Bun.env.XDG_DATA_HOME
@@ -45,7 +48,7 @@ if (typeof SOCKET_API_KEY !== 'string') {
     // rawContent is base64, must decode
 
     try {
-      SOCKET_API_KEY = JSON.parse(
+      socketApiToken = JSON.parse(
         Buffer.from(rawContent, 'base64').toString().trim(),
       ).apiToken
     } catch {
@@ -54,14 +57,14 @@ if (typeof SOCKET_API_KEY !== 'string') {
   }
 }
 
-if (!SOCKET_API_KEY) {
+if (!socketApiToken) {
   logger.warn(
     `Socket Security Scanner free mode. Set SOCKET_API_TOKEN to use your Socket org settings.`,
   )
 }
 
-const scannerImplementation = SOCKET_API_KEY
-  ? authenticated(SOCKET_API_KEY)
+const scannerImplementation = socketApiToken
+  ? authenticated(socketApiToken)
   : unauthenticated()
 // npm purl: `pkg:npm/` prefix, capture 1 = package name (optional `@scope/`
 // then a name with no `@`), literal `@`, capture 2 = version (rest of string).
