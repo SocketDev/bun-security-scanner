@@ -10,6 +10,12 @@ const packages: Bun.Security.Package[] = [
   },
 ]
 
+// Only run the authenticated test if a token is available; test setup checks
+// the raw env on purpose (fleet skip-if-unset convention, same as
+// socket-lib's it.skipIf(!BACKEND_OK) secret-backed suites).
+// socket-api-token-getter: allow direct-env
+const HAS_TOKEN = Boolean(process.env.SOCKET_API_TOKEN)
+
 describe('live', () => {
   const fetchSpy = spyOn(global, 'fetch')
 
@@ -17,13 +23,7 @@ describe('live', () => {
     fetchSpy.mockClear()
   })
 
-  test('authenticated', async () => {
-    // Only run if token is available; test setup checks the raw env on
-    // purpose. socket-api-token-getter: allow direct-env
-    if (!process.env.SOCKET_API_TOKEN) {
-      throw new Error('test requires a `SOCKET_API_TOKEN`')
-    }
-
+  test.skipIf(!HAS_TOKEN)('authenticated', async () => {
     const { scanner } = await import('../src/index')
     const advisories = await scanner.scan({ packages: [...packages] })
 
