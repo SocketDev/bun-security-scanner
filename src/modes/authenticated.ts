@@ -32,6 +32,7 @@ export function authenticated(apiToken: string): ScannerImplementation {
         )
       }
       // batchPackageStream yields one result per artifact.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the sdk types batch results with its generated openapi SocketArtifact; this narrows to the field subset the scanner consumes (inputPurl + alerts, verified live).
       yield [result.data as SocketArtifact]
     }
   }

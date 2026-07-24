@@ -44,6 +44,7 @@ describe('authenticated', () => {
       yield* results
     }
     streamSpy.mockImplementation(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the mock yields the success/status/data subset the scanner consumes; the sdk's full generated result type is irrelevant to these behavior tests.
       impl as unknown as typeof SocketSdk.prototype.batchPackageStream,
     )
   }

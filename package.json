@@ -12,14 +12,26 @@
     "type": "git",
     "url": "https://github.com/SocketDev/bun-security-scanner"
   },
+  "files": [
+    "CHANGELOG.md",
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
   "scripts": {
+    "build": "node scripts/repo/build.mts",
+    "prepublishOnly": "echo 'ERROR: Use GitHub Actions workflow for publishing' && exit 1",
     "test": "bun test",
     "check": "node scripts/fleet/check.mts",
     "check:paths": "node scripts/fleet/check/paths-are-canonical.mts",
