@@ -36,7 +36,7 @@ catalog:
   'rolldown': 1.1.4
   'semver': 7.8.5
   'shell-quote': 1.10.0
-  'taze': 19.14.1
+  'taze': 19.16.0
   'typescript': 7.0.2
   'vitest': 4.1.10
 
@@ -97,6 +97,15 @@ minimumReleaseAgeExclude:
   - '@ultrathink/*'
   - 'sdxgen'
   - 'sfw'
+  # taze 19.16.0 — the dep updater itself; forced ahead of the soak by owner
+  # directive so the regenerated single-registry patch (patchedDependencies)
+  # tracks the current release. Exact-pinned so a future version re-soaks.
+  # published: 2026-07-22 | removable: 2026-07-29
+  - 'taze@19.16.0'
+  # verkit — new dev-only transitive of taze 19.16.0 (same owner directive);
+  # exact-pinned so future versions re-soak.
+  # published: 2026-07-19 | removable: 2026-07-26
+  - 'verkit@0.1.2'
   - 'socket'
   - 'stuie'
   # published: 2026-07-16 | removable: 2026-07-23
@@ -123,6 +132,22 @@ minimumReleaseAgeExclude:
   - '@oxlint-tsgolint/win32-arm64@7.0.2001'
   # published: 2026-07-21 | removable: 2026-07-28
   - '@oxlint-tsgolint/win32-x64@7.0.2001'
+
+patchedDependencies:
+  # single-registry: routes taze version resolution through its own bundled
+  # direct-registry client (getVersionsFromRegistry — full packument with
+  # publish times, .npmrc/auth-aware) for EVERY registry, instead of the
+  # fast-npm-meta hosted endpoint it uses when the registry is the npm
+  # default. That third-party hop leaks our dependency names,
+  # violates the fleet single-registry posture, and is blocked by egress
+  # policy here — every lookup then hits taze's request timeout while taze
+  # still exits 0 ("Already up to date" false green; update.mts now fails
+  # loud on it). The former 5s->30s timeout half of this patch retired in
+  # 19.16.0: `requestTimeout` is config-wired now, set in
+  # .config/fleet/taze.config.mts.
+  # TEMPORARY: remove if taze grows a supported flag to force direct-registry
+  # resolution (or we swap to our own metadata client, see socket-lib plan).
+  'taze@19.16.0': 'patches/taze@19.16.0.patch'
 
 allowBuilds:
   '@socketsecurity/sdk': false

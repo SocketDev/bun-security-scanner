@@ -43,6 +43,7 @@
     "format": "node scripts/fleet/format.mts",
     "format:check": "node scripts/fleet/format.mts --check",
     "lockstep": "node scripts/fleet/lockstep.mts",
+    "lockstep:emit-mirror-globs": "node scripts/fleet/lockstep-emit-mirror-globs.mts",
     "lockstep:emit-schema": "node scripts/fleet/lockstep-emit-schema.mts",
     "prepare": "node scripts/fleet/install-git-hooks.mts && node scripts/fleet/prepare.mts",
     "security": "node scripts/fleet/security.mts",
@@ -53,7 +54,7 @@
     "weekly-update": "node scripts/fleet/weekly-update.mts",
     "weekly-update:ci": "node scripts/fleet/weekly-update-workflow.mts run",
     "doctor": "node scripts/fleet/doctor.mts",
-    "gen:llms-txt": "node scripts/fleet/make-llms-txt.mts --no-ai",
+    "gen:llms-txt": "node scripts/fleet/gen/llms-txt.mts --no-ai",
     "setup:brew": "node scripts/fleet/setup/setup-brew.mts",
     "setup:go": "node scripts/fleet/setup/setup-go.mts",
     "setup:mcp": "node scripts/fleet/setup/setup-mcp.mts",
@@ -109,7 +110,7 @@
   },
   "engines": {
     "node": ">=24",
-    "npm": ">=12.0.0",
+    "npm": ">=12.0.1",
     "pnpm": ">=11.0.5"
   },
   "allowScripts": {

@@ -8,7 +8,7 @@
  *   not export entries themselves.
  */
 
-import type { ExportsConfig } from '../fleet/make-package-exports.mts'
+import type { ExportsConfig } from '../fleet/gen/package-exports.mts'
 import { REPO_ROOT } from '../fleet/paths.mts'
 
 export const packageDir: string = REPO_ROOT

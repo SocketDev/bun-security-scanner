@@ -20,16 +20,14 @@ node_modules
 !/.claude/workflows/
 # Release-only GENERATED hook-dispatch artifacts: all three dispatch-table
 # variants, the rolldown bundles, the native snapshot launcher + its frozen
-# sidecars, the vendored acorn copies, and the dispatch manifest. Rebuilt by
+# sidecars, and the dispatch manifest. Rebuilt by
 # build-hook-bundle / build-hook-snapshot / setup:3-hook-snapshot, shipped in
 # the GitHub-release bundle, NEVER committed to the cascade. Unanchored (**/)
 # so each is ignored in BOTH the repo-root live copy AND the template/base/
 # mirror — the fleet keeps ignores in this root block, not nested per-dir
 # files. Keep in lock-step with RELEASE_ONLY_DIR_MIRROR_FILES (scripts/repo/
 # sync-scaffolding/dir-mirror-skip.mts). See docs/agents.md/fleet/release-vs-cascade.md.
-**/.claude/hooks/fleet/_dispatch/acorn-bindgen.cjs
-**/.claude/hooks/fleet/_dispatch/acorn.wasm
-**/.claude/hooks/fleet/_dispatch/bundle.cjs
+**/.claude/hooks/fleet/_dist/bundle.cjs
 **/.claude/hooks/fleet/_dispatch/dispatch-launcher
 **/.claude/hooks/fleet/_dispatch/dispatch-launcher.exe
 **/.claude/hooks/fleet/_dispatch/dispatch-table-excluded.mts
@@ -46,7 +44,7 @@ node_modules
 # and CLAUDE.md, never committed. A tracked symlink checks out as a plain
 # pointer file on Windows, so each host gets a real symlink generated on its
 # own OS. Tracking them only produces churn + merge conflicts. Keep in sync
-# with ADAPTERS in scripts/fleet/gen-harness-adapters.mts + the .agents/ mirror
+# with ADAPTERS in scripts/fleet/gen/harness-adapters.mts + the .agents/ mirror
 # (and CODEX_ADAPTER_PATHS in scripts/fleet/mcp-config.mts for /.codex/ — the
 # .mcp.json -> .codex projection generated at setup:mcp, never committed).
 # Host dirs we own entirely are ignored wholesale; .github/ holds tracked
