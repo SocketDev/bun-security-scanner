@@ -4,8 +4,9 @@ import os from 'node:os'
 import { PackageURL } from '@socketregistry/packageurl-js'
 import { authenticated } from './modes/authenticated'
 import { unauthenticated } from './modes/unauthenticated'
-import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
-import { readSocketApiTokenSync } from '@socketsecurity/lib-stable/secrets/socket-api-token'
+import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
+import { readSocketApiTokenSync } from '@socketsecurity/lib/secrets/socket-api-token'
+import { getXdgDataHome } from '@socketsecurity/lib/env/xdg'
 
 const logger = getDefaultLogger()
 
@@ -16,9 +17,10 @@ const logger = getDefaultLogger()
 let socketApiToken = readSocketApiTokenSync({ allowEnvOnly: true })
 
 if (typeof socketApiToken !== 'string') {
-  // get OS app data directory
+  // get OS app data directory (getXdgDataHome only reads $XDG_DATA_HOME; the
+  // win32 LOCALAPPDATA + darwin Application Support fallbacks stay hand-rolled)
   let dataHome =
-    process.platform === 'win32' ? Bun.env.LOCALAPPDATA : Bun.env.XDG_DATA_HOME
+    process.platform === 'win32' ? Bun.env.LOCALAPPDATA : getXdgDataHome()
 
   // fallback
   if (!dataHome) {
