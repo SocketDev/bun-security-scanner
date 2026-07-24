@@ -1,6 +1,7 @@
 import Bun from 'bun'
 import path from 'node:path'
 import os from 'node:os'
+import { PackageURL } from '@socketregistry/packageurl-js'
 import { authenticated } from './modes/authenticated'
 import { unauthenticated } from './modes/unauthenticated'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
@@ -66,9 +67,27 @@ if (!socketApiToken) {
 const scannerImplementation = socketApiToken
   ? authenticated(socketApiToken)
   : unauthenticated()
-// npm purl: `pkg:npm/` prefix, capture 1 = package name (optional `@scope/`
-// then a name with no `@`), literal `@`, capture 2 = version (rest of string).
-const purlRegex = /^pkg:npm\/((?:@[^/]+\/)?(?:[^@]+))@(.+)$/
+
+/**
+ * Parse an npm purl into the `@scope/name` + version pair the socket.dev
+ * overview URL wants. `PackageURL.fromString` decodes percent-encoded scopes
+ * the API can legally emit in `inputPurl` (the old hand-rolled regex never
+ * did); it throws on malformed purls, so map that to `undefined` to preserve
+ * the skip-on-no-match behavior.
+ */
+export function parseNpmPurl(
+  purl: string,
+): { name: string; version: string } | undefined {
+  try {
+    const { name, namespace, version } = PackageURL.fromString(purl)
+    if (!version) {
+      return undefined
+    }
+    return { name: namespace ? `${namespace}/${name}` : name, version }
+  } catch {
+    return undefined
+  }
+}
 
 export const scanner: Bun.Security.Scanner = {
   async scan({ packages }: { packages: Bun.Security.Package[] }) {
@@ -103,14 +122,13 @@ export const scanner: Bun.Security.Scanner = {
                 description.push(`Fix: ${fix}`)
               }
 
-              const match = artifact.inputPurl.match(purlRegex)
+              const parsed = parseNpmPurl(artifact.inputPurl)
 
-              if (!match) {
+              if (!parsed) {
                 continue
               }
 
-              const name = match[1]
-              const version = match[2]
+              const { name, version } = parsed
 
               const url = `https://socket.dev/npm/package/${name}/overview/${version}`
 
