@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  spyOn,
+  test,
+} from 'bun:test'
 import type { Mock } from 'bun:test'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { unauthenticated } from '../../src/modes/unauthenticated'
@@ -60,6 +68,9 @@ describe('unauthenticated', () => {
         headers: {
           'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
         },
+        // Every request is bounded by a timeout AbortSignal so a hung
+        // connection can never block `bun install` indefinitely (SURF-1041).
+        signal: expect.any(AbortSignal),
       },
     )
   })
@@ -146,6 +157,7 @@ describe('unauthenticated', () => {
         headers: {
           'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
         },
+        signal: expect.any(AbortSignal),
       },
     )
   })
@@ -173,6 +185,71 @@ describe('unauthenticated', () => {
       expect(artifacts).toHaveLength(2)
       expect(artifacts[0]).toEqual(artifact1)
       expect(artifacts[1]).toEqual(artifact2)
+    }
+  })
+
+  // REGRESSION (SURF-1041): a hung firewall-api connection must surface as a
+  // scan error, never block the scan (and therefore `bun install`) forever.
+  // Before the fix the fetch had no AbortSignal, so a response that never
+  // arrived left the scan pending indefinitely. Now every request carries a
+  // timeout AbortSignal; when it fires, fetch rejects and the fail-fast
+  // Promise.all propagates that rejection out of the async generator.
+  //
+  // Deterministic: the stub models a hung connection — it settles ONLY when its
+  // AbortSignal aborts (rejecting with the signal's reason), never on its own.
+  // Fake timers fast-forward past the 30s request budget so the real
+  // AbortSignal.timeout fires without waiting in wall-clock time.
+  test('unauthenticated scanner surfaces a request timeout as an error', async () => {
+    const hungFetch: typeof fetch = Object.assign(
+      (_url: string | URL | Request, init?: RequestInit | undefined) =>
+        new Promise<Response>((_resolve, reject) => {
+          const signal = init?.signal
+          if (signal) {
+            signal.addEventListener(
+              'abort',
+              () => {
+                reject(signal.reason)
+              },
+              { once: true },
+            )
+          }
+        }),
+      { preconnect: () => undefined },
+    )
+    fetchSpy.mockImplementation(hungFetch)
+
+    jest.useFakeTimers()
+    try {
+      const scanner = unauthenticated()
+      const results = scanner([...mockPackages])
+
+      let thrown: unknown
+      const consume = (async () => {
+        try {
+          for await (const artifacts of results) {
+            void artifacts
+          }
+        } catch (e) {
+          thrown = e
+        }
+      })()
+
+      // Let the flight dispatch and register its abort listener, then blow past
+      // the per-request deadline so AbortSignal.timeout fires.
+      await Promise.resolve()
+      jest.advanceTimersByTime(30_000)
+
+      await consume
+
+      // A TimeoutError (DOMException) is an Error; the scan rejected instead of
+      // hanging. Narrow with instanceof rather than a cast so the name check is
+      // type-safe.
+      expect(thrown).toBeInstanceOf(Error)
+      expect(thrown instanceof Error ? thrown.name : undefined).toBe(
+        'TimeoutError',
+      )
+    } finally {
+      jest.useRealTimers()
     }
   })
 })
