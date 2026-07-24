@@ -36,11 +36,7 @@ describe('parseNpmPurl', () => {
 })
 
 describe('artifactsToAdvisories', () => {
-  function artifact(
-    overrides: Partial<SocketArtifact> & {
-      alerts?: SocketArtifact['alerts']
-    } = {},
-  ): SocketArtifact {
+  function artifact(overrides: Partial<SocketArtifact> = {}): SocketArtifact {
     return {
       inputPurl: 'pkg:npm/lodash@4.17.21',
       alerts: [],
