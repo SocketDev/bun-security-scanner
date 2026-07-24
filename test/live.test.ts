@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 
 import { readSocketApiTokenSync } from '@socketsecurity/lib-stable/secrets/socket-api-token'
+import { SocketSdk } from '@socketsecurity/sdk'
 
 const packages: Bun.Security.Package[] = [
   {
@@ -70,9 +71,15 @@ const EXPECTED_ADVISORY = {
 
 describe('live', () => {
   const fetchSpy = spyOn(global, 'fetch')
+  // The SDK's transport is socket-lib httpRequest over node:http — it never
+  // touches global fetch — so the authenticated-path evidence is a
+  // call-through spy on the SDK method itself (no mockImplementation: the
+  // real request still goes out).
+  const sdkStreamSpy = spyOn(SocketSdk.prototype, 'batchPackageStream')
 
   afterEach(() => {
     fetchSpy.mockClear()
+    sdkStreamSpy.mockClear()
     restoreTokenAliases()
   })
 
@@ -88,9 +95,11 @@ describe('live', () => {
       expect(advisories.length).toBeGreaterThan(0)
       expect(advisories[0]!).toMatchObject(EXPECTED_ADVISORY)
 
-      // Verify the authenticated API was called
-      expect(fetchSpy).toHaveBeenCalled()
-      expect(fetchSpy.mock.lastCall?.[0]).toMatch('api.socket.dev')
+      // Verify the authenticated path went through the Socket SDK
+      expect(sdkStreamSpy).toHaveBeenCalled()
+      expect(sdkStreamSpy.mock.lastCall?.[0]).toEqual({
+        components: [{ purl: 'pkg:npm/lodahs@0.0.1-security' }],
+      })
     })
   }
 
@@ -104,8 +113,9 @@ describe('live', () => {
     expect(advisories.length).toBeGreaterThan(0)
     expect(advisories[0]!).toMatchObject(EXPECTED_ADVISORY)
 
-    // Verify the firewall API was called
+    // Verify the firewall API was called (and the SDK path was not)
     expect(fetchSpy).toHaveBeenCalled()
     expect(fetchSpy.mock.lastCall?.[0]).toMatch('firewall-api.socket.dev')
+    expect(sdkStreamSpy).not.toHaveBeenCalled()
   })
 })

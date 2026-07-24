@@ -82,7 +82,7 @@ export function parseNpmPurl(
 ): { name: string; version: string } | undefined {
   try {
     const { name, namespace, version } = PackageURL.fromString(purl)
-    if (!version) {
+    if (!name || !version) {
       return undefined
     }
     return { name: namespace ? `${namespace}/${name}` : name, version }

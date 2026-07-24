@@ -1,51 +1,38 @@
-import type { ScannerImplementation } from '../types'
-import { createScanner } from '../scanner-factory'
+import { SocketSdk } from '@socketsecurity/sdk'
+import type { ScannerImplementation, SocketArtifact } from '../types'
 import { userAgent } from './user-agent'
 
-export type SocketBatchEndpointBody = {
-  components: Array<{
-    purl: string
-  }>
-}
+export function authenticated(apiToken: string): ScannerImplementation {
+  // The SDK's node:http transport replaces the hand-rolled fetch loop; batching
+  // and concurrency come from batchPackageStream (chunkSize 100, concurrency
+  // 10 by default — far cheaper on quota than the old 1-purl-per-request
+  // pattern). Query parity with the old endpoint: actions=error,warn.
+  const sdk = new SocketSdk(apiToken, { userAgent })
 
-export function authenticated(apiKey: string): ScannerImplementation {
-  return createScanner({
-    maxSending: 30,
-    maxBatchLength: 1,
-    fetchStrategy: async (purls, artifacts) => {
-      const body = JSON.stringify({
-        components: purls.map(purl => ({ purl })),
-      } satisfies SocketBatchEndpointBody)
+  return async function* (packages) {
+    // Drain the caller's array in place — `scan()` loops `while
+    // (packages.length)`, so a non-consuming implementation would spin forever.
+    const components = packages
+      .splice(0)
+      .map(pkg => ({ purl: `pkg:npm/${pkg.name}@${pkg.version}` }))
 
-      // Tests mock global fetch; Bun ships fetch natively in this plugin
-      // runtime. socket-lint: allow global-fetch
-      const res = await fetch(
-        `https://api.socket.dev/v0/purl?actions=error,warn`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-            'User-Agent': userAgent,
-          },
-          body,
-        },
-      )
+    if (components.length === 0) {
+      return
+    }
 
-      if (!res.ok) {
+    const stream = sdk.batchPackageStream(
+      { components },
+      { queryParams: { actions: 'error,warn' } },
+    )
+
+    for await (const result of stream) {
+      if (!result.success) {
         throw new Error(
-          `Socket Security Scanner: Received ${res.status} from server`,
+          `Socket Security Scanner: Received ${result.status} from server`,
         )
       }
-
-      const data = await res.text()
-
-      artifacts.push(
-        ...data
-          .split('\n')
-          .filter(Boolean)
-          .map(line => JSON.parse(line)),
-      )
-    },
-  })
+      // batchPackageStream yields one result per artifact.
+      yield [result.data as SocketArtifact]
+    }
+  }
 }
