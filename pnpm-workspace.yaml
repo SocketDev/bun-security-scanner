@@ -57,6 +57,7 @@ overrides:
   'hasown': 'npm:@socketregistry/hasown@1.0.7'
   'iconv-lite': '0.7.2'
   'isexe@>=3': '4.0.0'
+  'js-yaml@>=5.0.0 <5.2.2': '5.2.2'
   'lru-cache@>=10': '11.3.6'
   'magic-string': '1.0.0'
   'mime-db': '1.54.0'
@@ -132,6 +133,8 @@ minimumReleaseAgeExclude:
   - '@oxlint-tsgolint/win32-arm64@7.0.2001'
   # published: 2026-07-21 | removable: 2026-07-28
   - '@oxlint-tsgolint/win32-x64@7.0.2001'
+  # published: 2026-07-23 | removable: 2026-07-30
+  - 'js-yaml@5.2.2'
 
 patchedDependencies:
   # single-registry: routes taze version resolution through its own bundled
