@@ -120,6 +120,12 @@ jobs:
       - uses: ./.github/actions/fleet/setup-and-install
         with:
           socket-api-token: ${{ secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW }}
+      # The fleet setup-and-install action installs node + pnpm only; this
+      # repo's `test` script is `bun test`, so bun must be on PATH before the
+      # run-script step or it dies with `bun: command not found`. Pinned to the
+      # same SHA the release workflow uses.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@22457c87c1b161cf7dde222c3e82b2b5f8d2bed2
       - uses: ./.github/actions/fleet/run-script
         env:
           # Authenticate build-time GitHub API reads (release listings,
