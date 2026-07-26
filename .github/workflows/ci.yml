@@ -126,6 +126,14 @@ jobs:
       # same SHA the release workflow uses.
       - name: Setup Bun
         uses: oven-sh/setup-bun@22457c87c1b161cf7dde222c3e82b2b5f8d2bed2
+        with:
+          # setup-bun caches by default, and this workflow also runs on
+          # `push: tags: ['*']`. A tag/release ref restoring a cache a
+          # less-trusted branch/PR run populated is the cache-poisoning
+          # vector zizmor flags (error[cache-poisoning] on ci.yml). Gate
+          # the cache off for tag refs only — ordinary branch/PR CI keeps
+          # a warm bun cache. See https://docs.zizmor.sh/audits/#cache-poisoning
+          no-cache: ${{ startsWith(github.ref, 'refs/tags/') }}
       - uses: ./.github/actions/fleet/run-script
         env:
           # Authenticate build-time GitHub API reads (release listings,
