@@ -45,8 +45,10 @@ node_modules
 # pointer file on Windows, so each host gets a real symlink generated on its
 # own OS. Tracking them only produces churn + merge conflicts. Keep in sync
 # with ADAPTERS in scripts/fleet/gen/harness-adapters.mts + the .agents/ mirror
-# (and CODEX_ADAPTER_PATHS in scripts/fleet/mcp-config.mts for /.codex/ — the
-# .mcp.json -> .codex projection generated at setup:mcp, never committed).
+# (and the .mcp.json projections in scripts/fleet/mcp-config.mts: /.codex/,
+# /.kimi-code/, and /opencode.json — all generated from the single committed
+# .mcp.json authority at setup:mcp and rebuilt into the release bundle at
+# make-release-bundle, never committed).
 # Host dirs we own entirely are ignored wholesale; .github/ holds tracked
 # fleet files, so only its generated adapter file is named.
 /.agents/
@@ -55,9 +57,11 @@ node_modules
 /.cursor/
 /.github/copilot-instructions.md
 /.janus/
+/.kimi-code/
 /.kiro/
 /.windsurf/
 /AGENTS.md
+/opencode.json
 
 # VS Code: ignore the dir contents so a hidden tasks.json with a `folderOpen`
 # auto-run (a known npm supply-chain vector — runs on folder open, zero clicks)
