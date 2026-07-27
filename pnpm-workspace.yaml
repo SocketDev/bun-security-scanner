@@ -26,7 +26,13 @@ catalog:
   'mdast-util-from-markdown': 2.0.3
   'micromark': 4.0.2
   'neosanitize': 0.3.0
-  'nock': 15.0.0
+  # Pinned back 15.0.0 -> 14.0.16 on 2026-07-27, hand-aligned to the fleet
+  # catalog (.config/fleet/pnpm-workspace.fleet.yaml): 15.0.0 ships
+  # @mswjs/interceptors 0.39.8, whose fetch bypass path throws
+  # TypeError: unusable on any fetch POST-with-body to an
+  # enableNetConnect-allowed host. Bump to the stabilized 15.x when the
+  # fleet catalog does.
+  'nock': 14.0.16
   'oxfmt': 0.59.0
   'oxlint': 1.74.0
   'oxlint-tsgolint': 7.0.2001
