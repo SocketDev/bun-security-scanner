@@ -1,0 +1,6 @@
+{
+  "allow": {
+    "bun.lock": "Bun's lockfile for the repo's own dependency graph; `bun test` and the scanner-under-test install flow resolve from it, and Bun writes it only at the package root.",
+    "bunfig.toml": "Bun requires its config at the package root; wires `[install.security] scanner = \"./src/index.ts\"` so bun install exercises the scanner under test, per README setup."
+  }
+}

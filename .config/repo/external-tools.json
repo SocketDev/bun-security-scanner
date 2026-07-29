@@ -1,0 +1,49 @@
+{
+  "tools": {
+    "bun": {
+      "description": "Bun — the runtime this scanner plugs into via bunfig [install.security].scanner; the version the test suite and CI run against.",
+      "notes": [
+        "Release bun-v1.3.14, published 2026-05-13 — outside the 7-day soak window at pin time (2026-07-28).",
+        "Integrity values are the upstream release's own SHASUMS256.txt entries converted to sha256 SRI; darwin-arm64 re-verified locally against the downloaded asset.",
+        "CI parity: .github/workflows/ci.yml Setup Bun `bun-version` must match this pin."
+      ],
+      "platforms": {
+        "darwin-arm64": {
+          "asset": "bun-darwin-aarch64.zip",
+          "integrity": "sha256-2LliIYKK1vl6x6wKt+lYcjQa92MAHogD6CZ2UsJlJiA="
+        },
+        "darwin-x64": {
+          "asset": "bun-darwin-x64.zip",
+          "integrity": "sha256-QYPfM3RiPlurMVxUfPoJdFM81FfYa3O2OfeoeXTNZjM="
+        },
+        "linux-arm64": {
+          "asset": "bun-linux-aarch64.zip",
+          "integrity": "sha256-on/7Y6gxA3WDbg1vZorhf6jY0YuIw3yCHGUzGXOhmjs="
+        },
+        "linux-arm64-musl": {
+          "asset": "bun-linux-aarch64-musl.zip",
+          "integrity": "sha256-uY4K02JcXADR1bX/VWBcet3b+uFRhh5oreV7LTuHA7s="
+        },
+        "linux-x64": {
+          "asset": "bun-linux-x64.zip",
+          "integrity": "sha256-lR7iruhV8IWVruxiJSJqKY0/6oOj3NZGXAnLzN9+hI8="
+        },
+        "linux-x64-musl": {
+          "asset": "bun-linux-x64-musl.zip",
+          "integrity": "sha256-FL2a7e6/Hbpn6N75UxyJvJiez98d5C5b/K8bjNkpRxk="
+        },
+        "win32-arm64": {
+          "asset": "bun-windows-aarch64.zip",
+          "integrity": "sha256-iYQfWlfyNItn7Ag5txj0v06n0Hw3HJukt3tseQ+RiVM="
+        },
+        "win32-x64": {
+          "asset": "bun-windows-x64.zip",
+          "integrity": "sha256-CgYgkwtmdde6RA6B9ODgDTz74JbEsUDT//AiBenhiSI="
+        }
+      },
+      "release": "asset",
+      "repository": "github:oven-sh/bun",
+      "version": "1.3.14"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "./socket-wheelhouse-schema.json",
+  "schemaVersion": 1,
+  "repoName": "bun-security-scanner",
+  "repo": { "type": "solo" },
+  "build": { "from": "npm-registry", "type": "js" }
+}

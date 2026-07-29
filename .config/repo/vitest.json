@@ -1,0 +1,3 @@
+{
+  "nodeTestExclude": ["test/*.test.{ts,mts}", "test/modes/**"]
+}
