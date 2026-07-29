@@ -1,0 +1,64 @@
+#!/bin/sh
+# Git pre-commit hook entry point. Invoked by git when core.hooksPath
+# points at this directory (set by `node scripts/install-git-hooks.mts`
+# at `pnpm install` time).
+#
+# Optional checks — can be bypassed with --no-verify for fast local
+# commits. Mandatory security checks ALSO run in pre-push hook.
+#
+# Use --no-verify (gated by the `Allow no-verify bypass` phrase) for:
+# - History operations (squash, rebase, amend)
+# - Emergency hotfixes
+# - When tests require binaries that haven't been built yet
+#
+# There is NO per-step env kill-switch — the disables are `--no-verify`
+# and the whole-chain `HUSKY=0` escape (handled by the root dispatcher,
+# same bypass phrase), so skipping checks is always explicit and
+# all-or-nothing.
+
+# Skip guards during rebase — commits are being replayed; lint/test on
+# each pick is noisy and slow. Signing is unaffected: git signs via
+# commit.gpgsign config, not this hook.
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null)"
+if [ -d "${GIT_DIR}/rebase-merge" ] || [ -d "${GIT_DIR}/rebase-apply" ]; then
+  exit 0
+fi
+
+# Put the repo-pinned Node (.node-version) on PATH — git runs hooks with
+# the login shell's PATH, which may be an older system Node than the
+# hooks' floor (.mts type-stripping needs Node >= 24). See
+# _shared/resolve-node.sh.
+. "$(dirname "$0")/../_shared/resolve-node.sh"
+
+# Sanitize placeholder Socket API credentials (logs each unset here; see the
+# shared script for the rationale) so the sfw pnpm-shim doesn't 401.
+SANITIZE_TOKEN_LABEL=pre-commit
+. "$(dirname "$0")/../_shared/sanitize-token-env.sh"
+
+# Run Socket security pre-commit checks (API keys, .DS_Store, etc.).
+node "$(dirname "$0")/pre-commit.mts"
+
+# Check if pnpm is available.
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "Error: pnpm not found. Install pnpm to run git hooks."
+  echo "Visit: https://pnpm.io/installation"
+  exit 1
+fi
+
+# Error-visibility + budget-bounded step runners (run_step / run_step_bounded),
+# extracted so the logic lives in one place. See _shared/run-step.sh.
+. "$(dirname "$0")/../_shared/run-step.sh"
+
+# verify-deps stays off for the commit gate: its job is the STAGED files;
+# dependency freshness belongs to the install/CI gates. Without this, a
+# lockfile that cannot reconcile yet (a soak-window pin mid-wait) blocks
+# every commit in the repo, including doc-only ones.
+run_step_bounded lint pnpm --config.verify-deps-before-run=false lint --staged || exit $?
+
+# Each repo's `pnpm test` script wraps a runner that understands
+# `--staged` (e.g. scripts/test.mts forwards staged-filtering to
+# vitest, or filters the staged set in a pre-pass). Repos whose
+# `pnpm test` is bare vitest without a wrapper need a local override
+# that pre-filters with `git diff --cached --name-only` then runs
+# `pnpm test`. Bounded so an sfw-proxy deadlock can't hang the commit.
+run_step_bounded test pnpm --config.verify-deps-before-run=false test --staged || exit $?
