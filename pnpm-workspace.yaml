@@ -1,0 +1,202 @@
+catalog:
+  '@redwoodjs/agent-ci': 0.17.1
+  '@shadscan/cli': 0.2.0
+  '@sinclair/typebox': 0.34.52
+  '@socketregistry/packageurl-js': 1.4.8
+  '@socketregistry/packageurl-js-stable': npm:@socketregistry/packageurl-js@1.4.8
+  '@socketsecurity/lib': 6.5.0
+  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.0
+  '@socketsecurity/registry': 2.0.5
+  '@socketsecurity/registry-stable': npm:@socketsecurity/registry@2.0.5
+  '@socketsecurity/sdk': 4.1.2
+  '@socketsecurity/sdk-stable': npm:@socketsecurity/sdk@4.1.2
+  '@types/mdast': 4.0.4
+  '@types/node': 26.1.1
+  '@types/semver': 7.7.1
+  '@types/shell-quote': 1.7.5
+  '@ultrathink/acorn.wasm': npm:@ultrathink/acorn-wasm@0.0.1
+  '@ultrathink/acorn.rs.wasm': 0.1.1
+  '@vitest/coverage-v8': 4.1.10
+  '@vitest/ui': 4.1.10
+  'c8': 12.0.0
+  'chrome-devtools-mcp': 1.6.0
+  'compromise': 14.16.0
+  'dtu-github-actions': 0.17.1
+  'fast-check': 4.9.0
+  'magic-string': 1.0.0
+  'markdownlint-cli2': 0.23.1
+  'mdast-util-from-markdown': 2.0.3
+  'micromark': 4.0.2
+  'neosanitize': 0.3.0
+  # Pinned back 15.0.0 -> 14.0.16 on 2026-07-27, hand-aligned to the fleet
+  # catalog (.config/fleet/pnpm-workspace.fleet.yaml): 15.0.0 ships
+  # @mswjs/interceptors 0.39.8, whose fetch bypass path throws
+  # TypeError: unusable on any fetch POST-with-body to an
+  # enableNetConnect-allowed host. Bump to the stabilized 15.x when the
+  # fleet catalog does.
+  'nock': 14.0.16
+  'oxfmt': 0.59.0
+  'oxlint': 1.75.0
+  'oxlint-tsgolint': 7.0.2001
+  'playwright-core': 1.61.1
+  'portless': 0.15.4
+  'regjsparser': 0.13.2
+  'rolldown': 1.1.4
+  'semver': 7.8.5
+  'shell-quote': 1.10.0
+  'taze': 19.16.0
+  'typescript': 7.0.2
+  'vitest': 4.1.10
+
+overrides:
+  # Fleet-canonical overrides (managed by socket-wheelhouse sync; do not edit).
+  '@socketregistry/packageurl-js': 'catalog:'
+  '@socketsecurity/lib': 'catalog:'
+  '@socketsecurity/registry': 'catalog:'
+  '@socketsecurity/sdk': 'catalog:'
+  'chalk@>=5': '5.6.2'
+  'es-define-property': 'npm:@socketregistry/es-define-property@1.0.7'
+  'es-set-tostringtag': 'npm:@socketregistry/es-set-tostringtag@1.0.10'
+  'function-bind': 'npm:@socketregistry/function-bind@1.0.7'
+  'glob': '13.0.6'
+  'gopd': 'npm:@socketregistry/gopd@1.0.7'
+  'has-symbols': 'npm:@socketregistry/has-symbols@1.0.7'
+  'has-tostringtag': 'npm:@socketregistry/has-tostringtag@1.0.7'
+  'hasown': 'npm:@socketregistry/hasown@1.0.7'
+  'iconv-lite': '0.7.3'
+  'isexe@>=3': '4.0.0'
+  'js-yaml@>=5.0.0 <5.2.2': '5.2.2'
+  'lru-cache@>=10': '11.5.2'
+  'magic-string': '1.0.0'
+  'mime-db': '1.54.0'
+  'mime-types@>=3': '3.0.2'
+  'minipass@>=4': '7.1.3'
+  'safe-buffer': 'npm:@socketregistry/safe-buffer@1.0.9'
+  'safer-buffer': 'npm:@socketregistry/safer-buffer@1.0.10'
+  'semver@>=5.0.0 <7.6.0': '7.8.1'
+  'side-channel': 'npm:@socketregistry/side-channel@1.0.10'
+  'ssri@>=12': '13.0.1'
+  'string-width@>=5': '8.2.2'
+  'update-notifier@>=4.0.0': '7.3.1'
+  'uuid': '11.1.1'
+  'which': '7.0.0'
+  'wrap-ansi@>=8': '9.0.2'
+  'yaml@2': '2.9.0'
+
+packages:
+  - .claude/hooks/fleet/*
+  - .config/fleet/oxlint-plugin
+  - .config/fleet/oxlint-plugin/fleet/*
+autoInstallPeers: true
+managePackageManagerVersions: false
+pmOnFail: 'warn'
+blockExoticSubdeps: true
+confirmModulesPurge: false
+enablePrePostScripts: true
+minimumReleaseAge: 10080
+resolutionMode: 'highest'
+saveExact: true
+trustPolicy: 'no-downgrade'
+minimumReleaseAgeExclude:
+  - '@sdxgen/*'
+  - '@socketoverride/*'
+  - '@socketregistry/*'
+  - '@socketsecurity/*'
+  - '@stuie/*'
+  - '@ultrathink/*'
+  - 'sdxgen'
+  - 'sfw'
+  # taze 19.16.0 — the dep updater itself; forced ahead of the soak by owner
+  # directive so the regenerated single-registry patch (patchedDependencies)
+  # tracks the current release. Exact-pinned so a future version re-soaks.
+  # published: 2026-07-22 | removable: 2026-07-29
+  - 'taze@19.16.0'
+  # verkit — new dev-only transitive of taze 19.16.0 (same owner directive);
+  # exact-pinned so future versions re-soak.
+  - 'socket'
+  - 'stuie'
+  # oxlint-tsgolint — the type-aware lint sidecar oxlint's `--type-aware` flag
+  # drives; first-party oxc tooling, same trust rationale as oxlint itself.
+  # Main package + per-platform binding family exact-pinned so a future
+  # version re-soaks.
+  # published: 2026-07-21 | removable: 2026-07-28
+  - 'oxlint-tsgolint@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/darwin-arm64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/darwin-x64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/linux-arm64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/linux-x64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/win32-arm64@7.0.2001'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint-tsgolint/win32-x64@7.0.2001'
+  # published: 2026-07-23 | removable: 2026-07-30
+  - 'js-yaml@5.2.2'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-android-arm-eabi@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-android-arm64@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-darwin-arm64@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-darwin-x64@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-freebsd-x64@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-arm-gnueabihf@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-arm-musleabihf@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-arm64-gnu@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-arm64-musl@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-ppc64-gnu@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-riscv64-gnu@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-riscv64-musl@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-s390x-gnu@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-x64-gnu@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-linux-x64-musl@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-openharmony-arm64@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-win32-arm64-msvc@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-win32-ia32-msvc@1.75.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - '@oxlint/binding-win32-x64-msvc@1.75.0'
+  # published: 2026-07-24 | removable: 2026-07-31
+  - '@shadscan/cli@0.2.0'
+  # published: 2026-07-21 | removable: 2026-07-28
+  - 'oxlint@1.75.0'
+
+patchedDependencies:
+  # single-registry: routes taze version resolution through its own bundled
+  # direct-registry client (getVersionsFromRegistry — full packument with
+  # publish times, .npmrc/auth-aware) for EVERY registry, instead of the
+  # fast-npm-meta hosted endpoint it uses when the registry is the npm
+  # default. That third-party hop leaks our dependency names,
+  # violates the fleet single-registry posture, and is blocked by egress
+  # policy here — every lookup then hits taze's request timeout while taze
+  # still exits 0 ("Already up to date" false green; update.mts now fails
+  # loud on it). The former 5s->30s timeout half of this patch retired in
+  # 19.16.0: `requestTimeout` is config-wired now, set in
+  # .config/fleet/taze.config.mts.
+  # TEMPORARY: remove if taze grows a supported flag to force direct-registry
+  # resolution (or we swap to our own metadata client, see socket-lib plan).
+  'taze@19.16.0': 'patches/taze@19.16.0.patch'
+
+allowBuilds:
+  '@socketsecurity/sdk': false
+  cpu-features: false
+  protobufjs: false
+  puppeteer: false
+  ssh2: false
