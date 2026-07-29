@@ -14,7 +14,8 @@
   },
   "files": [
     "CHANGELOG.md",
-    "dist"
+    "dist",
+    "DISCLOSURE"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -123,5 +124,8 @@
     "protobufjs": false,
     "puppeteer": false,
     "ssh2": false
+  },
+  "contentPolicy": {
+    "class": "dual-use"
   }
 }

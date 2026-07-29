@@ -1,0 +1,23 @@
+# Dual-use disclosure
+
+Package: @socketsecurity/bun-security-scanner
+Content policy class: dual-use (https://docs.npmjs.com/policies/dual-use)
+
+## Dual-use functionality
+
+This package is a security research utility. It registers as Bun's
+`install.security` scanner, hooks the package-manager install flow, inspects
+package metadata and contents while an install is in progress, queries Socket
+threat-intelligence advisories over the network, and blocks or warns on
+packages that match known-malicious or policy-violating signatures. Install
+hooking, mid-install package inspection, and advisory lookups are behaviors
+that can resemble malicious software to automated scanning.
+
+## Intended legitimate use
+
+Defensive supply-chain protection for developers using the Bun package
+manager: stopping known-malicious, hijacked, or policy-violating dependencies
+before they are installed. The package provides no exploitation, persistence,
+exfiltration, or obfuscation capability, collects no credentials, and sends
+only package identifiers needed for advisory lookups. Source and issue
+tracker: https://github.com/SocketDev/bun-security-scanner

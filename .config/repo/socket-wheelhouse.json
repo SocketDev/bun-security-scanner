@@ -20,5 +20,9 @@
       "functions": 100,
       "lines": 91
     }
+  },
+  "contentPolicy": {
+    "class": "dual-use",
+    "packages": ["."]
   }
 }
