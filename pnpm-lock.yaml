@@ -1087,6 +1087,16 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
+  .claude/hooks/fleet/land-as-you-go-nudge:
+    dependencies:
+      '@socketsecurity/lib-stable':
+        specifier: 'catalog:'
+        version: '@socketsecurity/lib@6.5.0(typescript@7.0.2)'
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
   .claude/hooks/fleet/land-fast-nudge:
     devDependencies:
       '@socketsecurity/lib-stable':
@@ -1140,6 +1150,12 @@ importers:
         version: 26.1.1
 
   .claude/hooks/fleet/memory-codify-nudge:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  .claude/hooks/fleet/memory-enforcement-stamp-guard:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1202,6 +1218,12 @@ importers:
       '@socketsecurity/lib-stable':
         specifier: 'catalog:'
         version: '@socketsecurity/lib@6.5.0(typescript@7.0.2)'
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  .claude/hooks/fleet/no-chained-pausing-git-guard:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1423,6 +1445,12 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
+  .claude/hooks/fleet/no-pr-in-squash-repo-guard:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
   .claude/hooks/fleet/no-pr-review-verdict-guard:
     dependencies:
       shell-quote:
@@ -1453,6 +1481,16 @@ importers:
         version: 26.1.1
 
   .claude/hooks/fleet/no-private-ref-in-tests-docs-guard:
+    dependencies:
+      '@socketsecurity/lib-stable':
+        specifier: 'catalog:'
+        version: '@socketsecurity/lib@6.5.0(typescript@7.0.2)'
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  .claude/hooks/fleet/no-private-repo-leak-guard:
     dependencies:
       '@socketsecurity/lib-stable':
         specifier: 'catalog:'
@@ -2016,7 +2054,7 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
-  .claude/hooks/fleet/rg-replace-flag-nudge:
+  .claude/hooks/fleet/rg-replace-flag-guard:
     devDependencies:
       '@socketsecurity/lib-stable':
         specifier: 'catalog:'
@@ -2238,6 +2276,16 @@ importers:
         specifier: 'catalog:'
         version: 26.1.1
 
+  .claude/hooks/fleet/tsc-canonical-tsconfig-guard:
+    dependencies:
+      '@socketsecurity/lib-stable':
+        specifier: 'catalog:'
+        version: '@socketsecurity/lib@6.5.0(typescript@7.0.2)'
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
   .claude/hooks/fleet/unaddressed-review-feedback-guard:
     dependencies:
       '@socketsecurity/lib-stable':
@@ -2277,6 +2325,12 @@ importers:
         version: 26.1.1
 
   .claude/hooks/fleet/untrusted-coauthor-guard:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+
+  .claude/hooks/fleet/use-repo-test-script-guard:
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -2532,8 +2586,6 @@ importers:
 
   .config/fleet/oxlint-plugin/fleet/prefer-node-builtin-imports: {}
 
-  .config/fleet/oxlint-plugin/fleet/prefer-node-modules-dot-cache: {}
-
   .config/fleet/oxlint-plugin/fleet/prefer-non-capturing-group: {}
 
   .config/fleet/oxlint-plugin/fleet/prefer-normalize-path: {}
@@ -2541,6 +2593,8 @@ importers:
   .config/fleet/oxlint-plugin/fleet/prefer-optional-chain: {}
 
   .config/fleet/oxlint-plugin/fleet/prefer-pure-call-form: {}
+
+  .config/fleet/oxlint-plugin/fleet/prefer-repo-root-dot-cache: {}
 
   .config/fleet/oxlint-plugin/fleet/prefer-safe-delete: {}
 
