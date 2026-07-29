@@ -1,5 +1,9 @@
 # Socket's Bun Security Scanner
 
+<div align="center">
+  <img src="assets/repo/brand/bun-security-scanner-logomark.svg" width="300" alt="Bun Security Scanner — the Bun mascot above the Bun wordmark and SECURITY SCANNER, inside the Socket gradient shield">
+</div>
+
 <a href="https://socket.dev/npm/package/@socketsecurity/bun-security-scanner"><img src="https://socket.dev/api/badge/npm/package/@socketsecurity/bun-security-scanner" alt="Socket Badge" height="20"></a>
 <img src="assets/repo/badges/coverage.svg" width="97" height="20" alt="Coverage" />
 
