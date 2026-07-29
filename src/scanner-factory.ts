@@ -1,7 +1,17 @@
 import type { ScannerImplementation, SocketArtifact } from './types'
 
 export type ScannerConfig = {
+  /**
+   * Ceiling on purls in flight at once. A free-mode strategy issues one HTTP
+   * request per purl, so this is the request-concurrency cap — the resource
+   * the scanner is actually rationing.
+   */
   maxSending: number
+  /**
+   * Purls handed to `fetchStrategy` per flight. Keep it at or below
+   * `maxSending`: a flight is admitted whole, so a batch wider than the cap
+   * runs alone and its own width becomes the peak.
+   */
   maxBatchLength: number
   fetchStrategy: (purls: string[], artifacts: SocketArtifact[]) => Promise<void>
 }
@@ -20,35 +30,55 @@ export function createScanner({
     // which empties in place and preserves the reference the flights hold.
     const artifacts: SocketArtifact[] = []
     let batch: Bun.Security.Package[] = []
-    let in_flight = 0
+    let inFlight = 0
 
+    // `pending` shrinks as flights settle, so the throttle can read live load.
+    // `flights` keeps every flight ever started: a flight that rejects early is
+    // gone from `pending` long before the final drain, and draining only the
+    // live set would let that rejection — a non-2xx response — vanish, handing
+    // Bun a short advisory list and a green install. The drain awaits `flights`.
     const pending: Set<Promise<void>> = new Set()
+    const flights: Array<Promise<void>> = []
+
+    // Single-waiter "a flight settled" signal. Re-racing `pending` each
+    // iteration would stack a handler set on every surviving flight; one fresh
+    // promise per settle keeps the awaited arm short-lived. Only the generator
+    // body waits on it, and it awaits one flight at a time, so there is never
+    // more than one waiter.
+    let slotFreed = Promise.withResolvers<void>()
 
     async function startFlight() {
       const purls = batch.map(p => `pkg:npm/${p.name}@${p.version}`)
       batch = []
-      in_flight += purls.length
 
-      if (in_flight >= maxSending) {
-        if (pending.size !== 0) {
-          // oxlint-disable-next-line socket/no-promise-race -- concurrency throttle: block for ANY in-flight fetch to free a slot; `pending` holds at most maxSending promises and every one is awaited by the final drain, so no loser is abandoned
-          await Promise.race(pending)
-        } else {
-          // bug if we get here
-        }
+      // Admit the flight only once its purls fit under the cap, and count them
+      // AFTER the wait — counting first made every flight's own purls push the
+      // total over `maxSending`, so the cap read as "already exceeded" instead
+      // of "no room", and the first flight of every scan sailed past the cap.
+      // Each settled flight frees exactly its own purls, so loop until enough
+      // are free rather than waking once and proceeding regardless.
+      while (pending.size > 0 && inFlight + purls.length > maxSending) {
+        await slotFreed.promise
       }
+
+      inFlight += purls.length
 
       const flight = fetchStrategy(purls, artifacts)
 
+      flights.push(flight)
       pending.add(flight)
 
       // Cleanup runs on BOTH settle paths (like `.finally`), but via
       // `.then(cleanup, cleanup)` so the derived chain never rejects — a bare
       // `.finally` re-rejects into an unhandled rejection. The flight's own
-      // rejection still surfaces through `pending` at the final drain.
+      // rejection still surfaces through `flights` at the final drain.
       const cleanup = () => {
-        in_flight -= purls.length
+        inFlight -= purls.length
         pending.delete(flight)
+
+        const waiter = slotFreed
+        slotFreed = Promise.withResolvers<void>()
+        waiter.resolve()
       }
       void flight.then(cleanup, cleanup)
     }
@@ -56,7 +86,9 @@ export function createScanner({
     while (packages.length > 0) {
       const item = packages.shift()!
       if (!item) {
-        break
+        // A hole in the caller's array costs that one entry, never the queue
+        // behind it — stopping here would leave real packages unscanned.
+        continue
       }
 
       batch.push(item)
@@ -74,7 +106,7 @@ export function createScanner({
     }
 
     // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast: a rejected fetch must surface as a scan error, not be swallowed — silently under-reporting security alerts is the exact failure this scanner guards against
-    await Promise.all(pending)
+    await Promise.all(flights)
     if (artifacts.length > 0) {
       yield artifacts
     }

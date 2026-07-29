@@ -3,10 +3,10 @@ import type { ScannerImplementation, SocketArtifact } from '../types'
 import { userAgent } from './user-agent'
 
 export function authenticated(apiToken: string): ScannerImplementation {
-  // The SDK's node:http transport replaces the hand-rolled fetch loop; batching
-  // and concurrency come from batchPackageStream (chunkSize 100, concurrency
-  // 10 by default — far cheaper on quota than the old 1-purl-per-request
-  // pattern). Query parity with the old endpoint: actions=error,warn.
+  // Batching and concurrency come from the SDK's batchPackageStream, which
+  // defaults to chunkSize 1024 (the API's per-request max, and quota is charged
+  // per request) and concurrencyLimit 10 — far cheaper on quota than one
+  // request per purl. Query parity with the firewall endpoint: actions=error,warn.
   const sdk = new SocketSdk(apiToken, { userAgent })
 
   return async function* (packages) {

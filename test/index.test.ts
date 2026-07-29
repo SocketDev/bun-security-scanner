@@ -14,6 +14,9 @@ import type { Mock } from 'bun:test'
 import type Bun from 'bun'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
+// The same specifier src/index.ts uses, so the spy lands on the instance the
+// module under test writes to.
+import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
 import { SocketSdk } from '@socketsecurity/sdk'
 import type { SocketArtifact } from '../src/types'
 
@@ -255,19 +258,85 @@ describe('index settings-file token fallback', () => {
     }
   })
 
-  test('throws a clear error when the settings file is unreadable', async () => {
+  test('degrades to free mode with an actionable warning when the settings file is unreadable', async () => {
     // Not valid base64-of-JSON → the JSON.parse in the fallback throws.
     writeSettings('%%% not base64 json %%%')
 
-    let thrown: unknown
-    try {
-      await freshScannerModule()
-    } catch (e) {
-      thrown = e
-    }
+    const warnSpy = spyOn(getDefaultLogger(), 'warn')
+    const fetchSpy = spyOn(global, 'fetch').mockImplementation(
+      Object.assign(() => Promise.resolve(new Response('')), {
+        preconnect: () => undefined,
+      }) as typeof fetch,
+    )
 
-    expect(thrown).toBeInstanceOf(Error)
-    expect(errorMessage(thrown)).toContain('error reading Socket settings')
+    try {
+      // Module init completes: an unreadable local settings file must not halt
+      // the install the scanner is gating.
+      const { scanner } = await freshScannerModule()
+
+      expect(scanner.version).toBe('1')
+
+      const warnings = warnSpy.mock.calls.map(call => String(call[0]))
+      const settingsWarning = warnings.find(text =>
+        text.includes('cannot read the Socket settings file'),
+      )
+
+      // What / Where / Saw vs. wanted / Fix.
+      expect(settingsWarning).toBeDefined()
+      expect(settingsWarning).toContain(
+        path.join(dataHome, 'socket', 'settings'),
+      )
+      expect(settingsWarning).toContain('Saw:')
+      expect(settingsWarning).toContain('Wanted:')
+      expect(settingsWarning).toContain('Fix:')
+      expect(settingsWarning).toContain('SOCKET_API_TOKEN')
+
+      // Free mode, not authenticated mode: the scan goes over plain fetch.
+      await scanner.scan({
+        packages: [
+          {
+            name: 'lodash',
+            version: '4.17.21',
+            requestedRange: '^4.0.0',
+            tarball: 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
+          },
+        ],
+      })
+
+      expect(fetchSpy).toHaveBeenCalled()
+    } finally {
+      warnSpy.mockRestore()
+      fetchSpy.mockRestore()
+    }
+  })
+
+  test('ignores a settings file whose JSON carries no apiToken', async () => {
+    writeSettings(Buffer.from(JSON.stringify({})).toString('base64'))
+
+    const fetchSpy = spyOn(global, 'fetch').mockImplementation(
+      Object.assign(() => Promise.resolve(new Response('')), {
+        preconnect: () => undefined,
+      }) as typeof fetch,
+    )
+
+    try {
+      const { scanner } = await freshScannerModule()
+
+      await scanner.scan({
+        packages: [
+          {
+            name: 'lodash',
+            version: '4.17.21',
+            requestedRange: '^4.0.0',
+            tarball: 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
+          },
+        ],
+      })
+
+      expect(fetchSpy).toHaveBeenCalled()
+    } finally {
+      fetchSpy.mockRestore()
+    }
   })
 })
 

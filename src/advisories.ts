@@ -3,20 +3,28 @@ import { PackageURL } from '@socketregistry/packageurl-js'
 import type { SocketArtifact } from './types'
 
 /**
+ * Overview URL for an artifact whose `inputPurl` does not parse into a
+ * socket.dev package path. A purl the parser rejects still carries alerts, so
+ * the advisory ships with the site root instead of a package deep link.
+ */
+const FALLBACK_OVERVIEW_URL = 'https://socket.dev/'
+
+/**
  * Map Socket artifacts to Bun security advisories. Pure — no I/O — so the
  * alert→advisory mapping (level, description assembly, overview URL) is unit
  * testable without the module-init token bootstrap that `index.ts` runs.
  *
- * Behavior contract (kept identical to the original inline `scan()` loop):
+ * Behavior contract:
+ *
  * - An artifact with no alerts contributes nothing.
- * - An artifact whose `inputPurl` cannot be parsed is skipped entirely — its
- * socket.dev overview URL can't be built, and every alert on it shares that
- * same unparseable purl.
+ * - Every alert becomes an advisory. An `inputPurl` the parser rejects (a
+ *   `github:`/`file:` version spec, a non-npm ecosystem) degrades the overview
+ *   URL to `FALLBACK_OVERVIEW_URL` and reports the raw `inputPurl` as the
+ *   package identifier — a security signal is never gated on URL construction.
  * - `action: 'error'` maps to `level: 'fatal'`; anything else maps to `'warn'`
- * (Bun only recognizes `'fatal' | 'warn'`).
- * - The description is assembled from the typo-squat hint, the alert
- * description, the note, and the fix, joined by blank lines with a trailing
- * newline.
+ *   (Bun only recognizes `'fatal' | 'warn'`).
+ * - The description is assembled from the typo-squat hint, the alert description,
+ *   the note, and the fix, joined by blank lines with a trailing newline.
  */
 export function artifactsToAdvisories(
   artifacts: SocketArtifact[],
@@ -31,13 +39,9 @@ export function artifactsToAdvisories(
     }
 
     const parsed = parseNpmPurl(artifact.inputPurl)
-
-    if (!parsed) {
-      continue
-    }
-
-    const { name, version } = parsed
-    const url = `https://socket.dev/npm/package/${name}/overview/${version}`
+    const url = parsed
+      ? `https://socket.dev/npm/package/${parsed.name}/overview/${parsed.version}`
+      : FALLBACK_OVERVIEW_URL
     const { alerts } = artifact
 
     for (let j = 0, alertCount = alerts.length; j < alertCount; j += 1) {
@@ -77,18 +81,19 @@ export function artifactsToAdvisories(
 }
 
 /**
- * Parse an npm purl into the `@scope/name` + version pair the socket.dev
- * overview URL wants. `PackageURL.fromString` decodes percent-encoded scopes
- * the API can legally emit in `inputPurl` (the old hand-rolled regex never
- * did); it throws on malformed purls, so map that to `undefined` to preserve
- * the skip-on-no-match behavior.
+ * Parse an **npm** purl into the `@scope/name` + version pair the socket.dev
+ * npm overview URL wants. `PackageURL.fromString` decodes percent-encoded
+ * scopes the API can legally emit in `inputPurl`, and throws on a malformed
+ * purl. A purl from another ecosystem parses cleanly but has no npm overview
+ * page, so it is rejected here alongside the malformed and version-less ones —
+ * `undefined` means "no npm deep link", never "drop the artifact".
  */
 export function parseNpmPurl(
   purl: string,
 ): { name: string; version: string } | undefined {
   try {
-    const { name, namespace, version } = PackageURL.fromString(purl)
-    if (!name || !version) {
+    const { name, namespace, type, version } = PackageURL.fromString(purl)
+    if (type !== 'npm' || !name || !version) {
       return undefined
     }
     return { name: namespace ? `${namespace}/${name}` : name, version }

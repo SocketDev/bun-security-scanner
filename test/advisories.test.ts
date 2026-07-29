@@ -33,6 +33,18 @@ describe('parseNpmPurl', () => {
     expect(parseNpmPurl('not-a-purl')).toBeUndefined()
     expect(parseNpmPurl('')).toBeUndefined()
   })
+
+  test('returns undefined for a version spec the purl grammar rejects', () => {
+    // `@socketregistry/packageurl-js` throws on these: the `github:`/`file:`
+    // tail parses as an npm namespace, which must start with `@`.
+    expect(parseNpmPurl('pkg:npm/foo@github:evil/foo#abc')).toBeUndefined()
+    expect(parseNpmPurl('pkg:npm/foo@file:../../etc')).toBeUndefined()
+  })
+
+  test('returns undefined for a non-npm ecosystem', () => {
+    // A pypi purl parses cleanly but has no socket.dev npm overview page.
+    expect(parseNpmPurl('pkg:pypi/requests@2.31.0')).toBeUndefined()
+  })
 })
 
 describe('artifactsToAdvisories', () => {
@@ -139,7 +151,7 @@ describe('artifactsToAdvisories', () => {
     )
   })
 
-  test('skips an artifact whose purl cannot be parsed, dropping all its alerts', () => {
+  test('still emits every alert when the purl cannot be parsed', () => {
     const advisories = artifactsToAdvisories([
       artifact({
         inputPurl: 'not-a-purl',
@@ -150,7 +162,59 @@ describe('artifactsToAdvisories', () => {
       }),
     ])
 
-    expect(advisories).toEqual([])
+    expect(advisories.map(a => a.level)).toEqual(['fatal', 'warn'])
+    expect(advisories.map(a => a.package)).toEqual(['not-a-purl', 'not-a-purl'])
+    expect(advisories.map(a => a.url)).toEqual([
+      'https://socket.dev/',
+      'https://socket.dev/',
+    ])
+  })
+
+  test('emits a fatal advisory for a purl the grammar rejects', () => {
+    // Regression: these throw inside `PackageURL.fromString`, and gating the
+    // advisory on that parse let a malware `action: 'error'` alert reach Bun
+    // as no advisory at all — the install then proceeded.
+    for (const inputPurl of [
+      'pkg:npm/foo@github:evil/foo#abc',
+      'pkg:npm/foo@file:../../etc',
+    ]) {
+      const advisories = artifactsToAdvisories([
+        artifact({
+          inputPurl,
+          alerts: [
+            {
+              action: 'error',
+              type: 'malware',
+              props: { description: 'Known malicious package' },
+            },
+          ],
+        }),
+      ])
+
+      expect(advisories).toHaveLength(1)
+      expect(advisories[0]).toMatchObject({
+        level: 'fatal',
+        package: inputPurl,
+        url: 'https://socket.dev/',
+      })
+      expect(advisories[0]!.description).toContain('Known malicious package')
+    }
+  })
+
+  test('degrades the URL for a non-npm artifact but keeps the advisory', () => {
+    const advisories = artifactsToAdvisories([
+      artifact({
+        inputPurl: 'pkg:pypi/requests@2.31.0',
+        alerts: [{ action: 'error', type: 'malware', props: {} }],
+      }),
+    ])
+
+    expect(advisories).toHaveLength(1)
+    expect(advisories[0]).toMatchObject({
+      level: 'fatal',
+      package: 'pkg:pypi/requests@2.31.0',
+      url: 'https://socket.dev/',
+    })
   })
 
   test('emits one advisory per alert on an artifact', () => {

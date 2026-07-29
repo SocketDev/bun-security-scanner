@@ -208,6 +208,116 @@ describe('scanner-factory', () => {
     expect(maxConcurrent).toBeLessThanOrEqual(10)
   })
 
+  test('respects maxSending when a batch holds many purls', async () => {
+    // The maxBatchLength: 1 case above hides the bug this covers: the throttle
+    // counts purls, so a batch wider than one has to be admitted as a unit.
+    // Counting a flight's purls before the wait made every flight read as
+    // "already over the cap", and freeing a single slot was not enough to make
+    // room for the next batch.
+    let maxConcurrent = 0
+    let currentInFlight = 0
+
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
+      currentInFlight += purls.length
+      maxConcurrent = Math.max(maxConcurrent, currentInFlight)
+
+      await new Promise<void>(resolve => setTimeout(resolve, tolerantSleep(10)))
+
+      currentInFlight -= purls.length
+    }
+
+    const manyPackages = Array.from({ length: 120 }, (_, i) => ({
+      name: `package${i}`,
+      version: '1.0.0',
+      requestedRange: '^1.0.0',
+      tarball: `https://registry.npmjs.org/package${i}/-/package${i}-1.0.0.tgz`,
+    }))
+
+    const scanner = createScanner({
+      maxSending: 20,
+      maxBatchLength: 10,
+      fetchStrategy,
+    })
+
+    for await (const artifacts of scanner(manyPackages)) {
+      void artifacts
+    }
+
+    expect(maxConcurrent).toBeLessThanOrEqual(20)
+    // Two 10-purl flights overlap, so the cap is reached, not merely respected
+    // by running one batch at a time.
+    expect(maxConcurrent).toBe(20)
+  })
+
+  test('surfaces a flight rejection that settles before the final drain', async () => {
+    // A non-2xx response has to stop the install. The rejected flight settles
+    // while later batches are still being queued, so the drain has to hold on
+    // to it rather than measure only what is still in flight.
+    let calls = 0
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
+      calls += 1
+      if (calls === 1) {
+        throw new Error('Socket Security Scanner: Received 404 from server')
+      }
+      await new Promise<void>(resolve => {
+        setTimeout(resolve, tolerantSleep(20))
+      })
+    }
+
+    const scanner = createScanner({
+      maxSending: 20,
+      maxBatchLength: 1,
+      fetchStrategy,
+    })
+
+    let thrown: unknown
+    try {
+      for await (const artifacts of scanner([...mockPackages])) {
+        void artifacts
+      }
+    } catch (e) {
+      thrown = e
+    }
+
+    expect(thrown).toBeInstanceOf(Error)
+    expect(String(thrown)).toContain('Received 404 from server')
+  })
+
+  test('scans every package when the caller array holds a hole', async () => {
+    const seen: string[] = []
+    const fetchStrategy = async (
+      purls: string[],
+      artifacts: SocketArtifact[],
+    ) => {
+      seen.push(...purls)
+    }
+
+    const scanner = createScanner({
+      maxSending: 10,
+      maxBatchLength: 1,
+      fetchStrategy,
+    })
+
+    // A hole costs its own entry only — the packages behind it still scan.
+    // Index 1 is left unset, so `packages.shift()` hands back `undefined` for
+    // it while the entry behind it is a real package.
+    const withHole = Array.from<Bun.Security.Package>({ length: 3 })
+    withHole[0] = mockPackages[0]!
+    withHole[2] = mockPackages[1]!
+
+    for await (const artifacts of scanner(withHole)) {
+      void artifacts
+    }
+
+    expect(seen).toEqual(['pkg:npm/package1@1.0.0', 'pkg:npm/package2@2.0.0'])
+  })
+
   test('should yield artifacts progressively with maxBatchLength', async () => {
     let batchIndex = 0
     const fetchStrategy = async (

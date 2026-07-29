@@ -3,6 +3,7 @@ import type { Mock } from 'bun:test'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { unauthenticated } from '../../src/modes/unauthenticated'
 import type { SocketArtifact } from '../../src/types'
+import { tolerantSleep } from '../fleet/_shared/lib/timing.mts'
 
 describe('unauthenticated', () => {
   const mockPackages: Bun.Security.Package[] = [
@@ -88,9 +89,54 @@ describe('unauthenticated', () => {
       // Process results
     }
 
-    // With maxBatchLength: 50, should make 2 batches (50 + 50 packages)
-    // Each batch makes parallel requests, so should be 100 total fetch calls
+    // Every purl costs one request on the free endpoint, whatever the batching.
     expect(fetchSpy).toHaveBeenCalledTimes(100)
+  })
+
+  test('unauthenticated scanner caps concurrent requests at the shipped config', async () => {
+    // The cap is a REQUEST cap and the free endpoint answers one purl per
+    // request, so a flight of N purls is N concurrent requests. This runs the
+    // shipped configuration — the one the cap has to hold for.
+    let inFlight = 0
+    let peak = 0
+    let total = 0
+
+    fetchSpy.mockImplementation(
+      Object.assign(
+        async () => {
+          inFlight += 1
+          total += 1
+          peak = Math.max(peak, inFlight)
+          await new Promise<void>(resolve => {
+            setTimeout(resolve, tolerantSleep(5))
+          })
+          inFlight -= 1
+          return new Response('')
+        },
+        { preconnect: () => undefined },
+      ) as typeof fetch,
+    )
+
+    const manyPackages: Bun.Security.Package[] = Array.from(
+      { length: 120 },
+      (_, i) => ({
+        name: `package${i}`,
+        version: '1.0.0',
+        requestedRange: '^1.0.0',
+        tarball: `https://registry.npmjs.org/package${i}/-/package${i}-1.0.0.tgz`,
+      }),
+    )
+
+    const scanner = unauthenticated()
+
+    for await (const artifacts of scanner(manyPackages)) {
+      void artifacts
+    }
+
+    expect(total).toBe(120)
+    // 20 is the advertised cap. Counting packages instead of requests let the
+    // peak reach the batch width, so 120 packages opened 50 sockets at once.
+    expect(peak).toBeLessThanOrEqual(20)
   })
 
   test('unauthenticated scanner should handle API errors', async () => {
