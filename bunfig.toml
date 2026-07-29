@@ -1,2 +1,17 @@
 [install.security]
 scanner = "./src/index.ts"
+
+[test]
+# Coverage scope mirrors the fleet vitest coverage excludes: measure `src/`
+# only. `dist/**` is the built bundle test/dist.test.ts smoke-tests, `test/**`
+# holds the suites plus the cascaded fleet helpers.
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = ["dist/**", "test/**"]
+# Bun applies these PER FILE, not to the total, so the floor is set by the
+# weakest file: src/index.ts, whose module-init bootstrap branches on
+# process.platform and on whether this machine has a Socket settings file, so a
+# few lines are unreachable on any single OS. Every other file sits at 100/100.
+# Bun reads only the plural keys — singular `line` / `function` parse without
+# error and are then ignored, which reports a number and exits 0 no matter how
+# far coverage falls.
+coverageThreshold = { functions = 0.95, lines = 0.65 }
