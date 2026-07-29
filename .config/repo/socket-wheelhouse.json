@@ -1,0 +1,24 @@
+{
+  "$schema": "./socket-wheelhouse-schema.json",
+  "schemaVersion": 1,
+  "repoName": "bun-security-scanner",
+  "repo": {
+    "type": "solo"
+  },
+  "build": {
+    "from": "npm-registry",
+    "type": "js"
+  },
+  "cover": {
+    "perFileThresholds": {
+      "src/index.ts": {
+        "lines": 65
+      }
+    },
+    "runner": "bun",
+    "thresholds": {
+      "functions": 100,
+      "lines": 91
+    }
+  }
+}

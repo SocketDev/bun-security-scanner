@@ -7,11 +7,9 @@ scanner = "./src/index.ts"
 # holds the suites plus the cascaded fleet helpers.
 coverageSkipTestFiles = true
 coveragePathIgnorePatterns = ["dist/**", "test/**"]
-# Bun applies these PER FILE, not to the total, so the floor is set by the
-# weakest file: src/index.ts, whose module-init bootstrap branches on
-# process.platform and on whether this machine has a Socket settings file, so a
-# few lines are unreachable on any single OS. Every other file sits at 100/100.
-# Bun reads only the plural keys — singular `line` / `function` parse without
-# error and are then ignored, which reports a number and exits 0 no matter how
-# far coverage falls.
-coverageThreshold = { functions = 0.95, lines = 0.65 }
+# Thresholds are NOT set here. The fleet coverage runner reads bun's lcov and
+# applies `cover.thresholds` + `cover.perFileThresholds` from
+# .config/repo/socket-wheelhouse.json itself, because bun's own
+# `coverageThreshold` accepts singular keys (`line`, `function`) without
+# complaint and then ignores them — `{ line = 0.99 }` exits 0 at 50% coverage.
+# A gate a typo can disable is not a gate.
