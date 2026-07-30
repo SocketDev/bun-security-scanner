@@ -2,10 +2,10 @@ catalog:
   '@redwoodjs/agent-ci': 0.17.1
   '@shadscan/cli': 0.2.0
   '@sinclair/typebox': 0.34.52
-  '@socketregistry/packageurl-js': 1.4.8
+  '@socketregistry/packageurl-js': 1.5.0
   '@socketregistry/packageurl-js-stable': npm:@socketregistry/packageurl-js@1.4.8
-  '@socketsecurity/lib': 6.5.0
-  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.0
+  '@socketsecurity/lib': 6.5.1
+  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.1
   '@socketsecurity/registry': 2.0.5
   '@socketsecurity/registry-stable': npm:@socketsecurity/registry@2.0.5
   '@socketsecurity/sdk': 4.1.2
@@ -34,8 +34,8 @@ catalog:
   # TypeError: unusable on any fetch POST-with-body to an
   # enableNetConnect-allowed host. Bump to the stabilized 15.x when the
   # fleet catalog does.
-  'nock': 14.0.16
-  'oxfmt': 0.59.0
+  'nock': 15.0.0
+  'oxfmt': 0.60.0
   'oxlint': 1.75.0
   'oxlint-tsgolint': 7.0.2001
   'playwright-core': 1.61.1
@@ -73,7 +73,7 @@ overrides:
   'minipass@>=4': '7.1.3'
   'safe-buffer': 'npm:@socketregistry/safe-buffer@1.0.9'
   'safer-buffer': 'npm:@socketregistry/safer-buffer@1.0.10'
-  'semver@>=5.0.0 <7.6.0': '7.8.1'
+  'semver@>=5.0.0 <7.6.0': '7.8.5'
   'side-channel': 'npm:@socketregistry/side-channel@1.0.10'
   'ssri@>=12': '13.0.1'
   'string-width@>=5': '8.2.2'
@@ -109,8 +109,6 @@ minimumReleaseAgeExclude:
   # taze 19.16.0 — the dep updater itself; forced ahead of the soak by owner
   # directive so the regenerated single-registry patch (patchedDependencies)
   # tracks the current release. Exact-pinned so a future version re-soaks.
-  # published: 2026-07-22 | removable: 2026-07-29
-  - 'taze@19.16.0'
   # verkit — new dev-only transitive of taze 19.16.0 (same owner directive);
   # exact-pinned so future versions re-soak.
   - 'socket'
@@ -119,64 +117,10 @@ minimumReleaseAgeExclude:
   # drives; first-party oxc tooling, same trust rationale as oxlint itself.
   # Main package + per-platform binding family exact-pinned so a future
   # version re-soaks.
-  # published: 2026-07-21 | removable: 2026-07-28
-  - 'oxlint-tsgolint@7.0.2001'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint-tsgolint/darwin-arm64@7.0.2001'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint-tsgolint/darwin-x64@7.0.2001'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint-tsgolint/linux-arm64@7.0.2001'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint-tsgolint/linux-x64@7.0.2001'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint-tsgolint/win32-arm64@7.0.2001'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint-tsgolint/win32-x64@7.0.2001'
   # published: 2026-07-23 | removable: 2026-07-30
   - 'js-yaml@5.2.2'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-android-arm-eabi@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-android-arm64@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-darwin-arm64@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-darwin-x64@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-freebsd-x64@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-arm-gnueabihf@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-arm-musleabihf@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-arm64-gnu@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-arm64-musl@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-ppc64-gnu@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-riscv64-gnu@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-riscv64-musl@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-s390x-gnu@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-x64-gnu@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-linux-x64-musl@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-openharmony-arm64@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-win32-arm64-msvc@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-win32-ia32-msvc@1.75.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - '@oxlint/binding-win32-x64-msvc@1.75.0'
   # published: 2026-07-24 | removable: 2026-07-31
   - '@shadscan/cli@0.2.0'
-  # published: 2026-07-21 | removable: 2026-07-28
-  - 'oxlint@1.75.0'
 
 patchedDependencies:
   # single-registry: routes taze version resolution through its own bundled
