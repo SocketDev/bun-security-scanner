@@ -188,6 +188,17 @@ export function buildPathsAndSupplyChainSteps(): CheckStep[] {
         'scripts/fleet/check/upstream-gitlinks-are-absent.mts',
         '--quiet',
       ]),
+    // Belt: every copyleft upstream present as a submodule is a TESTS-ONLY
+    // slice — no widened sparse cone, no materialized implementation file, no
+    // tracked file citing it as a derivation source. A copyleft project may be
+    // run and observed via its own tests; reading its implementation makes the
+    // consuming package a derivative work. Write-time twin:
+    // no-copyleft-source-read. See docs/agents.md/fleet/copyleft-boundaries.md.
+    () =>
+      run('node', [
+        'scripts/fleet/check/copyleft-slices-are-tests-only.mts',
+        '--quiet',
+      ]),
     // Belt, superset of the gitlink gate above: no tracked file is matched by
     // .gitignore anywhere in the tree — build output, vendored trees, caches, or
     // a stray nested gitlink. `git ls-files -ci --exclude-standard` is the
