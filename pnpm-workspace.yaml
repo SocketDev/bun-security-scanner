@@ -34,7 +34,7 @@ catalog:
   # TypeError: unusable on any fetch POST-with-body to an
   # enableNetConnect-allowed host. Bump to the stabilized 15.x when the
   # fleet catalog does.
-  'nock': 15.0.0
+  'nock': 14.0.16
   'oxfmt': 0.60.0
   'oxlint': 1.75.0
   'oxlint-tsgolint': 7.0.2001
