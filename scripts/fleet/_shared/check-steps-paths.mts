@@ -63,6 +63,15 @@ export function buildPathsAndSupplyChainSteps(): CheckStep[] {
     // and architecture docs whose every named script was fiction. Report-mode
     // until the fleet backlog burns down (member-ci rollout pattern).
     () => run('node', ['scripts/fleet/check/docs-file-references-resolve.mts']),
+    // Playwright launches must go through the sanctioned npm session module
+    // (publish-infra/npm/browser-session.mts): no sandbox flags, no bare
+    // chromium.launch, persistent context only. The 2026-07-29 sign-in-loop
+    // incident: a hand-rolled bootstrap mixed real- and mock-keychain cookie
+    // state in the shared profile and every post-OTP session evaporated.
+    () =>
+      run('node', [
+        'scripts/fleet/check/playwright-launches-are-sanctioned.mts',
+      ]),
     // Sibling of the two above for the skill-NAME surface: every command that
     // delegates in prose ("Run the `<name>` skill") must name a real
     // .claude/skills/**/<name>/SKILL.md, so a renamed/moved skill can't leave a
