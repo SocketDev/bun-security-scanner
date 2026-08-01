@@ -12,8 +12,6 @@
 
 Official Socket Security scanner for Bun's package installation process. Protects your projects from malicious packages, typosquatting, and other supply chain attacks.
 
-## Why this repo exists
-
 Bun's package installer exposes a security-provider API that lets a scanner
 vet every package before it is installed. This repo is Socket's implementation
 of that provider: it checks each package against Socket's threat intelligence
