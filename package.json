@@ -66,7 +66,8 @@
     "type": "node node_modules/typescript/bin/tsc --noEmit -p .config/fleet/tsconfig.check.json",
     "npm:publish": "node scripts/fleet/publish-pipeline.mts",
     "socket-wheelhouse:emit-schema": "node scripts/fleet/socket-wheelhouse-emit-schema.mts",
-    "mcp:reset": "node scripts/fleet/mcp-reset.mts"
+    "mcp:reset": "node scripts/fleet/mcp-reset.mts",
+    "setup:sfw-ca": "node scripts/fleet/setup/sfw-ca.mts"
   },
   "devDependencies": {
     "@redwoodjs/agent-ci": "catalog:",
@@ -94,6 +95,7 @@
     "micromark": "catalog:",
     "neosanitize": "catalog:",
     "nock": "catalog:",
+    "npm-high-impact": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",

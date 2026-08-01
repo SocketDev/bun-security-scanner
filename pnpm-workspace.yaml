@@ -4,8 +4,8 @@ catalog:
   '@sinclair/typebox': 0.34.52
   '@socketregistry/packageurl-js': 1.5.0
   '@socketregistry/packageurl-js-stable': npm:@socketregistry/packageurl-js@1.4.8
-  '@socketsecurity/lib': 6.5.1
-  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.1
+  '@socketsecurity/lib': 6.5.2
+  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.2
   '@socketsecurity/registry': 2.0.5
   '@socketsecurity/registry-stable': npm:@socketsecurity/registry@2.0.5
   '@socketsecurity/sdk': 4.1.3
@@ -23,7 +23,7 @@ catalog:
   'compromise': 14.16.0
   'dtu-github-actions': 0.17.1
   'fast-check': 4.9.0
-  'magic-string': 1.0.0
+  'magic-string': 1.1.0
   'markdownlint-cli2': 0.23.1
   'mdast-util-from-markdown': 2.0.3
   'micromark': 4.0.2
@@ -35,10 +35,11 @@ catalog:
   # enableNetConnect-allowed host. Bump to the stabilized 15.x when the
   # fleet catalog does.
   'nock': 14.0.16
+  'npm-high-impact': 1.13.0
   'oxfmt': 0.60.0
   'oxlint': 1.75.0
   'oxlint-tsgolint': 7.0.2001
-  'playwright-core': 1.61.1
+  'playwright-core': 1.62.0
   'portless': 0.15.4
   'regjsparser': 0.13.2
   'rolldown': 1.1.4
@@ -117,10 +118,6 @@ minimumReleaseAgeExclude:
   # drives; first-party oxc tooling, same trust rationale as oxlint itself.
   # Main package + per-platform binding family exact-pinned so a future
   # version re-soaks.
-  # published: 2026-07-23 | removable: 2026-07-30
-  - 'js-yaml@5.2.2'
-  # published: 2026-07-24 | removable: 2026-07-31
-  - '@shadscan/cli@0.2.0'
 
 patchedDependencies:
   # single-registry: routes taze version resolution through its own bundled
