@@ -53,7 +53,6 @@
     "sync-package-manager-pins": "node scripts/fleet/sync-package-manager-pins.mts",
     "update": "node scripts/fleet/update.mts",
     "weekly-update": "node scripts/fleet/weekly-update.mts",
-    "weekly-update:ci": "node scripts/fleet/weekly-update-workflow.mts run",
     "doctor": "node scripts/fleet/doctor.mts",
     "docs:llms": "node scripts/fleet/make-llms-txt.mts",
     "setup:brew": "node scripts/fleet/setup/brew.mts",
