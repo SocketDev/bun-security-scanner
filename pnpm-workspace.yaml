@@ -112,7 +112,6 @@ minimumReleaseAgeExclude:
   # verkit — new dev-only transitive of taze 19.16.0 (same owner directive);
   # exact-pinned so future versions re-soak.
   - 'socket'
-  - 'stuie'
   # oxlint-tsgolint — the type-aware lint sidecar oxlint's `--type-aware` flag
   # drives; first-party oxc tooling, same trust rationale as oxlint itself.
   # Main package + per-platform binding family exact-pinned so a future
