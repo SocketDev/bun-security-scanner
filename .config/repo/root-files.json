@@ -1,6 +1,7 @@
 {
   "allow": {
     "bun.lock": "Bun's lockfile for the repo's own dependency graph; `bun test` and the scanner-under-test install flow resolve from it, and Bun writes it only at the package root.",
-    "bunfig.toml": "Bun requires its config at the package root; wires `[install.security] scanner = \"./src/index.ts\"` so bun install exercises the scanner under test, per README setup."
+    "bunfig.toml": "Bun requires its config at the package root; wires `[install.security] scanner = \"./src/index.ts\"` so bun install exercises the scanner under test, per README setup.",
+    "DISCLOSURE": "npm's dual-use content policy reads the disclosure from the package root, and the fleet gate scripts/fleet/check/dual-use-declarations-are-complete.mts requires it there plus in the package.json files allowlist for this dual-use scanner."
   }
 }
