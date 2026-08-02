@@ -54,7 +54,6 @@
     "update": "node scripts/fleet/update.mts",
     "weekly-update": "node scripts/fleet/weekly-update.mts",
     "doctor": "node scripts/fleet/doctor.mts",
-    "docs:llms": "node scripts/fleet/make-llms-txt.mts",
     "setup:brew": "node scripts/fleet/setup/brew.mts",
     "setup:go": "node scripts/fleet/setup/go.mts",
     "setup:mcp": "node scripts/fleet/setup/mcp.mts",
@@ -67,7 +66,8 @@
     "socket-wheelhouse:emit-schema": "node scripts/fleet/socket-wheelhouse-emit-schema.mts",
     "mcp:reset": "node scripts/fleet/mcp-reset.mts",
     "setup:sfw-ca": "node scripts/fleet/setup/sfw-ca.mts",
-    "get-green": "node scripts/fleet/get-green.mts"
+    "get-green": "node scripts/fleet/get-green.mts",
+    "weekly-update:ci": "gh workflow run weekly-update.lock.yml"
   },
   "devDependencies": {
     "@redwoodjs/agent-ci": "catalog:",
