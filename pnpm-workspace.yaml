@@ -1,31 +1,34 @@
 catalog:
+  '@actions/cache': 6.2.0
   '@redwoodjs/agent-ci': 0.17.1
-  '@shadscan/cli': 0.5.0
+  '@shadscan/cli': 0.7.0
   '@sinclair/typebox': 0.34.52
-  '@socketregistry/packageurl-js': 1.5.0
-  '@socketregistry/packageurl-js-stable': npm:@socketregistry/packageurl-js@1.5.0
-  '@socketsecurity/lib': 6.5.2
-  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.2
+  '@socketregistry/packageurl-js': 1.5.1
+  '@socketregistry/packageurl-js-stable': npm:@socketregistry/packageurl-js@1.5.1
+  '@socketsecurity/lib': 6.5.3
+  '@socketsecurity/lib-stable': npm:@socketsecurity/lib@6.5.3
   '@socketsecurity/registry': 2.0.5
   '@socketsecurity/registry-stable': npm:@socketsecurity/registry@2.0.5
   '@socketsecurity/sdk': 4.1.3
   '@socketsecurity/sdk-stable': npm:@socketsecurity/sdk@4.1.3
   '@types/mdast': 4.0.4
-  '@types/node': 26.1.1
+  '@types/node': 26.1.2
   '@types/semver': 7.7.1
   '@types/shell-quote': 1.7.5
   '@ultrathink/acorn.rs.wasm': 0.1.1
   '@vitest/coverage-v8': 4.1.10
   '@vitest/ui': 4.1.10
+  'brace-expansion': 5.0.9
   'c8': 12.0.0
   'chrome-devtools-mcp': 1.6.0
   'compromise': 14.16.0
   'dtu-github-actions': 0.17.1
   'fast-check': 4.9.0
   'magic-string': 1.1.0
-  'markdownlint-cli2': 0.23.1
+  'markdownlint-cli2': 0.23.2
   'mdast-util-from-markdown': 2.0.3
   'micromark': 4.0.2
+  'minimatch': 10.2.6
   'neosanitize': 0.3.0
   # Pinned back 15.0.0 -> 14.0.16 on 2026-07-27, hand-aligned to the fleet
   # catalog (.config/fleet/pnpm-workspace.fleet.yaml): 15.0.0 ships
@@ -35,8 +38,8 @@ catalog:
   # fleet catalog does.
   'nock': 14.0.16
   'npm-high-impact': 1.13.0
-  'oxfmt': 0.60.0
-  'oxlint': 1.75.0
+  'oxfmt': 0.61.0
+  'oxlint': 1.76.0
   'oxlint-tsgolint': 7.0.2001
   'playwright-core': 1.62.0
   'portless': 0.15.4
@@ -44,7 +47,7 @@ catalog:
   'rolldown': 1.1.4
   'semver': 7.8.5
   'shell-quote': 1.10.0
-  'taze': 19.16.0
+  'taze': 19.17.1
   'typescript': 7.0.2
   'vitest': 4.1.10
 
@@ -54,6 +57,7 @@ overrides:
   '@socketsecurity/lib': 'catalog:'
   '@socketsecurity/registry': 'catalog:'
   '@socketsecurity/sdk': 'catalog:'
+  'brace-expansion@>=4': '5.0.9'
   'chalk@>=5': '5.6.2'
   'es-define-property': 'npm:@socketregistry/es-define-property@1.0.7'
   'es-set-tostringtag': 'npm:@socketregistry/es-set-tostringtag@1.0.10'
@@ -70,13 +74,16 @@ overrides:
   'magic-string': '1.1.0'
   'mime-db': '1.54.0'
   'mime-types@>=3': '3.0.2'
+  'minimatch@>=3': '10.2.6'
   'minipass@>=4': '7.1.3'
+  'postcss@>=8': '8.5.24'
   'safe-buffer': 'npm:@socketregistry/safe-buffer@1.0.9'
   'safer-buffer': 'npm:@socketregistry/safer-buffer@1.0.10'
   'semver@>=5.0.0 <7.6.0': '7.8.5'
   'side-channel': 'npm:@socketregistry/side-channel@1.0.10'
   'ssri@>=12': '13.0.1'
   'string-width@>=5': '8.2.2'
+  'tinyexec': '1.3.0'
   'update-notifier@>=4.0.0': '7.3.1'
   'uuid': '11.1.1'
   'which': '7.0.0'
@@ -116,22 +123,46 @@ minimumReleaseAgeExclude:
   # drives; first-party oxc tooling, same trust rationale as oxlint itself.
   # Main package + per-platform binding family exact-pinned so a future
   # version re-soaks.
+  # published: 2026-08-04 | removable: 2026-08-11
+  - '@socketsecurity/lib@6.5.3'
+  # published: 2026-07-30 | removable: 2026-08-06
+  - 'brace-expansion@5.0.9'
+  # published: 2026-08-03 | removable: 2026-08-10
+  - 'taze@19.17.1'
 
 patchedDependencies:
-  # single-registry: routes taze version resolution through its own bundled
-  # direct-registry client (getVersionsFromRegistry — full packument with
-  # publish times, .npmrc/auth-aware) for EVERY registry, instead of the
-  # fast-npm-meta hosted endpoint it uses when the registry is the npm
-  # default. That third-party hop leaks our dependency names,
-  # violates the fleet single-registry posture, and is blocked by egress
-  # policy here — every lookup then hits taze's request timeout while taze
-  # still exits 0 ("Already up to date" false green; update.mts now fails
-  # loud on it). The former 5s->30s timeout half of this patch retired in
-  # 19.16.0: `requestTimeout` is config-wired now, set in
-  # .config/fleet/taze.config.mts.
-  # TEMPORARY: remove if taze grows a supported flag to force direct-registry
-  # resolution (or we swap to our own metadata client, see socket-lib plan).
-  'taze@19.16.0': 'patches/taze@19.16.0.patch'
+  # default-export interop (managed by socket-wheelhouse sync; do not edit):
+  # 5.0.7 dropped the default export from BOTH builds. The CJS half breaks
+  # minimatch@9's compiled `__importDefault`, which reads `.default` and
+  # skips the namespace fallback once `__esModule` is set. The ESM half
+  # breaks any `import x from 'brace-expansion'`, the shape the fleet CI
+  # cache action resolves through, so an unpatched member throws "does not
+  # provide an export named default" and dies at setup before a test runs.
+  # The patch restores `expand` as the default on each build separately;
+  # patching one build leaves the other broken.
+  # On a bump, regenerate via `pnpm patch brace-expansion` + `pnpm patch-commit`.
+  brace-expansion@5.0.9: patches/brace-expansion@5.0.9.patch
+  # default-export interop (managed by socket-wheelhouse sync; do not edit):
+  # v10's ESM build ships named exports only, so `import minimatch from
+  # 'minimatch'` throws "does not provide an export named default". That is
+  # the shape `@actions/cache` resolves through, so an unpatched member dies
+  # in the CI cache step at setup, before a single check runs. The patch adds
+  # the default to BOTH builds; patching one leaves the other broken.
+  # It also makes the `minimatch@>=3` hoist safe: a v3 consumer
+  # (`@actions/glob@0.6.1` pulls 3.1.5) default-imports a callable, and the
+  # patched v10 answers that same shape.
+  # On a bump, regenerate via `pnpm patch minimatch` + `pnpm patch-commit`.
+  minimatch@10.2.6: patches/minimatch@10.2.6.patch
+  # single-registry (managed by socket-wheelhouse sync; do not edit):
+  # routes taze version resolution through its own bundled direct-registry
+  # client (getVersionsFromRegistry — full packument, .npmrc/auth-aware) for
+  # EVERY registry, instead of the fast-npm-meta hosted endpoint it uses
+  # when the registry is the npm default. That third-party hop leaks
+  # dependency names, violates the fleet single-registry posture, and is
+  # blocked by egress policy — every lookup then hits the request timeout
+  # while taze still exits 0 (false green; update.mts fails loud on it).
+  # On a taze bump, regenerate via `pnpm patch taze` + `pnpm patch-commit`.
+  taze@19.17.1: patches/taze@19.17.1.patch
 
 allowBuilds:
   '@socketsecurity/sdk': false
