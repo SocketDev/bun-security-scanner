@@ -94,6 +94,8 @@ packages:
   - .claude/hooks/fleet/*
   - .config/fleet/oxlint-plugin
   - .config/fleet/oxlint-plugin/fleet/*
+  - '.claude/hooks/repo/*'
+  - '.config/repo/oxlint-plugin/*'
 autoInstallPeers: true
 managePackageManagerVersions: false
 pmOnFail: 'warn'

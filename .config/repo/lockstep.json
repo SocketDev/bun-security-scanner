@@ -1,0 +1,6 @@
+{
+  "$schema": "../fleet/lockstep.schema.json",
+  "area": "bun-security-scanner",
+  "description": "Lock-step manifest. bun-security-scanner is a single npm package with no submodule upstreams or sibling language ports \u2014 empty rows is the expected state.",
+  "rows": []
+}
