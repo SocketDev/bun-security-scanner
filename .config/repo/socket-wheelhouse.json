@@ -24,5 +24,8 @@
   "contentPolicy": {
     "class": "dual-use",
     "packages": ["."]
+  },
+  "vitest": {
+    "nodeTestExclude": ["test/*.test.{ts,mts}", "test/modes/**"]
   }
 }
