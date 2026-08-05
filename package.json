@@ -1,6 +1,6 @@
 {
   "name": "@socketsecurity/bun-security-scanner",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Bun security scanner for SocketDev",
   "keywords": [
     "bun",
