@@ -22,6 +22,8 @@
  */
 
 import { readFileSync } from 'node:fs'
+
+import { isMainModule } from '../_shared/is-main-module.mts'
 import process from 'node:process'
 
 import {
@@ -107,4 +109,6 @@ async function main(): Promise<void> {
   )
 }
 
-void main()
+if (isMainModule(import.meta.url)) {
+  void main()
+}

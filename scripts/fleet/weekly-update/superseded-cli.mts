@@ -14,6 +14,8 @@
 
 import process from 'node:process'
 
+import { isMainModule } from '../_shared/is-main-module.mts'
+
 import { supersededPrNumbers } from './superseded.mts'
 
 function flag(argv: readonly string[], name: string): string | undefined {
@@ -82,4 +84,6 @@ async function main(): Promise<void> {
   }
 }
 
-void main()
+if (isMainModule(import.meta.url)) {
+  void main()
+}
