@@ -106,6 +106,7 @@
 - Hard bug or perf regression → build a tight loop that goes red on THIS bug and run it once BEFORE stating any hypothesis; run `/fleet:diagnosing-bugs`. [`diagnosing-bugs`](docs/agents.md/fleet/diagnosing-bugs.md)
 - Orient via `/map` before reading an unfamiliar file; read the span, not the whole file. [`repo-map`](docs/agents.md/fleet/repo-map.md)
 - Error messages have four ingredients in order: What / Where / Saw vs. wanted / Fix; use `errorMessage`/`isError`/`errorStack` from `@socketsecurity/lib/errors/*`. [`error-messages`](docs/agents.md/fleet/error-messages.md)
+- 🚨 Every CLI entry script self-describes: `runMain(main, SCRIPT_META)` answers `--describe`/`--help` before main() runs; in-main help handling is deleted. (`scripts/fleet/check/entry-scripts-self-describe.mts`) [`self-describing-scripts`](docs/agents.md/fleet/self-describing-scripts.md)
 - 🚨 Never emit a raw secret to tool output, commits, comments, or replies; tokens live in env vars (CI) or the OS keychain (dev), never in `.env*`. [`token-hygiene`](docs/agents.md/fleet/token-hygiene.md)
 - 🚨 npm-family auth (npm/pnpm/yarn publish/login) uses BROWSER auth (`--auth-type=web`); NEVER pass or suggest `--otp=<code>`. [`token-hygiene`](docs/agents.md/fleet/token-hygiene.md)
 - 🚨 Verify state before acting: read a resource's published state before any create/claim/publish (`npm view` / `gh release view`). (`.claude/hooks/fleet/verify-before-publish-guard/`) [`verify-state-before-acting`](docs/agents.md/fleet/verify-state-before-acting.md)
