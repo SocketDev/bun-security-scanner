@@ -39,10 +39,8 @@ import { SocketSdk } from '@socketsecurity/sdk-stable'
 
 import { COPYLEFT_UPSTREAMS } from '../../../.claude/hooks/fleet/_shared/copyleft-upstreams.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 
 import type { CopyleftUpstream } from '../../../.claude/hooks/fleet/_shared/copyleft-upstreams.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -294,16 +292,11 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "checks each copyleft upstream's pinned SPDX id still matches the Socket API",
-  help: `Usage: node scripts/fleet/check/copyleft-licenses-are-current.mts [flags]
-
-  --quiet  suppress the pass message`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(`copyleft-licenses-are-current failed: ${String(e)}`)
+    process.exitCode = 1
+  })
 }
 /* c8 ignore stop */

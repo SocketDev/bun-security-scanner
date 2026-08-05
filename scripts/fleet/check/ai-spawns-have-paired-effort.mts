@@ -43,13 +43,14 @@
 // with no adjacent comment. Exit codes: 0 — every AI spawn pins both, matches
 // the ladder, and justifies any escalation; 1 — at least one does not.
 //
-// Usage: node scripts/fleet/check/ai-spawns-have-paired-effort.mts
+// Usage: node scripts/fleet/check/ai-spawns-have-paired-effort.mts [--quiet]
 
 // oxlint-disable-next-line socket/no-agent-brand-assumption -- flags this file's "claude block" comment, a real backend-registry key reference, not generic Claude guidance; rule reports comment hits at the Program node.
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { globSync } from '@socketsecurity/lib-stable/globs/match'
 
@@ -62,9 +63,6 @@ import {
 } from '../lib/known-models.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -448,12 +446,11 @@ async function main(): Promise<void> {
   logger.success('Every model-pinning AI spawn pairs a reasoning effort.')
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks that every programmatic AI spawn pins both model and effort',
-  help: 'Usage: node scripts/fleet/check/ai-spawns-have-paired-effort.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(
+      `check-ai-spawns-have-paired-effort failed: ${errorMessage(e)}`,
+    )
+    process.exitCode = 1
+  })
 }

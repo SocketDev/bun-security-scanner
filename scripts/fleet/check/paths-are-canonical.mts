@@ -50,9 +50,6 @@ import { scanScriptFile } from './paths/scan-script.mts'
 import { scanWorkflowFile } from './paths/scan-workflow.mts'
 import { getFindings } from './paths/state.mts'
 import { walk } from './paths/walk.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 // Plain stderr/stdout output — no @socketsecurity/lib-stable dependency so
 // the gate is self-contained and works in socket-lib itself (which
@@ -78,7 +75,7 @@ const args = parseArgs({
 
 const ALLOWLIST = loadAllowlist(REPO_ROOT)
 
-const main = (): number => {
+export const main = (): number => {
   // Scan code files (Rule A + B).
   for (const rel of walk(
     REPO_ROOT,
@@ -175,17 +172,11 @@ const main = (): number => {
   return 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks path hygiene — every path is constructed exactly once and referenced everywhere else',
-  help: `Usage: node scripts/fleet/check/paths-are-canonical.mts [flags]
-
-  --explain      long-form fix suggestion per finding
-  --json         machine-readable findings
-  --quiet        silent on clean
-  --show-hashes  print each finding's snippet hash (for allowlist entries)`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  try {
+    process.exitCode = main()
+  } catch (e) {
+    logger.error(`Path-hygiene gate crashed: ${e}`)
+    process.exitCode = 2
+  }
 }

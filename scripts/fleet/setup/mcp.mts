@@ -16,19 +16,18 @@ import {
 } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import process from 'node:process'
 
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 
 import { mergeKimiMcpConfig, parseCanonicalMcpConfig } from '../mcp-config.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { resolveEcosystemOptions, skipResult } from './ecosystems.mts'
 
 import type {
   EcosystemStepOptions,
   EcosystemStepResult,
 } from './ecosystems.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 export interface McpSetupOptions extends EcosystemStepOptions {
   readonly kimiConfigPath?: string | undefined
@@ -75,12 +74,14 @@ export async function setupMcp(
   return { ok: true, skipped: false }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'bridges the committed .mcp.json authority to clients that do not discover it themselves',
-  help: 'Usage: pnpm run setup:mcp',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(async () => ((await setupMcp()).ok ? 0 : 1), SCRIPT_META)
+  setupMcp().then(
+    result => {
+      process.exitCode = result.ok ? 0 : 1
+    },
+    (error: unknown) => {
+      process.stderr.write(`${errorMessage(error)}\n`)
+      process.exitCode = 1
+    },
+  )
 }

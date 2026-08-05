@@ -56,9 +56,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { HOOK_TEST_DIRS, OWNS_RELOCATED_TESTS, REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -248,14 +245,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies every test-imported hook runs main() only behind the entrypoint guard',
-  help: `Usage: node scripts/fleet/check/hook-main-is-entrypoint-guarded.mts [flags]
-
-  --quiet  suppress the success message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

@@ -26,9 +26,6 @@ import {
 } from '../lib/enforcer-inventory.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 export interface EnforcementInventory {
   hooks: {
@@ -107,14 +104,6 @@ export function main(): void {
   )
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'emits the codifying-disciplines enforcement-surface inventory as a JSON envelope',
-  help: `Usage: node scripts/fleet/codify-scan/inventory.mts [flags]
-
-  --repo-root <path>  inventory the repo at <path> instead of this repo`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

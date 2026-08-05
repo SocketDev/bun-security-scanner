@@ -40,9 +40,6 @@ import process from 'node:process'
 import { parseArgs } from 'node:util'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 // The config is repo-owned: prefer the `.config/repo/` location, fall back to
 // the legacy top-level `.config/` path during the migration soak.
@@ -389,16 +386,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks lock-step header blocks agree byte-for-byte across every member of a quadruplet',
-  help: `Usage: node scripts/fleet/check/lock-step-headers-match.mts [flags]
-
-  --json        machine-readable findings
-  --quiet       silent on clean
-  --root <dir>  repo-root override (fixture-driven tests)`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

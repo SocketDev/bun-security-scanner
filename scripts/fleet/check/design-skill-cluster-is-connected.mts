@@ -19,8 +19,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -87,12 +85,9 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every interface-design cluster skill links to every peer skill',
-  help: 'Usage: node scripts/fleet/check/design-skill-cluster-is-connected.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((error: unknown) => {
+    logger.error(`design-skill-cluster-is-connected failed: ${String(error)}`)
+    process.exitCode = 1
+  })
 }

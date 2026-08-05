@@ -29,8 +29,6 @@ import {
   REPO_ROOT,
 } from './paths.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -135,14 +133,6 @@ function main(): void {
   logger.log(`Built ${path.relative(REPO_ROOT, OXLINT_PLUGIN_BUNDLE_PATH)}.`)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'rolldown-bundle the fleet oxlint plugin rules into .config/fleet/oxlint-plugin.mjs',
-  help: `Usage: node scripts/fleet/build-oxlint-bundle.mts [flags]
-
-  --check  exit 2 if the bundle is missing or older than the newest plugin source; does not rebuild`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

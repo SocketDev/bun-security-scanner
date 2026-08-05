@@ -27,9 +27,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { OWNS_RELOCATED_TESTS, REPO_ROOT } from '../paths.mts'
 import { fleetReposPath, parseFleetRepos } from './member-ci-fires-on-push.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -105,14 +102,8 @@ export function main(): void {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks no roster member exists as a stray directory nested in the wheelhouse root',
-  help: 'Usage: node scripts/fleet/check/member-dirs-are-not-nested.mts',
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }
 /* c8 ignore stop */

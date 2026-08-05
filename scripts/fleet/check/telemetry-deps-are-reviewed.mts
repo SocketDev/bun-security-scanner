@@ -27,9 +27,6 @@ import {
   telemetryScanSurface,
 } from '../lib/telemetry-scan.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -98,13 +95,6 @@ function main(): number {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks no lockfile or external tool ships an unreviewed telemetry SDK',
-  help: `Usage: node scripts/fleet/check/telemetry-deps-are-reviewed.mts [flags]
-  --quiet  suppress the success message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

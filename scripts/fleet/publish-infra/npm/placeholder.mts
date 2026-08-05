@@ -36,7 +36,6 @@ import process from 'node:process'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 
 import { isMainModule } from '../../_shared/is-main-module.mts'
-import { runMain } from '../../_shared/run-main.mts'
 import { runNpmWebAuth } from '../../npm-web-auth.mts'
 import { NAPI_TARGETS_DEFAULT } from '../../util/napi-targets.mts'
 import { logger } from '../shared.mts'
@@ -46,8 +45,6 @@ import {
   RUNNER_CONTEXT_ENV_VARS,
 } from './auth-posture.mts'
 import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
-
-import type { ScriptMeta } from '../../_shared/run-main.mts'
 
 // The reservation version lives with the POLICY that carves it out
 // (auth-posture.mts's PLACEHOLDER_RESERVATION_VERSION), not here — the
@@ -432,18 +429,11 @@ export async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'publishes minimal 0.0.0 npm name reservations so trusted publishing can be configured (local only)',
-  help: `Usage: node scripts/fleet/publish-infra/npm/placeholder.mts <name...> [flags]
-
-  --access <public|restricted>  the npm access level (default public)
-  --apply                       perform the publish (dry-run by default)
-  --napi-family                 expand each meta name into its napi family`,
-}
-
 // Entrypoint-guarded: importing this module (unit tests of its exported
 // helpers) must not execute the CLI.
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(errorMessage(e))
+    process.exitCode = 1
+  })
 }

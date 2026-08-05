@@ -27,9 +27,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { normalizePath } from '@socketsecurity/lib-stable/paths/normalize'
 
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -222,16 +219,8 @@ function main(): void {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies every gh-aw-generated workflow file maps to a declared .md source or a sanctioned emission',
-  help: `Usage: node scripts/fleet/check/gh-aw-emissions-are-declared.mts [flags]
-
-  --quiet  suppress the success message`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }
 /* c8 ignore stop */

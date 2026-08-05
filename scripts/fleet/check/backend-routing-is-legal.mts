@@ -35,9 +35,6 @@ import { globSync } from '@socketsecurity/lib-stable/globs/match'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -153,14 +150,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks that every multi-agent backend preference order names known, non-hybrid backends',
-  help: `Usage: node scripts/fleet/check/backend-routing-is-legal.mts [--quiet]
-
-  --quiet  suppress the success line`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

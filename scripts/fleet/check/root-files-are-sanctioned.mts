@@ -34,8 +34,6 @@ import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -237,14 +235,11 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe: 'check that every tracked repo-root entry is sanctioned',
-  help: `Usage: node scripts/fleet/check/root-files-are-sanctioned.mts [flags]
-  --quiet   suppress the success line`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(`root-files-are-sanctioned failed: ${String(e)}`)
+    process.exitCode = 1
+  })
 }
 /* c8 ignore stop */

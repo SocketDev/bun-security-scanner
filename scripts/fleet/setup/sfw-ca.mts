@@ -26,6 +26,9 @@ import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
+import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
+
 import {
   getSfwBinaryPath,
   getSfwCaCertPath,
@@ -41,7 +44,6 @@ import {
 } from '../../../.claude/hooks/fleet/_shared/sfw-ca.mts'
 import { resolveEcosystemOptions } from './ecosystems.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 
 import type { SfwCaDelivery } from '../../../.claude/hooks/fleet/_shared/sfw-ca.mts'
 import type {
@@ -49,8 +51,9 @@ import type {
   EcosystemStepResult,
   RunCommand,
 } from './ecosystems.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
+
+const mainLogger = getDefaultLogger()
 
 const STEP = 'setup:sfw-ca'
 
@@ -434,15 +437,22 @@ export function getSfwCaDirFor(certPath: string): string {
   return dir === '.' ? getSfwCaDir() : dir
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'creates the persistent Socket Firewall CA pair so non-Node clients stop failing TLS',
-  help: sfwCaHelpText(),
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(async () => {
-    const { force } = parseSfwCaArgs(process.argv.slice(2))
-    return (await setupSfwCa({ force })).ok ? 0 : 1
-  }, SCRIPT_META)
+  const { force, help } = parseSfwCaArgs(process.argv.slice(2))
+  if (help) {
+    mainLogger.log(sfwCaHelpText())
+    process.exitCode = 0
+  } else {
+    setupSfwCa({ force }).then(
+      result => {
+        if (!result.ok) {
+          process.exitCode = 1
+        }
+      },
+      (e: unknown) => {
+        mainLogger.error(errorMessage(e))
+        process.exitCode = 1
+      },
+    )
+  }
 }

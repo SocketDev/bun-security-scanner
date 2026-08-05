@@ -30,8 +30,6 @@ import process from 'node:process'
 import { REPO_ROOT } from '../paths.mts'
 import { hasFleetHookSource } from '../_shared/fleet-source-present.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 // Guards that MUST consult `isFleetTarget`, they lighten outside a fleet repo.
 // Sorted. Thread the detector into a guard, then add it here — the check fails
@@ -176,12 +174,6 @@ function main(): void {
   process.exit(1)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks convention guards consult the isFleetTarget detector and safety guards do not',
-  help: 'Usage: node scripts/fleet/check/convention-guards-consult-fleet-context.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

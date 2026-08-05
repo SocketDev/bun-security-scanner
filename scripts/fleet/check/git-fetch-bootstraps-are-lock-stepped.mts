@@ -27,9 +27,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -270,12 +267,11 @@ function main(): void {
   process.exitCode = runCheck(REPO_ROOT)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies the triplicated inline git-fetch bootstrap copies stay in lock-step',
-  help: 'Usage: node scripts/fleet/check/git-fetch-bootstraps-are-lock-stepped.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  try {
+    main()
+  } catch (e) {
+    logger.error(e)
+    process.exitCode = 1
+  }
 }

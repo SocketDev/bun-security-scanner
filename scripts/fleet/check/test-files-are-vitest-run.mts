@@ -38,11 +38,10 @@ import {
   readDeclaredTestCommands,
   resolveCommandCollection,
   RUNNER_LABELS,
+  TestConfigResolutionError,
 } from '../_shared/test-collection.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
 
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import type { RunnerId } from '../_shared/test-collection.mts'
 
 const logger = getDefaultLogger()
@@ -124,12 +123,12 @@ async function main(): Promise<void> {
   process.exit(0)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks vitest-collected test files register through the vitest API',
-  help: 'Usage: node scripts/fleet/check/test-files-are-vitest-run.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    if (e instanceof TestConfigResolutionError) {
+      logger.fail(`[test-files-are-vitest-run] ${e.message}`)
+      process.exit(1)
+    }
+    throw e
+  })
 }

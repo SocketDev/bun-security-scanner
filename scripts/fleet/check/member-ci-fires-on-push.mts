@@ -36,9 +36,6 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { OWNS_RELOCATED_TESTS, REPO_ROOT } from '../paths.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -215,14 +212,8 @@ export function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "checks every fleet member's ci.yml workflow actually fires on push — no dead CI",
-  help: 'Usage: node scripts/fleet/check/member-ci-fires-on-push.mts',
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }
 /* c8 ignore stop */

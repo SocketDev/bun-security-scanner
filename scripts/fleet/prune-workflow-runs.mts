@@ -43,9 +43,6 @@ import { REPO_ROOT } from './paths.mts'
 import { runCapture } from './publish-infra/shared.mts'
 import { createBackoff, sleep } from './_shared/backoff.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -481,6 +478,24 @@ export async function pruneRepo(
   return result
 }
 
+function printHelp(): void {
+  logger.log('Usage: node scripts/fleet/prune-workflow-runs.mts [options]')
+  logger.log('')
+  logger.log(
+    '  --all           prune every fleet roster repo (needs fleet-repos.json)',
+  )
+  logger.log('  --repo o/name   prune one repo (default: the current clone)')
+  logger.log(
+    `  --keep N        keep the newest N runs per present workflow (default ${KEEP_DEFAULT})`,
+  )
+  logger.log('  --days N        also delete runs older than N days')
+  logger.log(
+    '  --purge GLOB    purge every run of matching workflows (repeatable);',
+  )
+  logger.log(`                  built-in: ${PURGE_PATTERNS_DEFAULT.join(', ')}`)
+  logger.log('  --dry-run       report what would be deleted without deleting')
+}
+
 async function resolveTargetRepos(config: {
   all: boolean
   repo: string | undefined
@@ -526,12 +541,17 @@ async function main(): Promise<void> {
       all: { default: false, type: 'boolean' },
       days: { type: 'string' },
       'dry-run': { default: false, type: 'boolean' },
+      help: { default: false, type: 'boolean' },
       keep: { type: 'string' },
       purge: { multiple: true, type: 'string' },
       repo: { type: 'string' },
     },
     strict: false,
   })
+  if (values['help']) {
+    printHelp()
+    return
+  }
   const dryRun = !!values['dry-run']
   const rawDays =
     typeof values['days'] === 'string' ? values['days'] : undefined
@@ -636,21 +656,11 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe: 'prunes GitHub Actions workflow runs by the fleet retention policy',
-  help: `Usage: node scripts/fleet/prune-workflow-runs.mts [options]
-
-  --all           prune every fleet roster repo (needs fleet-repos.json)
-  --repo o/name   prune one repo (default: the current clone)
-  --keep N        keep the newest N runs per present workflow (default ${KEEP_DEFAULT})
-  --days N        also delete runs older than N days
-  --purge GLOB    purge every run of matching workflows (repeatable);
-                  built-in: ${PURGE_PATTERNS_DEFAULT.join(', ')}
-  --dry-run       report what would be deleted without deleting`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(e)
+    process.exitCode = 1
+  })
 }
 /* c8 ignore stop */

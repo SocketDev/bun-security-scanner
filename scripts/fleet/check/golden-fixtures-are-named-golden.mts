@@ -20,10 +20,7 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { goldenTarget } from '../../../.claude/hooks/fleet/_shared/golden-fixture-target.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -78,12 +75,6 @@ function main(): void {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies committed reference fixtures are named *.golden.json, never *.expected.json',
-  help: 'Usage: node scripts/fleet/check/golden-fixtures-are-named-golden.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

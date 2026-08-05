@@ -43,8 +43,6 @@ import {
 } from '../lib/coverage-badge.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -154,14 +152,6 @@ function main(): void {
   })
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks the repo coverage badge matches the latest coverage summary',
-  help: `Usage: node scripts/fleet/check/coverage-badge-is-current.mts [flags]
-
-  --quiet  suppress the pass message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

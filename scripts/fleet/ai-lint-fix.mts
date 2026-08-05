@@ -57,6 +57,7 @@ import path from 'node:path'
 import process from 'node:process'
 
 import { joinAnd } from '@socketsecurity/lib-stable/arrays/join'
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { runClaudeFix } from './ai-lint-fix/claude.mts'
@@ -78,8 +79,6 @@ import {
 } from './ai-lint-fix/rule-guidance.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
 import { installChildTeardown } from './_shared/process-lifecycle.mts'
-import { runMain } from './_shared/run-main.mts'
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 import type { AiCliProbe } from './ai-lint-fix/health.mts'
 
@@ -348,22 +347,14 @@ export async function main(): Promise<void> {
   )
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'AI-fix the lint findings left after the deterministic oxlint/oxfmt autofix pass',
-  help: `Usage: node scripts/fleet/ai-lint-fix.mts [flags]
-
-  --no-ai   skip the AI leg entirely (CI sets SKIP_AI_FIX=1 for the same effect)
-  --staged  lint the staged scope (forwarded to the lint runner)
-  --all     lint the whole tree (forwarded to the lint runner)
-
-Other flags pass through to \`pnpm run lint --json\` unchanged.`,
-}
-
 if (isMainModule(import.meta.url)) {
   // Wired here (not only in the parent fix.mts) so this process — spawned as
   // its own `node ai-lint-fix.mts` child — kills its OWN in-flight `claude`
   // grandchild if IT is killed or exits early. See _shared/process-lifecycle.mts.
   installChildTeardown()
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    const msg = errorMessage(e)
+    logger.error(`ai-lint-fix: ${msg}`)
+    process.exitCode = 1
+  })
 }

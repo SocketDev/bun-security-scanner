@@ -26,7 +26,6 @@ import { createInterface } from 'node:readline'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
 import {
   createTicketArgs,
   listTicketsArgs,
@@ -39,8 +38,6 @@ import {
   discoverWorkspaces,
   resolveWorkspace,
 } from './janus-multi-workspace.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -318,12 +315,6 @@ async function main(): Promise<void> {
   logger.info('[janus-multi-mcp] ready (stdio)')
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'serves a stdio MCP shim that routes Janus ticket tools across many repo queues',
-  help: 'Usage: node scripts/fleet/janus-multi-mcp.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  void main()
 }

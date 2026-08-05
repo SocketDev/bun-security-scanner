@@ -51,9 +51,6 @@ import {
 import type { DeclaredMirror } from '../lockstep/mirror-globs.mts'
 import { CONFIG_FLEET_DIR, REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -339,14 +336,6 @@ function main(): void {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every @lockstep-mirror marker pairs with a declared mirror row and every declared mirror is protected',
-  help: `Usage: node scripts/fleet/check/lockstep-mirror-markers-are-declared.mts [flags]
-
-  --quiet  silent on clean`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

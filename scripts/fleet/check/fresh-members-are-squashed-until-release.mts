@@ -43,6 +43,7 @@
 
 import process from 'node:process'
 
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 
@@ -55,7 +56,6 @@ import {
   probeMemberRelease,
   verifyFrozenZoneReachable,
 } from '../_shared/member-release-probe.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { OWNS_RELOCATED_TESTS, REPO_ROOT } from '../paths.mts'
 
 import type {
@@ -63,7 +63,6 @@ import type {
   FleetRoster,
 } from '../../../.claude/hooks/fleet/_shared/fleet-roster.mts'
 import type { MemberReleaseState } from '../_shared/member-release-probe.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -317,16 +316,13 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies released squash-history members keep their frozen release anchor reachable',
-  help: `Usage: node scripts/fleet/check/fresh-members-are-squashed-until-release.mts [flags]
-
-  --quiet  suppress the success message`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(
+      `fresh-members-are-squashed-until-release failed: ${errorMessage(e)}`,
+    )
+    process.exitCode = 1
+  })
 }
 /* c8 ignore stop */

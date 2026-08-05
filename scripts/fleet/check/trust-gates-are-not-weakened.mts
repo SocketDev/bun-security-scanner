@@ -36,9 +36,6 @@ import {
 import { checkGateFloors } from '../../../.claude/hooks/fleet/_shared/trust-gates.mts'
 import { PNPM_WORKSPACE_YAML, REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -226,14 +223,8 @@ export function main(): void {
   process.exit(1)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks the pnpm/npm trust-gate floors and tracked files for committed trust opt-outs',
-  help: 'Usage: node scripts/fleet/check/trust-gates-are-not-weakened.mts',
-}
-
 // Run only when invoked directly (CLI / CI), not when imported by unit tests
 // — main() calls process.exit, which would tear down the test runner.
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

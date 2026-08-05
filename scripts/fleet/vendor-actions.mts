@@ -36,15 +36,12 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { SOAK_DAYS } from './constants/soak.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
 import { writeThroughMirrorLock } from './_shared/mirror-lock.mts'
 import {
   portedUpstreams,
   upstreamSubmoduleName,
 } from './_shared/action-port-map.mts'
 import { REPO_ROOT } from './paths.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -503,15 +500,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'pins third-party GitHub Actions as upstream/ submodule references at their latest soaked release',
-  help: `Usage: node scripts/fleet/vendor-actions.mts [flags]
-
-  (no flags)  upsert .gitmodules to the latest soaked pins + stamp hashes
-  --check     exit 1 if any vendored action is behind its latest soaked release`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

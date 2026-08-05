@@ -48,9 +48,6 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 import { LINT_RULE_TEST_DIRS, REPO_ROOT } from './paths.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
 import { writeThroughMirrorLock } from './_shared/mirror-lock.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const PLUGIN_DIR = path.join(REPO_ROOT, '.config', 'fleet', 'oxlint-plugin')
 // Each rule is its own dir under the cascaded `fleet/` tier (mirrors
@@ -527,14 +524,7 @@ function main(): number {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'derives oxlint plugin registration + oxlintrc activation from the rule dir inventory',
-  help: `Usage: node scripts/fleet/sync-oxlint-rules.mts [flags]
-
-  --check  exit non-zero if either generated file would change; no write`,
-}
-
-if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+const invokedDirectly = isMainModule(import.meta.url)
+if (invokedDirectly) {
+  process.exitCode = main()
 }

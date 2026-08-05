@@ -50,6 +50,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import { FLEET_CATALOG_YAML, PNPM_WORKSPACE_YAML, REPO_ROOT } from './paths.mts'
@@ -68,8 +69,6 @@ import {
   resolveScopeMode,
 } from './_shared/scope-flags.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const WIN32 = process.platform === 'win32'
 const logger = getDefaultLogger()
@@ -167,6 +166,10 @@ Mutating runs hold the repo-scoped fixer lock; one fixer per tree at a time.`
 export async function main(
   argv: string[] = process.argv.slice(2),
 ): Promise<void> {
+  if (argv.includes('-h') || argv.includes('--help')) {
+    logger.log(FIX_USAGE)
+    return
+  }
   // Clean-scope early exit: scoped (non---all) runs with nothing in scope
   // skip the whole fixer chain. The release-pipeline preflight and repeated
   // interactive `pnpm run fix` calls hit this path constantly.
@@ -341,16 +344,13 @@ async function runFixers(argv: string[]): Promise<void> {
   process.exitCode = verifyCode !== 0 ? verifyCode : doctorCode
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'auto-fix the scoped tree: lint --fix, security tools, fleet doctor, then the AI residue pass',
-  help: FIX_USAGE,
-}
-
 // Entrypoint-guarded: importing this module (unit tests of its exported
 // helpers) must not execute the script, and must not register real process
 // signal handlers.
 if (isMainModule(import.meta.url)) {
   installChildTeardown()
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(errorMessage(e))
+    process.exitCode = 1
+  })
 }

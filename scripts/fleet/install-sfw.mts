@@ -54,6 +54,7 @@ import {
   writeBinaryCacheMetadata,
 } from '@socketsecurity/lib-stable/dlx/binary-cache'
 import { generateCacheKey } from '@socketsecurity/lib-stable/dlx/cache'
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { safeDelete, safeMkdirSync } from '@socketsecurity/lib-stable/fs/safe'
 import { getGitHubToken } from '@socketsecurity/lib-stable/github/token'
 import { httpDownload } from '@socketsecurity/lib-stable/http-request/download'
@@ -68,9 +69,6 @@ import { SFW_CA_FILENAMES } from '../../.claude/hooks/fleet/_shared/sfw-ca.mts'
 import { REPO_ROOT } from './paths.mts'
 import { sfwFlavorFor, sfwRackDirName } from './setup/lib/bootstrap-common.mjs'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -537,16 +535,9 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'installs Socket Firewall (sfw) into the Socket _dlx cache with rack + PATH handles',
-  help: `Usage: pnpm run install:sfw [flags]
-
-  --enterprise  install the enterprise flavor (needs SOCKET_API_KEY or SOCKET_API_TOKEN plus GITHUB_TOKEN / GH_TOKEN)
-  --force       ignore the cache and redownload
-  --quiet       suppress the success summary`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(errorMessage(e))
+    process.exitCode = 1
+  })
 }

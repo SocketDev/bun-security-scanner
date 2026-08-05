@@ -17,9 +17,6 @@ import { LOCKSTEP_SCHEMA, REPO_ROOT } from '../paths.mts'
 import { LockstepManifestSchema } from './schema.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { writeThroughMirrorLock } from '../_shared/mirror-lock.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -58,12 +55,6 @@ export async function main(): Promise<void> {
   logger.success(`wrote ${path.relative(rootDir, outPath)}`)
 }
 
-// Shared with the lockstep-emit-schema.mts entry shim.
-export const SCRIPT_META: ScriptMeta = {
-  describe: 'emits .config/fleet/lockstep.schema.json from the TypeBox schema',
-  help: 'Usage: pnpm run lockstep:emit-schema',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  void main()
 }

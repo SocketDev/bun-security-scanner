@@ -32,6 +32,7 @@
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import process from 'node:process'
 
 import { getCI } from '@socketsecurity/lib-stable/env/ci'
 import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
@@ -41,9 +42,6 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { DISPATCH_DIR, REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -242,12 +240,6 @@ function main(): number {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies the opted-in hook V8 snapshot is wired, builds, boots, and matches the baseline dispatch',
-  help: 'Usage: node scripts/fleet/check/hook-snapshot-is-wired.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  process.exitCode = main()
 }

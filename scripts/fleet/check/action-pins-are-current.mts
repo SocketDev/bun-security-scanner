@@ -46,9 +46,6 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { writeThroughMirrorLock } from '../_shared/mirror-lock.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -543,7 +540,7 @@ const cliGit: GitRunner = {
   },
 }
 
-function main(): void {
+export function main(): void {
   const quiet = process.argv.includes('--quiet')
   const fix = process.argv.includes('--fix')
   let units: Map<string, Unit>
@@ -624,15 +621,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks that internal GitHub Action / reusable-workflow SHA pins are current',
-  help: `Usage: node scripts/fleet/check/action-pins-are-current.mts [--fix] [--quiet]
-
-  --fix    repin stale entries to the base branch HEAD
-  --quiet  suppress the success line`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

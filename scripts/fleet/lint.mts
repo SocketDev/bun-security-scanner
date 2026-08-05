@@ -51,10 +51,7 @@ import {
 } from './_shared/scope-flags.mts'
 import type { ScopeMode } from './_shared/scope-flags.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
 import { WIN32 } from '@socketsecurity/lib-stable/constants/platform'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 // Re-exported for existing consumers (test/repo/unit/lint.test.mts) — the
 // canonical definition lives in _shared/scope-flags.mts so fix.mts can reuse
@@ -287,19 +284,7 @@ function runLint(): void {
   lintFileSet(mode, files)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'lints the chosen scope with oxlint + oxfmt (modified files by default)',
-  help: `Usage: pnpm run lint [flags] [files...]
-
-  [files...]           lint exactly these files (wins over every scope flag)
-  --modified, --changed  lint files modified vs HEAD (the default)
-  --staged             lint files in the git index (pre-commit path)
-  --all                lint the entire workspace
-  --fix                auto-fix issues
-  --quiet, --silent    suppress progress output`,
-}
-
-if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+const invokedDirectly = isMainModule(import.meta.url)
+if (invokedDirectly) {
+  main()
 }

@@ -37,20 +37,18 @@ import path from 'node:path'
 import process from 'node:process'
 
 import { WIN32 } from '@socketsecurity/lib-stable/constants/platform'
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { httpRequest } from '@socketsecurity/lib-stable/http-request'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { isMainModule } from '../../_shared/is-main-module.mts'
-import { runMain } from '../../_shared/run-main.mts'
 import { REPO_ROOT } from '../../paths.mts'
 import { buildPtyInvocation, runCapture } from '../shared.mts'
 import { resolvePinnedNpm } from './pinned-npm.mts'
 import { desiredTrustedPublisher } from './trusted-publisher-plan.mts'
 import type { TrustedPublisherDesired } from './trusted-publisher-plan.mts'
 import { resolveNpmWorkspaceLayout } from './workspace.mts'
-
-import type { ScriptMeta } from '../../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -798,15 +796,9 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'configures npm trusted publishers for workspace packages through the npm trust registry API',
-  help: `Usage: node scripts/fleet/publish-infra/npm/trust.mts [<pkg>…] [flags]
-
-  --apply              perform the writes and verify each (dry-run by default)
-  --repo <owner/name>  override the repository the trusted publisher binds to`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(errorMessage(e))
+    process.exitCode = 1
+  })
 }

@@ -20,9 +20,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -85,14 +82,6 @@ export function main(): number {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies the headroom proxy hook starts with both lossless flags set',
-  help: `Usage: node scripts/fleet/check/headroom-proxy-is-lossless.mts [flags]
-
-  --quiet  suppress the success message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  process.exitCode = main()
 }

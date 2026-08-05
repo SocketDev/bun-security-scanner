@@ -39,8 +39,6 @@ import {
 } from '../../../.claude/hooks/fleet/_shared/dated-citation.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -164,12 +162,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe: 'check that rule citations are generic, not dated incident logs',
-  help: `Usage: node scripts/fleet/check/rule-citations-are-generic.mts [flags]
-  --quiet   suppress the success line`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

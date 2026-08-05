@@ -71,10 +71,7 @@ import {
   resolveRepoName,
 } from '../../../.claude/hooks/fleet/_shared/fleet-roster.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -346,12 +343,6 @@ export function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies floating action alias tags track the newest release on their line',
-  help: 'Usage: node scripts/fleet/check/github-action-aliases-are-not-frozen.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

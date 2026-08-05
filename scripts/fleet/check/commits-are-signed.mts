@@ -23,8 +23,6 @@ import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -175,12 +173,9 @@ async function main(): Promise<void> {
   process.exitCode = await runCheck(REPO_ROOT)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every commit ahead of the tracked base carries a valid signature',
-  help: 'Usage: node scripts/fleet/check/commits-are-signed.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(e)
+    process.exitCode = 1
+  })
 }

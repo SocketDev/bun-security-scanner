@@ -18,9 +18,6 @@ import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { envWithExecutableFirst } from '../lib/ensure-node.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -86,12 +83,6 @@ export function main(): void {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks package-manager child processes resolve the same Node runtime as the fleet entrypoint',
-  help: 'Usage: node scripts/fleet/check/package-manager-node-is-continuous.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

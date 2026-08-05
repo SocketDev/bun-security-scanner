@@ -43,11 +43,9 @@ import {
   isCopyleftSparsePatternAllowed,
 } from '../../../.claude/hooks/fleet/_shared/copyleft-upstreams.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
 
 import type { CopyleftUpstream } from '../../../.claude/hooks/fleet/_shared/copyleft-upstreams.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -299,16 +297,11 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every copyleft upstream on disk is present as a tests-only slice',
-  help: `Usage: node scripts/fleet/check/copyleft-slices-are-tests-only.mts [flags]
-
-  --quiet  suppress the pass message`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(`copyleft-slices-are-tests-only failed: ${String(e)}`)
+    process.exitCode = 1
+  })
 }
 /* c8 ignore stop */

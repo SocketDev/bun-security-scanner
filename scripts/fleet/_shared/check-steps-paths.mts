@@ -503,10 +503,6 @@ export function buildPathsAndSupplyChainSteps(): CheckStep[] {
     // Every fleet/repo CLI entrypoint must FAIL SOFT (use runMain / a .catch),
     // never crash the user with a raw unhandled-rejection stack trace.
     () => run('node', ['scripts/fleet/check/entry-scripts-are-fail-soft.mts']),
-    // Every fleet/repo CLI entrypoint must SELF-DESCRIBE: runMain(main, meta)
-    // so --describe and -h/--help print purpose/usage instead of running the
-    // script's side effect.
-    () => run('node', ['scripts/fleet/check/entry-scripts-self-describe.mts']),
     // No committed dependency spec resolves through a local filesystem path
     // the repo does not carry: a hand-written `link:`/`file:` spec in a
     // package.json dependency block, or a pnpm-GENERATED lockfile `link:`

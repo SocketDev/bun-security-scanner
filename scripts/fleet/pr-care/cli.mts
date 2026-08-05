@@ -26,7 +26,6 @@ import process from 'node:process'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 
 import {
   collectBotFeedback,
@@ -40,8 +39,6 @@ import {
 import { rebaseAndPush, runGit, squashToOne, worktreeFor } from './branch.mts'
 import { checksVerdict, parseChecksOutput, pollChecks } from './checks.mts'
 import { ghRestJson, runGh } from './gh.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -338,21 +335,8 @@ export async function runPrCare(argv: readonly string[]): Promise<number> {
   return command(args)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'tends a stack of open PRs: lists, rebases, squashes, polls checks, and collapses bot comments',
-  help: `Usage: node scripts/fleet/pr-care/cli.mts <subcommand> --repo <owner/name> [--checkout <dir>]
-
-  list                     my open PRs + base/check/bot state
-  bots <n>                 bot feedback on one PR, classified
-  reply <n> --comment-id <id> --body-file <f>
-  collapse <n> --comment-id <id> [--review-node <nid>]
-  collapse-duplicates <n>  minimize staging-twin bot comments
-  rebase [<n> ...]         base-update via local rebase + lease push
-  squash <n>               one signed commit on origin/<base>
-  checks [<n> ...]         poll to conclusion, report reds`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(() => runPrCare(process.argv.slice(2)), SCRIPT_META)
+  void runPrCare(process.argv.slice(2)).then(code => {
+    process.exitCode = code
+  })
 }

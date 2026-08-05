@@ -21,7 +21,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { runDocsArtifact } from '../lib/api-docs/docs-artifact.mts'
 import { sortApiGroupKeys } from '../lib/api-docs/export-rows.mts'
 
@@ -104,14 +103,6 @@ export async function main(): Promise<number> {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "generate the root llms.txt, the publish-safe index of a package's exported subpaths",
-  help: `Usage: node scripts/fleet/gen/llms-txt.mts [flags]
-  --check  compare the committed file against a fresh render; exit 1 when stale
-  --quiet  suppress the skip / success line; failures still print`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

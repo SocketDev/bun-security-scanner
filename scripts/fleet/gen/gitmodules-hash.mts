@@ -36,8 +36,6 @@ import { httpRequest } from '@socketsecurity/lib-stable/http-request'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -858,12 +856,9 @@ async function main(): Promise<void> {
   process.exitCode = 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'set, generate, or verify the .gitmodules content-hash pin comments',
-  help: USAGE,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(`gen/gitmodules-hash: ${errorMessage(e)}`)
+    process.exitCode = 1
+  })
 }

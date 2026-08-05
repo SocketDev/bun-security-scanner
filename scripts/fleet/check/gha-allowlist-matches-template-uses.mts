@@ -29,6 +29,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
@@ -38,9 +39,6 @@ import {
 } from '../../../.claude/skills/fleet/auditing-gha/canonical-patterns.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -272,12 +270,11 @@ export function runCheck(
   return 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'verifies the canonical GitHub Actions allowlist stays in lock-step with the template workflow uses',
-  help: 'Usage: node scripts/fleet/check/gha-allowlist-matches-template-uses.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(() => runCheck(REPO_ROOT), SCRIPT_META)
+  try {
+    process.exitCode = runCheck(REPO_ROOT)
+  } catch (e) {
+    logger.error(e)
+    process.exitCode = 1
+  }
 }

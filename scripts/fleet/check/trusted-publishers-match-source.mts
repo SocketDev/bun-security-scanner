@@ -45,11 +45,8 @@ import {
   resolveRepoName,
 } from '../../../.claude/hooks/fleet/_shared/fleet-roster.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { runNpmWebAuth } from '../npm-web-auth.mts'
 import { REPO_ROOT } from '../paths.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -380,14 +377,8 @@ export default async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "checks each published package's npm trusted-publisher binding names the repo that publishes it",
-  help: 'Usage: node scripts/fleet/check/trusted-publishers-match-source.mts [<pkg>…]',
-}
-
 // Guarded: trust-sweep.mts imports `expectedRepositoryFor` from here, and a
 // bare call would run the whole check on import.
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  void main()
 }

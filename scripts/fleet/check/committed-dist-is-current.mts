@@ -64,8 +64,6 @@ import {
   resolveRepoName,
 } from '../../../.claude/hooks/fleet/_shared/fleet-roster.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
 
 const logger = getDefaultLogger()
@@ -287,15 +285,6 @@ export function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks the committed dist/ bundle is not provably stale against src/',
-  help: `Usage: node scripts/fleet/check/committed-dist-is-current.mts [flags]
-
-  --dist <dir>  bundle directory to compare (default: dist)
-  --src <dir>   source directory to compare (default: src)`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

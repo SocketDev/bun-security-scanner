@@ -93,8 +93,6 @@ import type { BumpLevel, ConventionalCommit } from './lib/changelog.mts'
 import type { ReleaseDerivation, ReleaseLane } from './lib/release-anchor.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
 import { writeThroughMirrorLock } from './_shared/mirror-lock.mts'
-import { runMain } from './_shared/run-main.mts'
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 const rootPath = REPO_ROOT
@@ -874,12 +872,9 @@ async function main(): Promise<void> {
   )
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'derive the next version from the conventional commits since the last release, write package.json + CHANGELOG.md, and commit the bump',
-  help: BUMP_USAGE,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(e)
+    process.exitCode = 1
+  })
 }

@@ -44,9 +44,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -155,14 +152,9 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks that every baseline catalog: dep is covered by an expected or optional catalog entry',
-  help: `Usage: node scripts/fleet/check/baseline-catalog-deps-are-covered.mts [--quiet]
-
-  --quiet  suppress the success line`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(`[baseline-catalog-deps-are-covered] error: ${e}`)
+    process.exitCode = 1
+  })
 }

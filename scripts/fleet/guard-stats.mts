@@ -18,8 +18,6 @@ import process from 'node:process'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-import type { ScriptMeta } from './_shared/run-main.mts'
 import { REPO_ROOT } from './paths.mts'
 
 const logger = getDefaultLogger()
@@ -158,13 +156,6 @@ export function main(): number {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'aggregate the guard-event log into per-hook precision and retry-suspect stats',
-  help: `Usage: node scripts/fleet/guard-stats.mts [flags]
-  --json  print the stats as JSON`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  process.exitCode = main()
 }

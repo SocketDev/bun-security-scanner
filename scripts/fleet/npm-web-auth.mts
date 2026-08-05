@@ -58,8 +58,6 @@ import { isMainModule } from './_shared/is-main-module.mts'
 import { runMain } from './_shared/run-main.mts'
 import { npmScratchCwd } from './publish-infra/npm/shared.mts'
 
-import type { ScriptMeta } from './_shared/run-main.mts'
-
 const logger = getDefaultLogger()
 
 // Operations that carry NO package/repo context — auth and registry-settings
@@ -477,9 +475,9 @@ function usage(): string {
 
 async function main(): Promise<number> {
   const argv = process.argv.slice(2)
-  if (argv.length === 0) {
+  if (argv.length === 0 || argv[0] === '--help' || argv[0] === '-h') {
     logger.log(usage())
-    return 2
+    return argv.length === 0 ? 2 : 0
   }
   return runNpmWebAuth({
     argv,
@@ -489,12 +487,6 @@ async function main(): Promise<number> {
   })
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'runs an npm write operation under a PTY so the browser 2FA web-auth flow works without a TTY',
-  help: usage(),
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

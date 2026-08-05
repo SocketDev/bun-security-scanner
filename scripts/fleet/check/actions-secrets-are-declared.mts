@@ -59,10 +59,7 @@ import {
   selectRepos,
   unmatchedSelectorMessage,
 } from '../_shared/repo-filter.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { fleetReposPath, parseFleetRepos } from './member-ci-fires-on-push.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import type { FleetRepo } from './member-ci-fires-on-push.mts'
 
 const logger = getDefaultLogger()
@@ -369,16 +366,8 @@ export function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "audits every fleet repo's GitHub Actions secret and variable names against the declared law",
-  help: `Usage: node scripts/fleet/check/actions-secrets-are-declared.mts [--repo <name>]
-
-  --repo <name>  narrow the sweep to named roster repos (repeatable; comma-separated values allowed)`,
-}
-
 /* c8 ignore start - entrypoint guard; exercised via subprocess */
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }
 /* c8 ignore stop */

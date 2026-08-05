@@ -54,9 +54,6 @@ import {
 } from '../util/pack-app-triplets.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -447,12 +444,11 @@ function main(): void {
   process.exitCode = runCheck(REPO_ROOT)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "checks every per-platform package tail matches its dot-named target's naming domain",
-  help: 'Usage: node scripts/fleet/check/platform-tails-match-naming-domain.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  try {
+    main()
+  } catch (e) {
+    logger.error(e)
+    process.exitCode = 1
+  }
 }

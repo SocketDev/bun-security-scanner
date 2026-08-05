@@ -27,9 +27,6 @@ import {
   SPARKLE_DISABLE_KEYS,
 } from '../../../.claude/hooks/fleet/_shared/sparkle-auto-update.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -72,12 +69,6 @@ export function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every Sparkle-shipping macOS tool app has auto-update disabled',
-  help: 'Usage: node scripts/fleet/check/sparkle-auto-update-is-disabled.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

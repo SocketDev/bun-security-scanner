@@ -31,15 +31,12 @@ import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { isMainModule } from '../../_shared/is-main-module.mts'
-import { runMain } from '../../_shared/run-main.mts'
 import { extractNpmAuthUrl } from '../../npm-web-auth.mts'
 import { expectedRepositoryFor } from '../../check/trusted-publishers-match-source.mts'
 import { logger, runCapture } from '../shared.mts'
 import { npmScratchCwd } from './shared.mts'
 import { sleep } from './browser-session.mts'
 import { expandSocketRegistryWorklist } from './trusted-publisher-browser.mts'
-
-import type { ScriptMeta } from '../../_shared/run-main.mts'
 
 // The fleet law for @socketregistry packages, stated once.
 const LAW = {
@@ -387,16 +384,9 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'bulk-sweeps npm trusted-publisher configs into fleet law via the npm trust registry lane',
-  help: `Usage: node scripts/fleet/publish-infra/npm/trust-sweep.mts [<pkg>…] [flags]
-
-  --drive            perform revoke + create (dry-run by default)
-  --socket-registry  expand the @socketregistry worklist into the package list
-  --repo <owner/name>  override the repository the law binds to`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(errorMessage(e))
+    process.exitCode = 1
+  })
 }

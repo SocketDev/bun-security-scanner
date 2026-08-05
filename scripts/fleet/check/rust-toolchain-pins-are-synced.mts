@@ -28,8 +28,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { writeThroughMirrorLock } from '../_shared/mirror-lock.mts'
 
 const logger = getDefaultLogger()
@@ -223,13 +221,11 @@ function main(): void {
   process.exitCode = runCheck(REPO_ROOT, { fix: !!values['fix'] })
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'check that derived Rust toolchain pins match the canonical channel',
-  help: `Usage: node scripts/fleet/check/rust-toolchain-pins-are-synced.mts [flags]
-  --fix   rewrite drifted derived copies to the canonical pin`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  try {
+    main()
+  } catch (e) {
+    logger.error(e)
+    process.exitCode = 1
+  }
 }

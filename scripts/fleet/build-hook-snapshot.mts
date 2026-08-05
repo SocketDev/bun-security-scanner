@@ -52,8 +52,6 @@ import {
   liftMirrorLockSync,
   writeThroughMirrorLock,
 } from './_shared/mirror-lock.mts'
-import { runMain } from './_shared/run-main.mts'
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -216,12 +214,6 @@ function main(): void {
   pruneStaleBlobs(blobOut)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'build the V8 startup-snapshot variant of the fleet hook dispatch bundle',
-  help: 'Usage: node scripts/fleet/build-hook-snapshot.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

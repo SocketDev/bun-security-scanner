@@ -49,8 +49,6 @@ import type {
 } from './browser-session.mts'
 import { logger } from '../shared.mts'
 import { isMainModule } from '../../_shared/is-main-module.mts'
-import { runMain } from '../../_shared/run-main.mts'
-import type { ScriptMeta } from '../../_shared/run-main.mts'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 
 /**
@@ -247,14 +245,9 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'reads the npm account-settings inventory through a signed-in browser session, redacting every payload',
-  help: `Usage: node scripts/fleet/publish-infra/npm/account-inventory-read.mts [flags]
-
-  --json  emit the redacted inventory as JSON instead of the human summary`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(errorMessage(e))
+    process.exitCode = 1
+  })
 }

@@ -21,9 +21,6 @@ import {
 } from '../mcp-config.mts'
 import type { PortableMcpServers } from '../mcp-config.mts'
 import { REPO_ROOT } from '../paths.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -108,12 +105,6 @@ export function findMcpClientConfigIssues(repoRoot: string): string[] {
   return issues
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks generated MCP client configs (Codex/OpenCode/Kimi) match the canonical .mcp.json',
-  help: 'Usage: node scripts/fleet/check/mcp-client-configs-are-current.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

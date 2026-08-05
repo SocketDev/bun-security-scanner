@@ -55,9 +55,6 @@ import {
 import type { ApplyConfig, ApplyResult } from './auto-bump-apply.mts'
 import type { Report, VersionPinReport } from './types.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 export {
   applyBump,
@@ -491,19 +488,6 @@ export function main(argv: readonly string[]): number {
   return 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'resolves version-pin auto-bumps from a lockstep drift report and lands approved ones',
-  help: `Usage: node scripts/fleet/lockstep/auto-bump.mts <mode> [flags]
-
-  --plan --report <lockstep.json|->  plan bumps from a report (stdin via -)
-    --tags <tags.json>               upstream tag list override
-    --manifest <lockstep.json>       manifest path override
-    --json                           machine-readable plan output
-  --apply --id <row-id> (--target-tag <tag> | --target-sha <sha>)
-    --manifest <lockstep.json>       manifest path override`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(() => main(process.argv.slice(2)), SCRIPT_META)
+  process.exitCode = main(process.argv.slice(2))
 }

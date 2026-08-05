@@ -32,10 +32,7 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 // the golden-fixture-naming-guard predicate.
 import { NATIVE_HANDLER_FILES } from '../../../.claude/hooks/fleet/_shared/native-handler-files.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 // Re-exported so consumers + tests can read the native-handler set from the belt
 // scan too, the write-time guard remains its single owner.
@@ -339,12 +336,11 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every template/base file is classified into exactly one distribution channel',
-  help: 'Usage: node scripts/fleet/check/wheelhouse-controlled-files-are-classified.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.fail(
+      `wheelhouse-controlled-files-are-classified failed: ${String(e)}`,
+    )
+    process.exitCode = 1
+  })
 }

@@ -36,8 +36,6 @@ import type { Page } from 'playwright-core'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 
 import { isMainModule } from '../../_shared/is-main-module.mts'
-import { runMain } from '../../_shared/run-main.mts'
-import type { ScriptMeta } from '../../_shared/run-main.mts'
 import { logger, rootPath, runCapture } from '../shared.mts'
 import { openNpmBrowserSession } from './browser-session.mts'
 import type {
@@ -424,19 +422,11 @@ export async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'reads and mass-applies the canonical npm trusted-publisher config by driving the access page in a signed-in browser',
-  help: `${USAGE}
-
-  --socket-registry   expand the worklist to every published @socketregistry package
-  --drive             fill and save the form (apply is dry-run by default)
-  --repo <owner/name> override the repository the config binds to
-  --profile-dir <dir> use another browser profile directory`,
-}
-
 // Entrypoint-guarded: importing this module (unit tests of its exported
 // helpers) must not launch a browser.
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(errorMessage(e))
+    process.exitCode = 1
+  })
 }

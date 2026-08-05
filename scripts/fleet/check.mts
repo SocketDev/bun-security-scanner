@@ -16,6 +16,7 @@ import path from 'node:path'
 import process from 'node:process'
 
 import { getCI } from '@socketsecurity/lib-stable/env/ci'
+import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 
@@ -24,9 +25,6 @@ import { discoverRepoChecks } from './_shared/repo-checks.mts'
 import { isScopeFlag } from './_shared/scope-flags.mts'
 import { REPO_ROOT } from './paths.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 export { buildSteps, run }
 
@@ -286,17 +284,9 @@ export async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'runs the unified fleet check suite — scoped lint, full type check, path hygiene, and every registered check',
-  help: `Usage: pnpm run check [--all | --staged | --changed | --modified] [--fix] [--quiet] [--release]
-
-  --all | --staged | --changed | --modified  lint scope forwarded to lint.mts (default: modified)
-  --fix      run the mutating fixer steps serially instead of the read-only pool
-  --quiet    forwarded to lint.mts
-  --release  include the release/CI-only checks (CI sets this implicitly)`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch((e: unknown) => {
+    logger.error(errorMessage(e))
+    process.exitCode = 1
+  })
 }

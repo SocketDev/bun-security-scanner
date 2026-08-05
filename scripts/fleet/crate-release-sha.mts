@@ -19,9 +19,6 @@ import { gunzipSync } from 'node:zlib'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const CRATES_IO_ORIGIN = 'https://crates.io'
 const MAX_REDIRECTS = 5
@@ -309,15 +306,6 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'prints the git commit Cargo recorded in a published crates.io archive',
-  help: `Usage: node scripts/fleet/crate-release-sha.mts <crate> [flags]
-
-  --version <x.y.z>  read the named published version instead of the newest
-  --json             emit the full release info as JSON`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  void main()
 }

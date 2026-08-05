@@ -47,8 +47,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { normalizePath } from '@socketsecurity/lib-stable/paths/normalize'
 
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { REPO_ROOT } from '../paths.mts'
 
 const logger = getDefaultLogger()
@@ -384,15 +382,8 @@ export function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'check that playwright launches go through the sanctioned session module',
-  help: `Usage: node scripts/fleet/check/playwright-launches-are-sanctioned.mts [flags]
-  --quiet   suppress the success line`,
-}
-
 // Entrypoint-guarded so importing this module for a unit test of its pure
 // scanner does not run the scan.
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

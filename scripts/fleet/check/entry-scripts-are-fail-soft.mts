@@ -32,7 +32,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -233,12 +232,6 @@ function main(): number {
   return 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks every CLI entry script fails soft and guards its module-scope main',
-  help: 'Usage: node scripts/fleet/check/entry-scripts-are-fail-soft.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

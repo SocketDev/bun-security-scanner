@@ -51,9 +51,6 @@ import type {
 } from './lib/gh-aw-action-pin-soak.mts'
 import { REPO_ROOT } from './paths.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const DAY_MS = 86_400_000
 
@@ -485,14 +482,6 @@ function main(): void {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'recompiles gh-aw workflow sources to refresh action/container SHA pins under the soak gate',
-  help: `Usage: node scripts/fleet/sync-gh-aw-action-pins.mts [flags]
-
-  --quiet  suppress the clean-state line`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

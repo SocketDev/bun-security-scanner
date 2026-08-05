@@ -26,13 +26,10 @@ import process from 'node:process'
 
 import { readStdin } from '../../../.claude/hooks/fleet/_shared/transcript.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import {
   extractEditedTargets,
   findBlockedTarget,
 } from './fleet-fork-detect.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 /**
  * Render the PreToolUse deny decision for a blocked edit (Codex + Kimi share
@@ -100,15 +97,6 @@ export async function runPreToolUseHook(): Promise<void> {
   process.stdout.write(`${renderPreToolUseDeny(blocked.message)}\n`)
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'cross-CLI PreToolUse shim that denies edits to fleet-canonical files in a member repo',
-  help: `Usage: node scripts/fleet/cross-cli/pretooluse-hook.mts
-
-Reads a PreToolUse JSON payload on stdin (Codex / Kimi hook contract) and
-prints a deny decision when the edit targets a fleet-canonical file.`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(runPreToolUseHook, SCRIPT_META)
+  void runPreToolUseHook()
 }

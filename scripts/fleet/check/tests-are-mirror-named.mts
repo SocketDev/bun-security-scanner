@@ -38,9 +38,6 @@ import { REPO_ROOT } from '../paths.mts'
 import { normalizePath } from '@socketsecurity/lib-stable/paths/normalize'
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { writeThroughMirrorLock } from '../_shared/mirror-lock.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -328,14 +325,6 @@ function main(): number {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe: 'checks every unit test file mirrors the one source it tests',
-  help: `Usage: node scripts/fleet/check/tests-are-mirror-named.mts [flags]
-  --strict  fail (exit 1) on violations not in the baseline
-  --update  rewrite the baseline down as legacy tests conform
-  --quiet   suppress the success message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

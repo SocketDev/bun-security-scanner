@@ -38,9 +38,6 @@ import {
   TEST_REPO_DIR,
 } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -216,13 +213,6 @@ function main(): void {
   )
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'reports shared hook-layer exports that no in-repo consumer references',
-  help: `Usage: node scripts/fleet/check/shared-hook-helpers-are-used.mts [flags]
-  --quiet  suppress the success message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

@@ -14,9 +14,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 
 import { isMainModule } from './_shared/is-main-module.mts'
-import { runMain } from './_shared/run-main.mts'
-
-import type { ScriptMeta } from './_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -44,12 +41,9 @@ export async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'runs the post-install prepare steps (installs the fleet git hooks)',
-  help: 'Usage: node scripts/fleet/prepare.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main().catch(error => {
+    logger.error(`prepare failed: ${errorMessage(error)}`)
+    process.exitCode = 1
+  })
 }

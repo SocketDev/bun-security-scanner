@@ -48,8 +48,6 @@ export {
   resolveHookBundleOut,
 } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { writeThroughMirrorLock } from '../_shared/mirror-lock.mts'
 
 /**
@@ -374,13 +372,6 @@ function main(): void {
   )
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'generate the static hook dispatch table the rolldown hook bundle is built from',
-  help: `Usage: node scripts/fleet/gen/hook-dispatch.mts [flags]
-  --check  exit 2 when the on-disk table differs from freshly generated`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

@@ -22,9 +22,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { FLEET_ENV } from '../../../.claude/hooks/fleet/_shared/fleet-env.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -170,12 +167,6 @@ async function main(): Promise<void> {
   process.exitCode = 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks any workflow that sets a FLEET_ENV knob sets the complete fleet env list',
-  help: 'Usage: node scripts/fleet/check/workflow-envs-have-full-fleet-env.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  void main()
 }

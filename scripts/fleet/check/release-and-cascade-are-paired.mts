@@ -28,8 +28,6 @@ import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -173,13 +171,6 @@ function main(): void {
   process.exitCode = 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'check that the pinned cascade SHA is paired with its matching release',
-  help: `Usage: node scripts/fleet/check/release-and-cascade-are-paired.mts [flags]
-  --quiet   suppress the success line`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

@@ -27,9 +27,6 @@ import {
 import { CONFIG_FLEET_DIR, REPO_ROOT } from '../paths.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { writeThroughMirrorLock } from '../_shared/mirror-lock.mts'
-import { runMain } from '../_shared/run-main.mts'
-
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -56,13 +53,6 @@ export function main(): void {
   )
 }
 
-// Shared with the lockstep-emit-mirror-globs.mts entry shim.
-export const SCRIPT_META: ScriptMeta = {
-  describe:
-    'regenerates the lockstep-mirrors block in .config/fleet/.prettierignore from the manifest',
-  help: 'Usage: pnpm run lockstep:emit-mirror-globs',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  main()
 }

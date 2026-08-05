@@ -48,8 +48,6 @@ import { planGithubUpdate } from './github.mts'
 import { REPO_ROOT } from '../paths.mts'
 import { isSoakExcluded, readSoakRules } from '../soak-rules.mts'
 import type { SoakRules } from '../soak-rules.mts'
-import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 
 // Inline soak-bypass annotation: a version adopted while still inside the 7-day
@@ -121,7 +119,7 @@ export function isGithubTool(t: Tool): t is GithubReleaseTool {
  * listed in `minimumReleaseAgeExclude` bypasses the soak here exactly as pnpm
  * bypasses it for npm installs — instead of only the `isSocketSourced` rule.
  */
-function readSoakPolicy(yamlPath: string): SoakRules {
+export function readSoakPolicy(yamlPath: string): SoakRules {
   return readSoakRules(yamlPath)
 }
 
@@ -490,7 +488,7 @@ interface CliOpts {
   verifyAssets: boolean
 }
 
-function parseArgs(): CliOpts {
+export function parseArgs(): CliOpts {
   let apply = false
   let externalToolsPath = path.join(
     REPO_ROOT,
@@ -513,6 +511,16 @@ function parseArgs(): CliOpts {
       externalToolsPath = path.join(next, 'external-tools.json')
       pnpmWorkspaceYaml = path.join(next, 'pnpm-workspace.yaml')
       i += 1
+    } else if (a === '--help') {
+      process.stdout.write(
+        'Usage: node scripts/update-external-tools.mts ' +
+          '[--apply] [--verify-assets] [--target <dir>]\n' +
+          '\n' +
+          'Default dry-run prints the planned changes. --apply flushes.\n' +
+          '--verify-assets re-downloads each asset to surface SHA drift on\n' +
+          'the *current* pinned version (slower; ~10s per asset).\n',
+      )
+      process.exit(0)
     } else {
       throw new Error(`Unknown argument: ${a}`)
     }
@@ -520,7 +528,7 @@ function parseArgs(): CliOpts {
   return { apply, externalToolsPath, pnpmWorkspaceYaml, verifyAssets }
 }
 
-async function main(): Promise<number> {
+export async function main(): Promise<number> {
   const opts = parseArgs()
   const { exclude: soakExclude, minutes: soakMinutes } = readSoakPolicy(
     opts.pnpmWorkspaceYaml,
@@ -599,19 +607,20 @@ async function main(): Promise<number> {
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'bump external-tools.json entries to their latest soak-cleared release',
-  help: `Usage: node scripts/fleet/external-tools/update.mts [flags]
-  --apply          write the planned changes (default is a dry run)
-  --verify-assets  re-download each asset to surface SHA drift on the current pin (slower)
-  --target <dir>   directory holding external-tools.json + pnpm-workspace.yaml`,
-}
-
 // Only invoke main() when run directly (e.g. `node update-external-tools.mts`),
 // not when imported by the vitest test that exercises `shouldSkipGithubFetch`.
 // Without this guard, an import would walk external-tools.json + hit the
 // network during the test process.
 if (import.meta.main) {
-  runMain(main, SCRIPT_META)
+  main().then(
+    code => {
+      process.exitCode = code
+    },
+    err => {
+      process.stderr.write(
+        `${err instanceof Error ? errorMessage(err) : String(err)}\n`,
+      )
+      process.exitCode = 1
+    },
+  )
 }

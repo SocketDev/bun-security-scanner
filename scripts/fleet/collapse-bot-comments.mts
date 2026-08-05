@@ -31,8 +31,6 @@ import { directiveFor } from './_shared/bot-directives.mts'
 import { isMainModule } from './_shared/is-main-module.mts'
 import { runMain } from './_shared/run-main.mts'
 
-import type { ScriptMeta } from './_shared/run-main.mts'
-
 const logger = getDefaultLogger()
 
 // A caught mutation error whose message matches this is the no-write-access
@@ -505,14 +503,6 @@ export async function main(): Promise<number> {
   return verdict
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "collapses a PR's bot review noise — resolves bot threads and minimizes bot comments as resolved",
-  help: `Usage: node scripts/fleet/collapse-bot-comments.mts <owner>/<repo> <pr-number> [flags]
-
-  --dry-run  print the collapse plan without mutating anything`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

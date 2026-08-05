@@ -45,7 +45,6 @@ import { findSocketPinDowngrades } from '../lib/catalog-pin-floor.mts'
 import type { PinDowngrade } from '../lib/catalog-pin-floor.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
 import { runMain } from '../_shared/run-main.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -110,13 +109,6 @@ export async function main(): Promise<number> {
   )
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'checks no Socket-published catalog pin moves down from the committed tree',
-  help: `Usage: node scripts/fleet/check/socket-pins-are-never-lowered.mts [flags]
-  --quiet  suppress the success message`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

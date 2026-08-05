@@ -14,7 +14,6 @@
 import process from 'node:process'
 
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 import {
   cacheErrorText,
   loadActionsCacheModule,
@@ -23,7 +22,6 @@ import {
   parseCacheCliArgs,
 } from './cache-cli.mts'
 
-import type { ScriptMeta } from '../_shared/run-main.mts'
 import type { ActionsCacheModule } from './cache-cli.mts'
 
 // The reserve-conflict error class name thrown by @actions/cache when the
@@ -81,14 +79,8 @@ export async function runCacheSave(
   return 0
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe: 'saves the given paths to the GitHub Actions cache under one key',
-  help: `Usage: node scripts/fleet/cache/save.mts --path <path>... --key <key>
-
-  --path <path>  a path to cache (repeatable; a value may be a newline-separated list)
-  --key <key>    the cache key to save under`,
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(() => runCacheSave(process.argv.slice(2)), SCRIPT_META)
+  runCacheSave(process.argv.slice(2)).then(code => {
+    process.exitCode = code
+  })
 }

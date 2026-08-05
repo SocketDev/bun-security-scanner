@@ -23,6 +23,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
@@ -33,11 +34,9 @@ import {
 } from '../_shared/action-port-map.mts'
 import { parseGitmodules } from '../_shared/gitmodules.mts'
 import { isMainModule } from '../_shared/is-main-module.mts'
-import { runMain } from '../_shared/run-main.mts'
 
 import type { CompositePort } from '../_shared/action-port-map.mts'
 import type { GitmodulesEntry } from '../_shared/gitmodules.mts'
-import type { ScriptMeta } from '../_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -237,12 +236,11 @@ export function runCheck(
   return 1
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    "checks that every fleet composite action's declared ports are in lock-step with their upstream reference pins",
-  help: 'Usage: node scripts/fleet/check/action-ports-are-lock-stepped.mts',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(() => runCheck(REPO_ROOT), SCRIPT_META)
+  try {
+    process.exitCode = runCheck(REPO_ROOT)
+  } catch (e) {
+    logger.error(e)
+    process.exitCode = 1
+  }
 }
