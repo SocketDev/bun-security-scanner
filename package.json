@@ -111,6 +111,7 @@
     "semver": "catalog:",
     "shell-quote": "catalog:",
     "taze": "catalog:",
+    "typebox": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
