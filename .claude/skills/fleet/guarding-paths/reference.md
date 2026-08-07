@@ -1,8 +1,8 @@
-# guarding-paths — fix patterns
+# guarding-paths - fix patterns
 
 The patterns to apply for each detection rule. The orchestration story (modes, phases, allowlisting) lives in [`SKILL.md`](SKILL.md). The `install` mode copies file scaffolding from [`templates/`](templates/).
 
-## Rule A — Multi-stage path constructed inline (in `.mts`/`.cts`)
+## Rule A - Multi-stage path constructed inline (in `.mts`/`.cts`)
 
 **Bad**:
 
@@ -17,6 +17,9 @@ const finalBinary = path.join(
   'binary',
 )
 ```
+
+<details>
+<summary><b>Fix</b> - the <code>paths.mts</code> helper to write, the consumer import, and the canonical binsuite helpers <code>getFinalBinaryPath</code> / <code>getDownloadedDir</code></summary>
 
 **Fix**: move the construction into the package's `scripts/paths.mts` (or `lib/paths.mts`), or use a build-infra helper:
 
@@ -44,7 +47,9 @@ const { outputFinalBinary } = getBuildPaths(mode, platformArch)
 
 For binsuite tools (binpress / binflate / binject) the canonical helper is `getFinalBinaryPath(packageRoot, mode, platformArch, binaryName)` from `build-infra/lib/paths`. For download caches use `getDownloadedDir(packageRoot)`.
 
-## Rule B — Cross-package traversal
+</details>
+
+## Rule B - Cross-package traversal
 
 **Bad**:
 
@@ -61,6 +66,9 @@ const liefDir = path.join(
   'lief',
 )
 ```
+
+<details>
+<summary><b>Fix</b> - three steps: producer <code>exports</code> for <code>./scripts/paths</code>, a <code>workspace:*</code> dep in the consumer, then the cross-package helper import</summary>
 
 **Fix**: declare the workspace dep, expose `paths.mts` via the producer's `exports`, import the helper:
 
@@ -80,7 +88,9 @@ const liefDir = path.join(
    const { outputFinalDir } = getLiefBuildPaths(mode, platformArch)
    ```
 
-## Rule C — Workflow path repetition
+</details>
+
+## Rule C - Workflow path repetition
 
 **Bad** (3 steps each rebuilding the same path):
 
@@ -92,6 +102,9 @@ const liefDir = path.join(
 - name: Step C
   run: cd packages/foo/build/${BUILD_MODE}/${PLATFORM_ARCH}/out/Final && do-thing-3
 ```
+
+<details>
+<summary><b>Fix</b> - the "Compute foo paths" step in full: <code>package_dir</code>, <code>platform_build_dir</code> and <code>final_dir</code> written to <code>$GITHUB_OUTPUT</code>, plus the <code>_rel</code> companion for <code>working-directory:</code> steps</summary>
 
 **Fix**: add a "Compute <pkg> paths" step early in the job that constructs the path once, expose via `$GITHUB_OUTPUT`, reference downstream:
 
@@ -120,7 +133,9 @@ const liefDir = path.join(
 
 For paths used inside `working-directory: packages/foo` steps, expose a `_rel` companion (e.g. `final_dir_rel=build/${BUILD_MODE}/${PLATFORM_ARCH}/out/Final`) and reference that.
 
-## Rule D — Comment-encoded paths
+</details>
+
+## Rule D - Comment-encoded paths
 
 **Bad**:
 
@@ -138,7 +153,7 @@ COPY --from=builder /build/packages/foo/build/${BUILD_MODE}/${PLATFORM_ARCH}/out
 
 The comment may describe structure (`<mode>/<arch>`) but should not be a parsable literal path.
 
-## Rule G — Dockerfile / Makefile / shell duplicate construction
+## Rule G - Dockerfile / Makefile / shell duplicate construction
 
 **Bad** (Dockerfile reconstructs the path 3 times in the same stage):
 
@@ -156,7 +171,7 @@ ENV FINAL_DIR=build/${BUILD_MODE}/${PLATFORM_ARCH}/out/Final
 RUN mkdir -p "$FINAL_DIR" && cp src "$FINAL_DIR/output" && ls "$FINAL_DIR/"
 ```
 
-Each Dockerfile `FROM` stage is its own scope — `ENV` from the build stage doesn't reach a subsequent `FROM scratch AS export` stage. The gate accounts for this.
+Each Dockerfile `FROM` stage is its own scope - `ENV` from the build stage doesn't reach a subsequent `FROM scratch AS export` stage. The gate accounts for this.
 
 ## Reference patterns (worked example)
 

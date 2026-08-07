@@ -7,24 +7,27 @@ an **author-agreed feature-branch total-squash**. It collapses the named branch 
 base's merge-base instead of squashing the default branch, so an agreed squash no longer needs the
 `Allow total squash bypass` phrase.
 
-- **`--base <ref>`** — the PR base for the merge-base. Defaults to the resolved default branch
+<details>
+<summary><b>Flags and safety gates</b>: what `--base` and `--message` default to, the four engine-enforced checks from divergence refusal to the lease push, and the two-command backup recovery</summary>
+
+- **`--base <ref>`** - the PR base for the merge-base. Defaults to the resolved default branch
   (`main` → `master` fallback); pass it when the branch targets a non-default base. Only
-  `merge-base..tip` is collapsed — the shared base is never rewritten.
-- **`--message <subject>`** — the collapsed commit's subject (usually the PR title). Omit it to default
+  `merge-base..tip` is collapsed - the shared base is never rewritten.
+- **`--message <subject>`** - the collapsed commit's subject (usually the PR title). Omit it to default
   to the branch tip's own subject, falling back to `chore: initial commit`.
 
 Safety is identical to the default-branch flow and is enforced by the engine, not the guard:
 
-1. **Divergence refusal** — if local `<name>` and `origin/<name>` each hold commits the other lacks, the
+1. **Divergence refusal** - if local `<name>` and `origin/<name>` each hold commits the other lacks, the
    run refuses (reconcile forward first). Local-ahead is squashed from the local tip; local == origin (or
    no local branch) is squashed from origin's tip.
-2. **Backup ref first** — the pre-squash tip is pushed to `refs/heads/backup-YYYYMMDD-HHMMSS` on origin
+2. **Backup ref first** - the pre-squash tip is pushed to `refs/heads/backup-YYYYMMDD-HHMMSS` on origin
    before any rewrite.
-3. **HARD tree-identity gate** — `squashSingleCommit` `process.exit(1)`s if the collapsed tree differs
+3. **HARD tree-identity gate** - `squashSingleCommit` `process.exit(1)`s if the collapsed tree differs
    from the pre-squash tip by a single byte.
-4. **Lease push under the sentinel** — `SQUASH_HISTORY=1 git push --force-with-lease=<name>:<origin-sha>
+4. **Lease push under the sentinel** - `SQUASH_HISTORY=1 git push --force-with-lease=<name>:<origin-sha>
    origin HEAD:<name>`. That exact shape (single ref, lease, no multi-ref/delete flags) is what
-   `squash-sentinel.mts` authorizes for **any** branch — the guard trusts the byte-verified backup the
+   `squash-sentinel.mts` authorizes for **any** branch - the guard trusts the byte-verified backup the
    engine already performed, so no bypass phrase is needed.
 
 Recover a feature-branch squash the same way as the default-branch one:
@@ -34,9 +37,14 @@ git fetch origin backup-YYYYMMDD-HHMMSS
 git push --force origin FETCH_HEAD:<name>
 ```
 
+</details>
+
 ## Retry Loops
 
 ### Phase 2: Backup Branch Creation with Retry
+
+<details>
+<summary><b>Backup-branch retry loop</b>: 3 attempts at a `backup-YYYYMMDD-HHMMSS` branch, with a 1-second sleep between timestamp collisions and a listing of every existing backup</summary>
 
 ```bash
 # Retry backup branch creation up to 3 times for timestamp collisions
@@ -84,11 +92,16 @@ done
 git branch | grep backup-
 ```
 
+</details>
+
 ### Phase 8: Force Push with Retry
 
 `$BASE` is the default branch resolved in Phase 1 (never hard-code `main`). The
 `SQUASH_HISTORY=1` sentinel clears the `no-force-push-guard` block, and
 `--force-with-lease` aborts if the remote moved since the last fetch.
+
+<details>
+<summary><b>Force-push retry loop</b>: 3 attempts at `SQUASH_HISTORY=1 git push --force-with-lease origin "$BASE"`, a 2-second delay between tries, and the permissions/branch-protection hint on final failure</summary>
 
 ```bash
 # Retry force push up to 3 times for transient failures
@@ -115,6 +128,8 @@ while [ $ITERATION -le $MAX_ITERATIONS ]; do
   ITERATION=$((ITERATION + 1))
 done
 ```
+
+</details>
 
 ## Code Integrity Verification
 
@@ -187,10 +202,10 @@ git branch | grep backup-
 `run.mts` refuses to squash a dirty tree up front (`checkTreeIsClean`,
 exit 2). A squash collapses COMMITTED history, so anything living only in
 the working tree is excluded from the collapse and left stranded on top of
-rewritten history — where this flow's own recovery step
+rewritten history - where this flow's own recovery step
 (`git reset --hard <newHead>`) destroys it.
 
-Land the dirty files FIRST, then squash — never the reverse. Commit with an
+Land the dirty files FIRST, then squash - never the reverse. Commit with an
 explicit pathspec; do NOT use `git add -A` (sweeps files belonging to
 parallel Claude sessions) or `git stash` (a shared store other sessions can
 clobber on pop).
@@ -250,7 +265,7 @@ Common causes:
    node scripts/fleet/grant-ruleset-bypass.mts <repo> --revoke
    ```
 
-   Never patch the ruleset by hand — a full-body `gh api` write drops the rules
+   Never patch the ruleset by hand - a full-body `gh api` write drops the rules
    it omits. The grant is self-expiring: the next
    `main-branch-rules-are-enforced --fix` removes it.
 3. **No remote tracking:** Add with `SQUASH_HISTORY=1 git push --set-upstream --force-with-lease origin "$BASE"`
