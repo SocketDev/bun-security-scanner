@@ -26,11 +26,14 @@ gates never disagree on what counts as a leak.
 ## Bypass
 
 There is no chat bypass phrase. For a line that must keep the literal
-path (rare - usually documentation), append the per-line marker the
-commit-time scanner also honors:
+path (rare - usually documentation), place the waiver marker on its own
+line above it - the placement the commit-time scanner honors. The
+example below shows the shape with an env-var placeholder standing in
+for the literal home prefix, so the example itself is not a leak:
 
 ```
-/Users/jdalton/x // oxlint-disable-next-line socket/personal-path-placeholders
+// oxlint-disable-next-line socket/personal-path-placeholders -- doc example
+$HOME/example/path
 ```
 
 The bare `// socket-lint: allow` form blanket-suppresses every scanner

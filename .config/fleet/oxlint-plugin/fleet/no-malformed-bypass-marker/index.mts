@@ -119,6 +119,8 @@ function hoistTrailingMarkerFix(
     return undefined
   }
   const indent = /^\s*/.exec(before)?.[0] ?? ''
+  // Copied verbatim: only a trailing `-disable-next-line` reaches here, and
+  // above the code that spelling already targets the line it means to waive.
   const commentText = sourceText.slice(cs, ce)
   const codePart = before.replace(/\s+$/, '')
   return (fixer: RuleFixer) =>

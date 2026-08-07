@@ -1900,10 +1900,8 @@ pnpm-debug.log
 .git-hooks/pre-commit
 .git-hooks/pre-push
 .github/agent-ci.Dockerfile
-.github/dependabot.yml
 .kimi-code/mcp.json
 .mcp.json
-.npmrc
 assets/badge-follow-bluesky.svg
 assets/badge-follow-x.svg
 assets/socket-combomark-dark.svg
@@ -2047,9 +2045,6 @@ docs/design/fleet/components.css
 docs/design/fleet/tokens.css
 docs/references/fleet/sfw-local-install.md
 opencode.json
-patches/brace-expansion@5.0.9.patch
-patches/minimatch@10.2.6.patch
-patches/taze@19.17.1.patch
 scripts/fleet/_shared/action-port-map.mts
 scripts/fleet/_shared/active-run-marker.mts
 scripts/fleet/_shared/backoff.mts
@@ -2186,6 +2181,7 @@ scripts/fleet/check/brand-assets-are-canonically-named.mts
 scripts/fleet/check/brew-install-is-pinned.mts
 scripts/fleet/check/brew-supply-chain-is-hardened.mts
 scripts/fleet/check/build-microarch-is-portable.mts
+scripts/fleet/check/bundle-catalog-pins-are-locked.mts
 scripts/fleet/check/bundle-is-installable.mts
 scripts/fleet/check/bypass-phrases-are-metadata.mts
 scripts/fleet/check/cargo-soak-config-is-current.mts
