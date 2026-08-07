@@ -105,7 +105,7 @@ catalog:
   # marks 15.0.0 deprecated as "released accidentally" and the fix lives
   # in 15.0.0-beta.14, a beta still inside the 7-day soak; bump to the
   # stabilized 15.x when it ships.
-  'nock': 14.0.16
+  'nock': 14.0.17
   # npm-high-impact 1.13.0 — wooorm's high-impact npm package lists
   # (npmHighImpact + npmTopDependents + npmTopDownloads); the ecosystem-reach
   # input for scripts/fleet/measure-ecosystem-impact.mts, which ranks override
