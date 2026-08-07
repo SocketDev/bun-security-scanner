@@ -41,6 +41,9 @@ When a parser ships in multiple implementations that must agree behaviorally (e.
 
 Three forms, three jobs:
 
+<details>
+<summary><b>Detail</b> - File-level provenance, Inline cross-references, Lock-step note</summary>
+
 **File-level provenance**: top-of-file `//!` doc comment that names where the canonical source lives. Ports state who they follow; canonical files state who follows them:
 
 ```rust
@@ -82,6 +85,8 @@ In a port (Go/C++/TS), the reference points up at Rust. In Rust (canonical), the
 
 The line `Lock-step with X` says "go look here"; the note `Lock-step note:` says "I already looked, and this is why I'm not matching shape-for-shape". Keep them distinct: a reviewer searching for missing lock-step refs filters by the former; a reviewer auditing _why_ this port diverges filters by the latter.
 
+</details>
+
 ## 6. Don't let lock-step references rot
 
 Paths in `Lock-step with X: <path>:<lines>` are claims about file layout that decay when ports get reorganized. A stale `Lock-step with Rust: crates/parser-stmt/src/...` reference after the `parser-stmt` crate directory is renamed is worse than no reference. It lies to the reader.
@@ -94,6 +99,9 @@ Two cheap defenses:
 ## 7. Lock-step header: byte-identical intent across the quadruplet
 
 Cross-references catch path rot. They don't catch _semantic_ drift, the case where the four impls quietly start disagreeing about what the file is _for_. The convention for that is a top-of-file **Lock-step header** block, byte-identical across every member of the quadruplet:
+
+<details>
+<summary><b>Detail</b> - the worked steps (3 snippets)</summary>
 
 ```rust
 // BEGIN LOCK-STEP HEADER
@@ -133,6 +141,8 @@ Rules:
 
 The gate (`scripts/fleet/check/lock-step-headers-match.mts`, registered in the same per-repo opt-in `lock-step-refs.json` under `.config/repo/` as §5–6) walks the quadruplets named by each canonical-side header, extracts the `BEGIN LOCK-STEP HEADER` / `END LOCK-STEP HEADER` block from each peer, and fails CI on any byte-diff. When the canonical impl needs to revise the contract, every peer must update in the same commit.
 
+</details>
+
 ## Scope
 
 This exception applies to:
@@ -150,13 +160,13 @@ It does NOT apply to:
 
 Default rules apply for those. The exception buys verbosity only when the verbosity is load-bearing (cross-impl alignment).
 
-File-doc uses `@file`, never `@fileoverview` (socket/no-fileoverview-prefer-file) — a doc generator reading `@fileoverview` while the fleet writes `@file` produced empty API descriptions.
+File-doc uses `@file`, never `@fileoverview` (socket/no-fileoverview-prefer-file) - a doc generator reading `@fileoverview` while the fleet writes `@file` produced empty API descriptions.
 
 ## State the present, never the removed past
 
 A comment describes what the code does NOW. It never narrates what was removed,
-replaced, or deprecated — the dead past is noise the reader never needs. It also
-never describes the code by what it is NOT, lacks, or is unlike — no "not a
+replaced, or deprecated - the dead past is noise the reader never needs. It also
+never describes the code by what it is NOT, lacks, or is unlike - no "not a
 fork", "inspired by X", "unlike Y", "we don't include Z". State the positive:
 what the code does, not what it declines to do or resemble.
 
@@ -171,7 +181,7 @@ Banned shapes (`no-removal-comment-nudge` flags them on Edit/MultiEdit):
   the import/call that replaces it), never orphaned where code was deleted.
 
 When told to remove something or stop using it, purge it and write the result as
-if it never existed — don't augment the wording to acknowledge it. The
+if it never existed - don't augment the wording to acknowledge it. The
 distinctive multi-word phrases keep the nudge from firing on ordinary prose
 ("no longer than 80 chars", "the value replaced in the map"). git log carries
 the history.

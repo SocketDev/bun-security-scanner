@@ -6,23 +6,26 @@ squash, reword, lease-force reconcile).
 ## Commits are ephemeral on a squash-enabled repo
 
 A repo that carries the `squashing-history` skill collapses its default branch
-to a single `chore: initial commit` on a cadence — the squash preserves the
+to a single `chore: initial commit` on a cadence: the squash preserves the
 **tree**, not the **log**. So on such a repo, individual commit granularity and
 message polish are throwaway: they exist only until the next squash.
 
 Once the member has cut a real published release, that "collapses to one
 commit" claim narrows: every commit through the newest published-release
-commit FREEZES (byte-identical forever — see
+commit FREEZES (byte-identical forever; see
 [`squash-until-release`](squash-until-release.md)), and only the tail above it
 is still throwaway in the sense below. The opt-in stays; a released repo does
 not drop back to ordinary permanent-history rules.
 
+<details>
+<summary><b>The relaxed cadence, rule by rule</b>: commit hygiene, messy commits, what still matters, how to identify a squash repo, which staging guards stand down, which destructive ops stay gated, pushing to origin main</summary>
+
 - **Don't over-invest in commit hygiene.** Skip the surgical one-commit-per-fix
   splitting, the carefully-worded Conventional-Commits bodies, and the
   logical-grouping agonizing. Land fast with a plain, reasonable message and
-  move on — the message is gone at the next flatten.
+  move on: the message is gone at the next flatten.
 - **A messy or imperfect commit is not worth a cleanup pass.** A stray rebuilt
-  artifact, a bundled-together set of changes, a terse subject — none survive
+  artifact, a bundled-together set of changes, a terse subject: none survive
   the squash, so don't spend a revert-bypass or a re-commit dance fixing them.
   Land it; the flatten cleans the log.
 - **What still matters:** the working TREE must be correct (the squash keeps
@@ -53,15 +56,20 @@ not drop back to ordinary permanent-history rules.
   canonical; origin carries the pre-squash history, and a diverged or orphan origin
   is the EXPECTED state, reconciled forward by the force-push, never a reset of
   local to origin. A released member's tail squash is still a non-fast-forward
-  rewrite of the SAME shape — the force-push cost below is unchanged; freezing
+  rewrite of the SAME shape. The force-push cost below is unchanged; freezing
   the release commit changes WHAT gets rewritten, not whether a rewrite needs
   the ruleset exemption dance.
+
+</details>
 
 ## The server-side ref-protection block, and its temporary exemption
 
 Clearing the local guards leaves a second wall. Every fleet repo carries two
 repo-level protection rulesets, each created and converged by the one check
 script that owns its shape:
+
+<details>
+<summary><b>Detail</b>: the full list (8 entries)</summary>
 
 - `fleet-main-protection`, from
   `scripts/fleet/check/main-branch-rules-are-enforced.mts`: target `branch`,
@@ -101,7 +109,7 @@ node scripts/fleet/grant-ruleset-bypass.mts <repo> --revoke --tags
   ruleset's name, target, ref includes, and owning `--fix` command off the check
   script that owns it. A third managed ruleset is one more table entry.
 - **Never hand-run `gh api` against a ruleset.** A hand-written full body
-  silently rewrites whatever it omits — that is how a PUT meant to add one
+  silently rewrites whatever it omits: that is how a PUT meant to add one
   bypass actor drops `non_fast_forward` for everyone. The script reads the
   ruleset, replaces only `bypass_actors`, writes it back, then re-reads and
   fails loud if any rule type disappeared.
@@ -120,6 +128,8 @@ node scripts/fleet/grant-ruleset-bypass.mts <repo> --revoke --tags
 - **Revoke when done.** Waiting for the next `--fix` run works, but leaves a
   live exemption sitting on the repo until then.
 
+</details>
+
 ## Strip attribution with the script, never a rebase dance
 
 When the pre-push gate reports "AI attribution found in commit messages", the
@@ -135,10 +145,10 @@ identity, and author dates, re-signs through the normal signing config,
 verifies the final tree byte-identical, and re-scans the result. A
 hand-scripted `git rebase -i` with `GIT_SEQUENCE_EDITOR`/`GIT_EDITOR` editors
 is banned by `attribution-rewrite-nudge`: it is quoting-fragile, silently
-no-ops when the todo regex misses, and verifies nothing — all three failure
+no-ops when the todo regex misses, and verifies nothing. All three failure
 modes happened live (socket-mcp, 2026-07-10) before the script existed.
 
-## Never `filter-branch` — it drops signatures and keeps the committer
+## Never `filter-branch`: it drops signatures and keeps the committer
 
 `history-rewrite-guard` BLOCKS `git filter-branch`, `git filter-repo` (both the
 subcommand and the standalone `git-filter-repo` binary), and a `git commit-tree`
@@ -146,6 +156,9 @@ with no `-S`/`--gpg-sign`. Bypass slug: `history-rewrite`.
 
 Two defects, both silent, both fatal on a branch whose ruleset requires verified
 signatures:
+
+<details>
+<summary><b>The two defects in full</b>: signatures dropped on every re-created commit, and the original GIT_COMMITTER_* restored so even a re-signed rewrite fails verification</summary>
 
 - **Signatures are dropped.** `filter-branch` re-creates every commit, and a
   re-created commit is unsigned unless you ask for a signature. Nothing warns
@@ -157,9 +170,11 @@ signatures:
   `--commit-filter 'git commit-tree -S "$@"'` fails GitHub verification: your
   signature disagrees with the restored committer field.
 
+</details>
+
 Two invariants hold for any rewrite:
 
-1. **Sign every re-minted commit** — pass `-S`.
+1. **Sign every re-minted commit** - pass `-S`.
 2. **Let the committer default** to whoever runs the rewrite. Set only
    `GIT_AUTHOR_NAME` / `GIT_AUTHOR_EMAIL` / `GIT_AUTHOR_DATE`; never restore
    `GIT_COMMITTER_*`.
@@ -171,13 +186,13 @@ has the same re-mint problem and is not a sanctioned path either.
 Both defects have landed for real: a hand-rolled `filter-branch --msg-filter`,
 reached for to strip one trailer instead of the script that already owned the
 operation, left a branch-worth of unsigned commits that only `commits-are-signed`
-caught, and the re-signed retry was still rejected — "Commits must have verified
+caught, and the re-signed retry was still rejected: "Commits must have verified
 signatures."
 
 ## A rewrite base must sit on origin's lineage
 
-After a force-push rewrite, old anchors — version tags, npm `gitHead`
-records, backup refs — still point into the REPLACED history. Consolidating
+After a force-push rewrite, old anchors (version tags, npm `gitHead`
+records, backup refs) still point into the REPLACED history. Consolidating
 or squashing onto such a base rebuilds the branch on that dead line, so every
 replaced commit comes back, including ones the rewrite removed on purpose.
 
@@ -192,7 +207,7 @@ history (`git log origin/main --oneline | head -20`, match the bump/release
 subject) and pass that sha as `--base`. When local work is already built on
 the dead line, re-anchor it: snapshot the verified tree
 (`git commit-tree <tree> -p origin/main`), point the branch at the snapshot,
-then consolidate with `--base origin/main` — the result is a fast-forward of
+then consolidate with `--base origin/main`: the result is a fast-forward of
 origin, no force needed.
 
 ## What consolidation preserves
@@ -200,8 +215,8 @@ origin, no force needed.
 The local `HEAD` at command start is the content source. The base ref chooses
 the parent lineage; it never replaces the local tree. Before the first
 destructive command, the script parks the original tip on the fleet's canonical
-backup branch — `refs/heads/backup-YYYYMMDD-HHMMSS`, the same
-`formatBackupBranch` name the squash flow uses — and pushes it to `origin`. That
+backup branch (`refs/heads/backup-YYYYMMDD-HHMMSS`, the same
+`formatBackupBranch` name the squash flow uses) and pushes it to `origin`. That
 one name is what `backup-branches.mts prune` retires,
 `backup-branches.mts normalize` renames, and `bump.mts` scans at release time
 for parked, un-landed work, so a consolidation's safety net is visible to every
@@ -210,15 +225,20 @@ tool that handles backups. Recover it with
 
 Three outcomes:
 
-- **Pushed to origin** — the normal case. The original history is recoverable
+<details>
+<summary><b>The three backup outcomes</b>: pushed to origin, push failed so the consolidate aborts, no origin remote so the backup stays local under the canonical name</summary>
+
+- **Pushed to origin** - the normal case. The original history is recoverable
   from any clone.
-- **Push failed** (auth, branch protection, network) — the consolidate ABORTS.
+- **Push failed** (auth, branch protection, network) - the consolidate ABORTS.
   A rewrite with no recoverable backup is the outcome the mechanism exists to
   prevent, so a failed push is a hard error, never a warning.
-- **No `origin` remote** — the backup is written as a LOCAL branch under the
+- **No `origin` remote** - the backup is written as a LOCAL branch under the
   same canonical name, and the run says so on its own line. The name stays
   canonical, so the prune and normalize scripts still see a backup that never
   left the machine.
+
+</details>
 
 The backup is never torn down by the script. When the rewrite fails its own
 integrity check the script hard-restores the original tip AND leaves the backup
@@ -233,15 +253,15 @@ separately authorized lease force-push.
 
 ## Subagents: a worktree is not durable storage
 
-`tidying-worktrees` and `managing-worktrees` prune worktrees automatically —
-`git worktree prune` plus a `--force` removal of anything the removability
-predicate calls spent — and a squash-opt-in repo force-pushes its default
+`tidying-worktrees` and `managing-worktrees` prune worktrees automatically
+(`git worktree prune` plus a `--force` removal of anything the removability
+predicate calls spent), and a squash-opt-in repo force-pushes its default
 branch on a cadence. A subagent that treats its worktree as the durable copy
 of its own work, or a commit SHA as a stable handle, loses both without
 warning.
 
 - **Land to your own branch continuously.** Never let work live only in the
-  worktree. Commit and push (or land to local main) as you go — a worktree
+  worktree. Commit and push (or land to local main) as you go: a worktree
   that gets swept mid-task takes any unlanded commit with it.
 - **Identify your work by subject, not SHA.** A squash or a lease-force
   reconcile mints new commit objects for the same tree; the SHA you saw
@@ -249,7 +269,7 @@ warning.
   instead of pinning to a specific hash.
 - **A live rewrite in progress is a pause signal.** If a squash or history
   rewrite is running, or `main`'s history changes under you mid-task, stop
-  mutating git state, report what you saw, and wait — don't try to reconcile
+  mutating git state, report what you saw, and wait. Don't try to reconcile
   a moving target yourself.
 - **Never reset or rewind local main to origin.** Origin moving ahead by a
   squash/rewrite is not newer truth; reconcile forward (see "Local main is

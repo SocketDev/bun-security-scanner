@@ -33,6 +33,9 @@ Generic, repo-agnostic: no table definitions, no repo-specific schema
 paths or database name. Copy verbatim; the only thing a repo supplies is
 its `DATABASE_URL`.
 
+<details>
+<summary><b>Detail</b> - the worked steps (2 snippets)</summary>
+
 ```ts
 import { defineConfig } from 'drizzle-kit'
 
@@ -67,6 +70,8 @@ pnpm exec drizzle-kit migrate  --config .config/drizzle.config.mts
 
 Wire those as `db:generate` / `db:migrate` package scripts so callers
 never retype the `--config` path.
+
+</details>
 
 ## Driver wiring
 
@@ -111,7 +116,7 @@ Drizzle covers the database boundary (table shape, query types). For validating 
 
 ## When NOT to add a database
 
-Most fleet repos are libraries, parsers, or CLIs with no persistent state; they need no database at all. Don't add Drizzle/Postgres speculatively. The stack applies only when a repo genuinely persists relational state — a service, a registry API, an events store. A cache or a flat-file index is not a database need.
+Most fleet repos are libraries, parsers, or CLIs with no persistent state; they need no database at all. Don't add Drizzle/Postgres speculatively. The stack applies only when a repo genuinely persists relational state - a service, a registry API, an events store. A cache or a flat-file index is not a database need.
 
 ## Reference implementation
 
