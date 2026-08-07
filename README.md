@@ -1,7 +1,7 @@
 # Socket's Bun Security Scanner
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/brand/bun-security-scanner-logomark.svg" width="300" alt="Bun Security Scanner — the Bun mascot above the Bun wordmark and SECURITY SCANNER, inside the Socket gradient shield">
+  <img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/brand/bun-security-scanner-logomark.svg" width="300" alt="Bun Security Scanner - the Bun mascot above the Bun wordmark and SECURITY SCANNER, inside the Socket gradient shield">
 </div>
 
 <a href="https://socket.dev/npm/package/@socketsecurity/bun-security-scanner"><img src="https://socket.dev/api/badge/npm/package/@socketsecurity/bun-security-scanner" alt="Socket Badge" height="20"></a>

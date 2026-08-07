@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-**MANDATORY**: Act as principal-level engineer. This file is a thin index — every rule's detail lives in `docs/agents.md/{fleet,repo}/<topic>.md`; fleet bullets are canonical (edit only in `template/`, then cascade), repo bullets are host-owned. (`.claude/hooks/fleet/{claude-md-size-guard,claude-md-section-size-guard,claude-md-defer-detail-nudge,claude-md-rule-add-guard}/`)
+**MANDATORY**: Act as principal-level engineer. This file is a thin index - every rule's detail lives in `docs/agents.md/{fleet,repo}/<topic>.md`; fleet bullets are canonical (edit only in `template/`, then cascade), repo bullets are host-owned. (`.claude/hooks/fleet/{claude-md-size-guard,claude-md-section-size-guard,claude-md-defer-detail-nudge,claude-md-rule-add-guard}/`)
 
 <!-- <fleet> -->
 
@@ -142,7 +142,7 @@
 Per-repo content lives below this header, in the same bullet-index shape as the fleet block above.
 
 - One rule per `-` bullet, stating it in a single line, linking [`topic`](docs/agents.md/repo/topic.md) for the detail.
-- Architecture, commands, build pipeline, and domain detail live in `docs/agents.md/repo/<topic>.md` — per-repo, never cascaded.
+- Architecture, commands, build pipeline, and domain detail live in `docs/agents.md/repo/<topic>.md` - per-repo, never cascaded.
 - A `###` subsection may open with at most one orienting sentence; everything actionable under it is bullets.
 - The whole file is capped at 40 KB and each `###` section at 8 lines. (`scripts/fleet/check/claude-md-repo-section-is-a-bullet-index.mts`)
 
