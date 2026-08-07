@@ -129,4 +129,8 @@ pnpm-debug.log
 *.tgz
 # </fleet>
 # <repo>
+# THIN member: the fleet payload is untracked; scripts/repo/bootstrap/prepare.mts
+# fetches it from the pinned fleet-pack release (bundle.ref in
+# .config/repo/socket-wheelhouse.json) before install-git-hooks runs.
+/scripts/fleet/
 # </repo>

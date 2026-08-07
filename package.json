@@ -41,6 +41,8 @@
     "cover": "node scripts/fleet/cover.mts",
     "doctor:auth": "node scripts/fleet/check/setup-is-prompt-less.mts",
     "fix": "node scripts/fleet/fix.mts",
+    "fleet:status": "node scripts/repo/bootstrap/fleet.mjs --status",
+    "sync-fleet": "node scripts/repo/bootstrap/fleet.mjs",
     "format": "node scripts/fleet/format.mts",
     "format:check": "node scripts/fleet/format.mts --check",
     "lockstep": "node scripts/fleet/lockstep.mts",
