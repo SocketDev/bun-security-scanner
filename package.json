@@ -41,8 +41,6 @@
     "cover": "node scripts/fleet/cover.mts",
     "doctor:auth": "node scripts/fleet/check/setup-is-prompt-less.mts",
     "fix": "node scripts/fleet/fix.mts",
-    "fleet:status": "node scripts/repo/bootstrap/fleet.mjs --status",
-    "sync-fleet": "node scripts/repo/bootstrap/fleet.mjs",
     "format": "node scripts/fleet/format.mts",
     "format:check": "node scripts/fleet/format.mts --check",
     "lockstep": "node scripts/fleet/lockstep.mts",
@@ -74,7 +72,6 @@
     "prune:caches": "node scripts/fleet/prune-actions-caches.mts"
   },
   "devDependencies": {
-    "@actions/cache": "catalog:",
     "@redwoodjs/agent-ci": "catalog:",
     "@shadscan/cli": "catalog:",
     "@sinclair/typebox": "catalog:",
@@ -97,16 +94,13 @@
     "magic-string": "catalog:",
     "markdownlint-cli2": "catalog:",
     "mdast-util-from-markdown": "catalog:",
-    "mdast-util-gfm": "catalog:",
     "micromark": "catalog:",
-    "micromark-extension-gfm": "catalog:",
     "neosanitize": "catalog:",
     "nock": "catalog:",
     "npm-high-impact": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
-    "parse5": "catalog:",
     "playwright-core": "catalog:",
     "portless": "catalog:",
     "regjsparser": "catalog:",
@@ -127,7 +121,7 @@
   },
   "engines": {
     "node": ">=24",
-    "npm": ">=12.0.1",
+    "npm": ">=12.0.2",
     "pnpm": ">=11.0.5"
   },
   "allowScripts": {
