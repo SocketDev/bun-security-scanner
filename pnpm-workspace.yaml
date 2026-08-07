@@ -1,4 +1,10 @@
 catalog:
+  # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
+  # change can be validated before it's pushed (see the `agent-ci` skill).
+  # The published package is a self-contained Node CLI (`dist/cli.js`) — no
+  # platform-binary optionalDependencies, despite the monorepo's internal
+  # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
+  # explicitly (not left transitive) so its version is uniform fleet-wide.
   '@redwoodjs/agent-ci': 0.17.1
   '@ultrathink/acorn.rs.wasm': 0.1.1
   'brace-expansion': 5.0.9
@@ -272,11 +278,13 @@ autoInstallPeers: true
 # the moment the runner's pnpm differs from the pin.
 managePackageManagerVersions: false
 
-# Soak time for external-tools updates: minutes a release must have
-# existed before scripts/fleet/external-tools/update.mts will consider it
-# (mirrors pnpm's `minimumReleaseAge` for npm catalog entries). 10080
-# minutes = 7 days. Same value fleet repos use.
-pmOnFail: 'warn'
+# pnpm 11's packageManager-version-check failure policy. `warn` lets the
+# install proceed with a mismatched pnpm (emitting a warning) rather than
+# hard-failing. `error` is the default when the field is absent — socket-lib
+# had `error` while the wheelhouse lacked the field, which blocked commits
+# under a dev pnpm that differed from the `packageManager` pin. `warn` keeps
+# the pin informational without blocking CI or local dev.
+pmOnFail: warn
 
 # Refuse transitive (sub-) deps declared via git/tarball/local-tarball
 # specs. Direct git deps in this repo are still allowed; this only
