@@ -230,7 +230,9 @@ interface NpmToolInstallConfig {
  * AgentShield comment for the documented case).
  */
 export async function setupNpmTool(
-  // oxlint-disable-next-line no-shadow -- required config param name matches the module-level tool-manifest `config` by convention
+  // Required config param name matches the module-level tool-manifest `config`
+  // by convention.
+  // oxlint-disable-next-line no-shadow -- required config param name matches
   config: NpmToolInstallConfig,
 ): Promise<boolean> {
   const { displayName, name, tool } = {
@@ -360,9 +362,11 @@ export async function setupSkillSpector(): Promise<boolean> {
   return runSetupSkillSpector()
 }
 
+/* c8 ignore start - standalone entrypoint; only runs when executed directly, not when imported */
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   runSetupAll().catch((e: unknown) => {
     logger.error(errorMessage(e))
     process.exitCode = 1
   })
 }
+/* c8 ignore stop */

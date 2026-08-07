@@ -92,10 +92,23 @@ export const DEFAULT_PARSE_OPTIONS: Required<ParseOptions> = {
 
 // The narrow slice of the wasm parser API the fleet helpers use: raw `parse`
 // (AST, plus a `comments` array when `collectComments` is set) + the `simple`
-// visitor walk. The full package exposes more (walk / findNode* / aqs_match);
-// the fleet surface stays intentionally small.
+// and `recursive` visitor walks. The full package exposes more
+// (walk / findNode* / aqs_match); the fleet surface stays intentionally small.
 interface AcornWasm {
   parse: (source: string, options: ParseOptions) => AcornNode
+  recursive: (
+    source: string,
+    state: unknown,
+    visitors: Record<
+      string,
+      (
+        node: unknown,
+        state: unknown,
+        callback: (node: unknown, state: unknown) => void,
+      ) => void
+    >,
+    options: ParseOptions,
+  ) => void
   simple: (
     source: string,
     visitors: Record<string, (node: unknown) => void>,
@@ -169,6 +182,51 @@ export function walkSimple(
 }
 
 /**
+ * Walk `source` with visitor-controlled traversal: a visitor that never calls
+ * `callback` PRUNES its whole subtree inside wasm, so those nodes never
+ * materialize across the wasm→JS boundary. That makes a top-level scan cheap
+ * — no-op visitors for the function/class node types skip the bulk of a file
+ * while every remaining node of a visited type still surfaces. Errors during
+ * parse are silently swallowed — see `tryParse` for the fragment-tolerance
+ * rationale.
+ */
+export function walkRecursive(
+  source: string,
+  visitors: Record<
+    string,
+    (
+      node: AcornNode,
+      state: unknown,
+      callback: (node: AcornNode, state: unknown) => void,
+    ) => void
+  >,
+  options?: ParseOptions | undefined,
+): void {
+  try {
+    const acorn = acornWasm()
+    acorn.recursive(
+      source,
+      undefined,
+      visitors as unknown as Record<
+        string,
+        (
+          node: unknown,
+          state: unknown,
+          callback: (node: unknown, state: unknown) => void,
+        ) => void
+      >,
+      {
+        __proto__: null,
+        ...DEFAULT_PARSE_OPTIONS,
+        ...options,
+      } as unknown as ParseOptions,
+    )
+  } catch {
+    // Parse failure — caller's hook should fail open.
+  }
+}
+
+/**
  * Convert a byte offset into 1-based line + 0-based column. The wasm parser
  * doesn't emit `loc` data even with `locations: true`, but every node carries
  * `start` / `end` byte offsets — this function bridges the gap.
@@ -212,6 +270,7 @@ export function offsetToLineCol(
  */
 export function splitLines(source: string): string[] {
   // Single regex pass: collapse `\r\n` and bare `\r` to `\n`, then split.
-  // socket-lint: allow uncommented-regex -- newline normalization, described above.
+  // Newline normalization, described above.
+  // oxlint-disable-next-line socket/require-regex-comment -- newline
   return source.replace(/\r\n?/g, '\n').split('\n')
 }

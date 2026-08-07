@@ -45,6 +45,7 @@ import type { BatchOutcome, CheckResult, Dep, HookInput } from './types.mts'
 
 import { block, defineHook, editGuard, runHook } from '../_shared/guard.mts'
 import type { GuardResult } from '../_shared/guard.mts'
+import { verdictContinuation, verdictLine } from '../_shared/verdict.mts'
 
 const logger = getDefaultLogger()
 
@@ -58,7 +59,10 @@ const CACHE_TTL = 5 * 60 * 1000
 const MAX_CACHE_SIZE = 500
 
 // SDK instance using the public API token, no user config needed.
-// oxlint-disable-next-line socket/no-module-eval-side-effects -- this hook is snapshot-excluded (the SDK's native [Foreign] handles can't serialize); a lazy memoized client is the tracked upstream @socketsecurity/sdk fix.
+// This hook is snapshot-excluded (the SDK's native [Foreign] handles can't
+// serialize); a lazy memoized client is the tracked upstream
+// @socketsecurity/sdk fix.
+// oxlint-disable-next-line socket/no-module-eval-side-effects -- this hook
 const sdk = new SocketSdk(SOCKET_PUBLIC_API_TOKEN, {
   timeout: API_TIMEOUT,
 })
@@ -337,10 +341,17 @@ export const check = editGuard(
     })
 
     if (blocked.length > 0) {
-      const lines = [`Socket: blocked ${blocked.length} dep(s):`]
-      for (let i = 0, { length } = blocked; i < length; i += 1) {
+      const first = blocked[0]!
+      const lines = [
+        verdictLine(
+          'block',
+          'check-new-deps',
+          `blocked ${blocked.length} dep(s) — Socket.dev flagged "${first.purl}" (${first.reason}); remove it`,
+        ),
+      ]
+      for (let i = 1, { length } = blocked; i < length; i += 1) {
         const b = blocked[i]!
-        lines.push(`  ${b.purl}: ${b.reason}`)
+        lines.push(verdictContinuation(`"${b.purl}" (${b.reason})`))
       }
       return block(lines.join('\n'))
     }

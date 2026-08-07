@@ -52,7 +52,8 @@ const FILE_WRITING_TOOLS = new Set(['Edit', 'NotebookEdit', 'Write'])
 // would noise up every turn that touches a vendored file.
 const SKIP_PATH_SUBSTRINGS: readonly string[] = [
   '/node_modules/',
-  // oxlint-disable-next-line socket/prefer-node-modules-dot-cache -- repo-root `.cache/` exemption, distinct from .cache
+  // Repo-root `.cache/` exemption, distinct from .cache.
+  // oxlint-disable-next-line socket/prefer-repo-root-dot-cache -- repo-root
   '/.cache/',
   '/coverage/',
   '/coverage-isolated/',
@@ -176,30 +177,17 @@ export const check = (payload: ToolCallPayload): GuardResult => {
     return undefined
   }
 
-  const lines = ['[file-size-nudge] File-size cap exceeded:', '']
+  const lines: string[] = []
   for (let i = 0, { length } = hits; i < length; i += 1) {
     const hit = hits[i]!
     const capLabel =
       hit.cap === 'hard'
         ? `HARD CAP (${HARD_CAP_LINES} lines)`
         : `soft cap (${SOFT_CAP_LINES} lines)`
-    lines.push(`  • ${hit.path}`)
-    lines.push(`      ${hit.lines} lines — past ${capLabel}`)
+    lines.push(
+      `💡 file-size-nudge: ${hit.path} — ${hit.lines} lines, past ${capLabel} — split along natural seams (docs/agents.md/file-size.md)`,
+    )
   }
-  lines.push('')
-  lines.push(
-    '  CLAUDE.md "File size": split along natural seams — group by domain,',
-  )
-  lines.push(
-    "  name files for what's in them, co-locate helpers with consumers.",
-  )
-  lines.push(
-    '  Exceptions (single legitimate large function / generated artifact)',
-  )
-  lines.push(
-    '  should be stated inline. Full playbook: docs/agents.md/file-size.md.',
-  )
-  lines.push('')
   return notify(lines.join('\n') + '\n')
 }
 
