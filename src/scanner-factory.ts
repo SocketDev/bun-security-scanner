@@ -105,7 +105,10 @@ export function createScanner({
       await startFlight()
     }
 
-    // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast: a rejected fetch must surface as a scan error, not be swallowed — silently under-reporting security alerts is the exact failure this scanner guards against
+    // A rejected fetch must surface as a scan error, not be swallowed:
+    // silently under-reporting security alerts is the exact failure this
+    // scanner guards against.
+    // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast scan
     await Promise.all(flights)
     if (artifacts.length > 0) {
       yield artifacts

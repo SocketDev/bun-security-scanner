@@ -18,11 +18,13 @@ export function unauthenticated(): ScannerImplementation {
         purl =>
           `https://firewall-api.socket.dev/purl/${encodeURIComponent(purl)}`,
       )
-      // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast: one failed batch aborts the whole scan on purpose
+      // One failed batch aborts the whole scan on purpose.
+      // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast scan
       await Promise.all(
         urls.map(async url => {
           // Tests mock global fetch; Bun ships fetch natively in this plugin
-          // runtime. socket-lint: allow global-fetch
+          // runtime.
+          // oxlint-disable-next-line socket/no-fetch-prefer-http-request -- bun
           const res = await fetch(url, {
             headers: {
               'User-Agent': userAgent,

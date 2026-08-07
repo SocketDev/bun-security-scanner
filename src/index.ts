@@ -50,9 +50,9 @@ if (typeof socketApiToken !== 'string') {
 
   // attempt to read token from socket settings. This module is a Bun-only
   // ESM plugin entry point and never bundles to CJS.
-  // socket-lint: allow top-level-await
+  // oxlint-disable-next-line socket/no-top-level-await -- bun-only esm entry
   if (await file.exists()) {
-    // socket-lint: allow top-level-await
+    // oxlint-disable-next-line socket/no-top-level-await -- bun-only esm entry
     const rawContent = await file.text()
     // rawContent is base64, must decode
 
