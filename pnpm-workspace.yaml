@@ -145,6 +145,22 @@ catalog:
   #    pinned npm version instead of a sibling working tree.
   '@actions/cache': 6.2.0
 
+# pnpm `overrides` block — two purposes:
+#
+# 1. Force every transitive `vite` resolution to the catalog'd 8.0.13.
+#    Vitest 4.1.6 advertises support for `vite: ^6.0.0 || ^7.0.0 || ^8.0.0`,
+#    so the bump is compatible. The override is what actually removes
+#    esbuild from the install tree — without it, vitest would still
+#    resolve vite ^6.x.
+#
+# 2. Force every consumer of Socket's own packages to resolve through
+#    the catalog-pinned published versions. The `catalog:` form rewrites
+#    `workspace:*`, `^x.y.z`, and bare-version specs alike to the version
+#    in the default `catalog:` block above. This is the safety property
+#    that prevents accidental local-checkout resolution when a sibling
+#    repo is on disk: even if a downstream package declares
+#    `"@socketsecurity/lib": "workspace:*"`, pnpm rewrites it to the
+#    pinned npm version instead of a sibling working tree.
 overrides:
   # Fleet-canonical overrides (managed by socket-wheelhouse sync; do not edit).
   '@sinclair/typebox': 'catalog:'
@@ -258,13 +274,6 @@ overrides:
   'vite': 'catalog:'
   'which@>=4': '7.0.0'
 
-# Native post-install build scripts. These three arrive transitively via
-# @redwoodjs/agent-ci's `ssh2` (optional crypto acceleration). agent-ci's
-# published CLI (`dist/cli.js`) runs without them — verified `agent-ci --help`
-# works with the builds skipped — so we decline to run their post-install
-# scripts. Declining is the safe default; running native build scripts from a
-# transitive dep is unnecessary attack surface here.
-
 packages:
   - .claude/hooks/fleet/*
   - .config/fleet/oxlint-plugin
@@ -272,6 +281,13 @@ packages:
   - '.claude/hooks/repo/*'
   - '.config/repo/oxlint-plugin/*'
 autoInstallPeers: true
+
+# Opt out of pnpm's packageManager-version self-check. CI installs pnpm from
+# its native bin via the shared setup workflow, not corepack, so the runner's
+# pnpm legitimately differs from the `packageManager` pin (which is
+# informational, not a version to enforce). Without this, pnpm hard-fails
+# ("This project is configured to use <pin> ... your current pnpm is <run>")
+# the moment the runner's pnpm differs from the pin.
 managePackageManagerVersions: false
 
 # pnpm 11's packageManager-version-check failure policy. `warn` lets the
@@ -281,6 +297,14 @@ managePackageManagerVersions: false
 # under a dev pnpm that differed from the `packageManager` pin. `warn` keeps
 # the pin informational without blocking CI or local dev.
 pmOnFail: 'warn'
+
+# Refuse transitive (sub-) deps declared via git/tarball/local-tarball
+# specs. Direct git deps in this repo are still allowed; this only
+# affects what nested dependencies are permitted. Defends against a
+# package listing a git URL in its own dependencies — a supply-chain
+# vector that bypasses npm registry validation. pnpm's current
+# default is `false`; declared explicitly so a future default flip
+# can't silently widen the trust boundary.
 blockExoticSubdeps: true
 
 # Proceed with a node_modules purge WITHOUT an interactive confirm. The fleet
@@ -299,6 +323,13 @@ confirmModulesPurge: false
 # ("This project is configured to use <pin> ... your current pnpm is <run>")
 # the moment the runner's pnpm differs from the pin.
 enablePrePostScripts: true
+
+# pnpm 11's packageManager-version-check failure policy. `warn` lets the
+# install proceed with a mismatched pnpm (emitting a warning) rather than
+# hard-failing. `error` is the default when the field is absent — socket-lib
+# had `error` while the wheelhouse lacked the field, which blocked commits
+# under a dev pnpm that differed from the `packageManager` pin. `warn` keeps
+# the pin informational without blocking CI or local dev.
 minimumReleaseAge: 10080
 resolutionMode: 'highest'
 saveExact: true
@@ -540,6 +571,12 @@ patchedDependencies:
   # On a taze bump, regenerate via `pnpm patch taze` + `pnpm patch-commit`.
   taze@19.17.1: patches/taze@19.17.1.patch
 
+# Native post-install build scripts. These three arrive transitively via
+# @redwoodjs/agent-ci's `ssh2` (optional crypto acceleration). agent-ci's
+# published CLI (`dist/cli.js`) runs without them — verified `agent-ci --help`
+# works with the builds skipped — so we decline to run their post-install
+# scripts. Declining is the safe default; running native build scripts from a
+# transitive dep is unnecessary attack surface here.
 allowBuilds:
   # sdk 4.0.3 ships a `preinstall` bootstrap script in the published tarball;
   # it is repo-setup tooling and is unneeded when consumed as a dep.
