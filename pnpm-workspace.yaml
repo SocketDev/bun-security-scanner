@@ -14,6 +14,7 @@ catalog:
   # the soak window, so it carries a minimumReleaseAgeExclude entry below.
   '@shadscan/cli': 0.8.0
   '@sinclair/typebox': 0.34.52
+  'ecc-agentshield': 1.4.0
   # typebox 1.x — the unscoped rewrite of @sinclair/typebox. Both names are
   # pinned while the fleet migrates; the 0.x entry is deleted once no member
   # imports the scoped name. 1.3.10 is inside the 7-day soak, so it carries a
