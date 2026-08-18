@@ -84,7 +84,7 @@ export function createScanner({
     }
 
     while (packages.length > 0) {
-      const item = packages.shift()!
+      const item = packages.shift()
       if (!item) {
         // A hole in the caller's array costs that one entry, never the queue
         // behind it — stopping here would leave real packages unscanned.

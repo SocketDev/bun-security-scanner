@@ -38,7 +38,7 @@ export function unauthenticated(): ScannerImplementation {
           const data = await res.text()
           artifacts.push(
             ...data
-              .split('\n')
+              .split(/\r?\n/)
               .filter(Boolean)
               .map(line => JSON.parse(line)),
           )
