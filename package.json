@@ -56,7 +56,6 @@
     "doctor": "node scripts/fleet/doctor.mts",
     "setup:brew": "node scripts/fleet/setup/brew.mts",
     "setup:go": "node scripts/fleet/setup/go.mts",
-    "setup:mcp": "node scripts/fleet/setup/mcp.mts",
     "setup:python": "node scripts/fleet/setup/python.mts",
     "setup:refero": "node scripts/fleet/setup/refero.mts",
     "setup:rust": "node scripts/fleet/setup/rust.mts",
@@ -89,7 +88,10 @@
     "gh:auth": "node scripts/fleet/gh-auth.mts",
     "npm:auth:browser": "node scripts/fleet/npm-auth-browser.mts",
     "npm:auth:cli": "node scripts/fleet/npm-auth-cli.mts",
-    "prune:gha-caches": "node scripts/fleet/prune-actions-caches.mts"
+    "prune:gha-caches": "node scripts/fleet/prune-actions-caches.mts",
+    "offload:model": "node scripts/fleet/offload-model.mts",
+    "setup:fireconnect": "node scripts/fleet/setup/fireconnect.mts",
+    "setup:offload-providers": "node scripts/fleet/setup/offload-providers.mts"
   },
   "devDependencies": {
     "@playwright/mcp": "catalog:",
@@ -140,7 +142,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": ">=11.17.0",
+      "version": ">=11.21.0",
       "onFail": "error"
     }
   },

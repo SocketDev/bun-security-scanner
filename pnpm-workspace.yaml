@@ -12,14 +12,14 @@ catalog:
   # shadscan — shadcn UI audit CLI for the design skills (missing UI
   # fundamentals report). Exact-pinned; the whole package is younger than
   # the soak window, so it carries a minimumReleaseAgeExclude entry below.
-  '@shadscan/cli': 0.8.0
+  '@shadscan/cli': 0.16.0
   '@sinclair/typebox': 0.34.52
   'ecc-agentshield': 1.4.0
   # typebox 1.x — the unscoped rewrite of @sinclair/typebox. Both names are
   # pinned while the fleet migrates; the 0.x entry is deleted once no member
   # imports the scoped name. 1.3.10 is inside the 7-day soak, so it carries a
   # dated minimumReleaseAgeExclude entry above.
-  'typebox': 1.3.10
+  'typebox': 1.3.13
   '@socketregistry/packageurl-js': 1.5.2
   # -stable aliases: pnpm `overrides:` can't redirect a package's own
   # name when used INSIDE that same package — Node ESM treats it as a
@@ -39,7 +39,7 @@ catalog:
   '@socketsecurity/sdk': 4.1.4
   '@socketsecurity/sdk-stable': 'npm:@socketsecurity/sdk@4.1.4'
   '@types/mdast': 4.0.4
-  '@types/node': 26.1.2
+  '@types/node': 26.2.0
   '@types/semver': 7.8.0
   '@types/shell-quote': 1.7.5
   'compromise': 14.16.0
@@ -47,7 +47,7 @@ catalog:
   # derivation, version compare, config validation). Runs standalone in vitest.
   # published: 2026-07-08 (past 7-day soak). See .claude/skills/fleet/property-testing.
   'fast-check': 4.9.0
-  'magic-string': 1.1.0
+  'magic-string': 1.1.1
   'markdownlint-cli2': 0.23.2
   'mdast-util-from-markdown': 2.0.3
   # GFM pair for render-faithful markdown parsing (tables, footnotes,
@@ -99,7 +99,7 @@ catalog:
   'regjsparser': 0.13.2
   'semver': 7.8.5
   'shell-quote': 1.10.0
-  'taze': 19.17.1
+  'taze': 19.17.2
   # vite 8.0.16 swaps esbuild → rolldown natively (bundles rolldown
   # 1.0.2) and patches the <=8.0.15 advisories (GHSA-fx2h-pf6j-xcff
   # high, GHSA-v6wh-96g9-6wx3 medium). Tracked here so the pnpm
@@ -109,10 +109,10 @@ catalog:
   'vitest': 4.1.10
   '@vitest/coverage-v8': 4.1.10
   c8: 12.0.0
-  'chrome-devtools-mcp': 1.6.0
+  'chrome-devtools-mcp': 1.7.0
   # Playwright MCP server — agent-driven browsing with the fleet agent-banner
   # init script (see .config/fleet/playwright/).
-  '@playwright/mcp': 0.0.78
+  '@playwright/mcp': 0.0.79
   '@vitest/ui': 4.1.10
   # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
   # change can be validated before it's pushed (see the `agent-ci` skill).
@@ -120,7 +120,7 @@ catalog:
   # platform-binary optionalDependencies, despite the monorepo's internal
   # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
   # explicitly (not left transitive) so its version is uniform fleet-wide.
-  '@anthropic-ai/claude-code': 2.1.220
+  '@anthropic-ai/claude-code': 2.1.229
   # comptime 0.1.0 — Zig-inspired build-time evaluation for Rolldown/Vite.
   # Wraps comptime(() => expr) calls; the Rolldown plugin evaluates them at
   # build time and replaces the call site with the serialized literal result.
@@ -209,7 +209,7 @@ overrides:
   '@types/unist@2': '3.0.3'
   # Dedup compat shim: ansi-regex 5 (CJS yargs@17 cluster) vs 6 (ESM,
   # markdownlint). See the patchedDependencies comment for the shim.
-  'ansi-regex': '6.2.2'
+  'ansi-regex': '6.3.0'
   # Dedup: color-convert 0.5.3 is a declared-but-unused dependency of
   # css-color-converter@2.0.0 (badge-maker) — its lib/index.js never
   # `require`s color-convert at all, so the 0.5.3 resolution is dead weight.
@@ -321,6 +321,7 @@ minimumReleaseAge: 10080
 resolutionMode: 'highest'
 saveExact: true
 trustPolicy: no-downgrade
+enableGlobalVirtualStore: true
 
 # Refuse transitive (sub-) deps declared via git/tarball/local-tarball
 # specs. Direct git deps in this repo are still allowed; this only
@@ -330,8 +331,6 @@ trustPolicy: no-downgrade
 # default is `false`; declared explicitly so a future default flip
 # can't silently widen the trust boundary.
 minimumReleaseAgeExclude:
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxc-project/types@0.143.0'
   # Socket-owned scopes — bypass the soak window because they ship
   # through Socket's own provenance + publish pipeline. Canonical
   # list: scripts/constants/socket-scopes.mts SOCKET_PACKAGE_PATTERNS.
@@ -403,120 +402,6 @@ minimumReleaseAgeExclude:
   # 0.27.14 (same owner directive as its entry above: build-only dts
   # emitter, never shipped to runtime). Core packages + both per-platform
   # binding families, exact-pinned so future versions re-soak.
-  # published: 2026-08-04 | removable: 2026-08-11
-  - '@socketsecurity/lib@6.5.3'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - 'taze@19.17.1'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-android-arm-eabi@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-android-arm64@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-darwin-arm64@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-darwin-x64@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-freebsd-x64@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-arm-gnueabihf@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-arm-musleabihf@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-arm64-gnu@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-arm64-musl@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-ppc64-gnu@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-riscv64-gnu@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-riscv64-musl@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-s390x-gnu@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-x64-gnu@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-linux-x64-musl@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-openharmony-arm64@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-win32-arm64-msvc@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-win32-ia32-msvc@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxfmt/binding-win32-x64-msvc@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-android-arm-eabi@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-android-arm64@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-darwin-arm64@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-darwin-x64@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-freebsd-x64@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-arm-gnueabihf@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-arm-musleabihf@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-arm64-gnu@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-arm64-musl@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-ppc64-gnu@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-riscv64-gnu@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-riscv64-musl@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-s390x-gnu@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-x64-gnu@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-linux-x64-musl@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-openharmony-arm64@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-win32-arm64-msvc@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-win32-ia32-msvc@1.77.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - '@oxlint/binding-win32-x64-msvc@1.77.0'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-android-arm64@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-darwin-arm64@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-darwin-x64@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-freebsd-x64@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-arm-gnueabihf@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-arm64-gnu@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-arm64-musl@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-ppc64-gnu@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-s390x-gnu@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-x64-gnu@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-linux-x64-musl@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-openharmony-arm64@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-win32-arm64-msvc@1.2.3'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - '@rolldown/binding-win32-x64-msvc@1.2.3'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - 'oxfmt@0.62.0'
-  # published: 2026-08-03 | removable: 2026-08-10
-  - 'oxlint@1.77.0'
-  # published: 2026-08-05 | removable: 2026-08-12
-  - 'rolldown@1.2.3'
 
 patchedDependencies:
   # default-export interop (managed by socket-wheelhouse sync; do not edit):
@@ -550,14 +435,25 @@ patchedDependencies:
   # blocked by egress policy — every lookup then hits the request timeout
   # while taze still exits 0 (false green; update.mts fails loud on it).
   # On a taze bump, regenerate via `pnpm patch taze` + `pnpm patch-commit`.
-  taze@19.17.1: patches/taze@19.17.1.patch
+  # phantom self-alias requires (managed by socket-wheelhouse sync; do not edit):
+  # five dist files require '@socketsecurity/lib-stable/...' but lib declares no
+  # such dependency — lib-stable is an alias of lib itself, so the require only
+  # ever resolved by per-repo virtual-store placement accident. Under
+  # enableGlobalVirtualStore the issuer path is the machine-wide store, where no
+  # alias sibling exists, so every import of the secrets/ai surface dies with
+  # Cannot find module '@socketsecurity/lib-stable/process/spawn/child' (pnpm v11
+  # does not materialize packageExtensions deps inside the links store, so the
+  # declaration alone cannot save it). The patch rewrites the five requires to
+  # the relative path inside lib itself. Rides the @socketsecurity/lib catalog
+  # pin: on a bump, regenerate via `pnpm patch @socketsecurity/lib` + `pnpm patch-commit`.
+  '@socketsecurity/lib@6.7.0': patches/@socketsecurity__lib@6.7.0.patch
 
-# Native post-install build scripts. These three arrive transitively via
-# @redwoodjs/agent-ci's `ssh2` (optional crypto acceleration). agent-ci's
-# published CLI (`dist/cli.js`) runs without them — verified `agent-ci --help`
-# works with the builds skipped — so we decline to run their post-install
-# scripts. Declining is the safe default; running native build scripts from a
-# transitive dep is unnecessary attack surface here.
+  # Native post-install build scripts. These three arrive transitively via
+  # @redwoodjs/agent-ci's `ssh2` (optional crypto acceleration). agent-ci's
+  # published CLI (`dist/cli.js`) runs without them — verified `agent-ci --help`
+  # works with the builds skipped — so we decline to run their post-install
+  # scripts. Declining is the safe default; running native build scripts from a
+  # transitive dep is unnecessary attack surface here.
 allowBuilds:
   # Optional native addon for ssh2 crypto acceleration; JS fallback is fine.
   cpu-features: false

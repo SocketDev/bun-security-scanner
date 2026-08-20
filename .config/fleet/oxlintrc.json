@@ -7,6 +7,43 @@
     "suspicious": "error"
   },
   "rules": {
+    "eslint/curly": "error",
+    "eslint/no-await-in-loop": "off",
+    "eslint/no-console": "off",
+    "eslint/no-control-regex": "off",
+    "eslint/no-empty": [
+      "error",
+      {
+        "allowEmptyCatch": true
+      }
+    ],
+    "eslint/no-new": "error",
+    "eslint/no-proto": "error",
+    "eslint/no-shadow": "error",
+    "eslint/no-underscore-dangle": "off",
+    "eslint/no-unmodified-loop-condition": "off",
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^$",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": false
+      }
+    ],
+    "eslint/no-useless-catch": "off",
+    "eslint/no-var": "error",
+    "eslint/prefer-const": "error",
+    "eslint/preserve-caught-error": "off",
+    "eslint/sort-imports": "off",
+    "import/no-cycle": "off",
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "import/no-self-import": "error",
+    "import/no-unassigned-import": "off",
     "socket/bag-param-optionality-naming": "error",
     "socket/export-top-level-functions": "error",
     "socket/exported-name-has-domain-word": "error",
@@ -26,6 +63,7 @@
     "socket/no-deprecation": "error",
     "socket/no-dynamic-import-in-snapshot-hook": "error",
     "socket/no-dynamic-import-outside-bundle": "error",
+    "socket/no-error-message-assertions": "error",
     "socket/no-eslint-biome-config-ref": "error",
     "socket/no-fetch-prefer-http-request": "error",
     "socket/no-file-scope-oxlint-disable": "error",
@@ -41,6 +79,7 @@
     "socket/no-module-eval-side-effects": "error",
     "socket/no-namespace-import": "error",
     "socket/no-npx-dlx": "error",
+    "socket/no-optional-param-before-options-bag": ["warn"],
     "socket/no-optional-positional-trap": "error",
     "socket/no-options-param-mutation": "error",
     "socket/no-package-manager-auto-update-reenable": "error",
@@ -55,6 +94,8 @@
     "socket/no-redundant-spread-fallback": "error",
     "socket/no-required-in-options-bag": ["warn"],
     "socket/no-runtime-features-below-engine-floor": "error",
+    "socket/no-shop-metaphor-jargon": "error",
+    "socket/no-snapshot-hostile-builtin": "error",
     "socket/no-source-content-tests": "error",
     "socket/no-source-sniffing": "error",
     "socket/no-spawn-stream-double-consume": "error",
@@ -65,6 +106,7 @@
     "socket/no-sync-rm-in-test-lifecycle": "error",
     "socket/no-top-level-await": "error",
     "socket/no-truncated-lint-disable-reason": "error",
+    "socket/no-truthy-object-guard": "error",
     "socket/no-underscore-identifier": "error",
     "socket/no-use-strict-in-esm": "error",
     "socket/no-vitest-empty-test": "error",
@@ -93,6 +135,7 @@
     "socket/prefer-find-repo-root": "error",
     "socket/prefer-find-up-package-json": "error",
     "socket/prefer-function-declaration": "error",
+    "socket/prefer-lib-predicates": "error",
     "socket/prefer-lib-versions-over-semver": "error",
     "socket/prefer-mock-import": "error",
     "socket/prefer-node-builtin-imports": "error",
@@ -100,10 +143,12 @@
     "socket/prefer-normalize-path": "error",
     "socket/prefer-optional-chain": "error",
     "socket/prefer-pure-call-form": "error",
+    "socket/prefer-refined-record": "error",
     "socket/prefer-replace-function": "error",
     "socket/prefer-repo-root-dot-cache": "error",
     "socket/prefer-safe-delete": "error",
     "socket/prefer-separate-type-import": "error",
+    "socket/prefer-setup-naming": "error",
     "socket/prefer-shell-win32": "error",
     "socket/prefer-spawn-over-execsync": "error",
     "socket/prefer-stable-self-import": "error",
@@ -125,50 +170,12 @@
     "socket/sort-source-methods": "error",
     "socket/terse-lint-disable-reason": "error",
     "socket/use-fleet-canonical-api-token-getter": "error",
-    "eslint/curly": "error",
-    "eslint/no-await-in-loop": "off",
-    "eslint/no-console": "off",
-    "eslint/no-control-regex": "off",
-    "eslint/no-empty": [
-      "error",
-      {
-        "allowEmptyCatch": true
-      }
-    ],
-    "eslint/no-new": "error",
-    "eslint/no-underscore-dangle": "off",
-    "eslint/no-unmodified-loop-condition": "off",
-    "eslint/no-useless-catch": "off",
-    "eslint/no-proto": "error",
-    "eslint/no-shadow": "error",
-    "eslint/no-unused-vars": [
-      "error",
-      {
-        "args": "all",
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^$",
-        "caughtErrors": "all",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_",
-        "ignoreRestSiblings": false
-      }
-    ],
-    "eslint/no-var": "error",
-    "eslint/prefer-const": "error",
-    "eslint/preserve-caught-error": "off",
-    "eslint/sort-imports": "off",
-    "import/no-cycle": "off",
-    "import/no-named-as-default": "off",
-    "import/no-named-as-default-member": "off",
-    "import/no-self-import": "error",
-    "import/no-unassigned-import": "off",
     "typescript/array-type": [
       "error",
       {
         "default": "array-simple"
       }
     ],
-    "typescript/no-extraneous-class": "off",
     "typescript/consistent-type-assertions": [
       "error",
       {
@@ -185,6 +192,7 @@
     ],
     "typescript/no-explicit-any": "error",
     "typescript/no-extra-non-null-assertion": "error",
+    "typescript/no-extraneous-class": "off",
     "typescript/no-misused-new": "error",
     "typescript/no-non-null-asserted-optional-chain": "off",
     "typescript/no-redundant-type-constituents": "off",
@@ -201,10 +209,10 @@
     "typescript/triple-slash-reference": "error",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/no-array-for-each": "off",
-    "unicorn/no-array-sort": "error",
-    "unicorn/no-null": "off",
     "unicorn/no-array-reverse": "error",
+    "unicorn/no-array-sort": "error",
     "unicorn/no-empty-file": "off",
+    "unicorn/no-null": "off",
     "unicorn/no-useless-fallback-in-spread": "off",
     "unicorn/numeric-separators-style": "error",
     "unicorn/prefer-node-protocol": "error",
