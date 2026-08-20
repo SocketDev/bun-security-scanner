@@ -107,6 +107,7 @@ test/fleet/registry-infra/cargo/placeholder.test.mts linguist-generated=true
 test/fleet/registry-infra/npm/placeholder.test.mts linguist-generated=true
 test/fleet/scripts/setup.mts linguist-generated=true
 test/fleet/unit/comment-voice.test.mts linguist-generated=true
+test/fleet/unit/socket-state.test.mts linguist-generated=true
 # </fleet>
 # <repo>
 # </repo>
