@@ -6,6 +6,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   rmSync,
@@ -1331,6 +1332,107 @@ function installFiles(filesDir, dest, manifest, options) {
  * Non-fatal by design — a non-git dest or an already-clean index is a no-op
  * (`--ignore-unmatch`).
  */
+/**
+ * Every regular file beneath `dir`, as paths relative to `dir`. Bare-node walk:
+ * this module is dep-0 and must not reach for a glob library.
+ */
+function walkFilesRelative(dir, prefix, out) {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return
+  }
+  for (let i = 0, { length } = entries; i < length; i += 1) {
+    const entry = entries[i]
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+    if (entry.isDirectory())
+      walkFilesRelative(path.join(dir, entry.name), rel, out)
+    else if (entry.isFile()) out.push(rel)
+  }
+}
+/**
+ * Expand a manifest into one entry per FILE that `filesDir` actually carries.
+ *
+ * Three shapes need flattening before placement, and only the first is one
+ * `installFiles` already handles:
+ *
+ * - A file entry with a source: kept as-is.
+ * - A DIRECTORY entry: expanded into every file beneath it, each inheriting the
+ *   directory's flags. 39 of the manifest's entries are whole-tree mirror roots
+ *   (`scripts/fleet`, `.claude/hooks/fleet`, `docs/agents.md/fleet`) and they
+ *   are the bulk of the payload. Expanding rather than special-casing keeps the
+ *   always-tracked skip, the canonical splice and the per-file read-only lock
+ *   all applying, with no second placement path to drift from the first.
+ * - An entry with NO source: dropped. The manifest describes every shape the
+ *   fleet can deliver, including conditional entries seeded by other fixers
+ *   (`.cargo/config.darwin-signing.toml` under `hasRust`); 94 of them have no
+ *   template source here. A fetched tarball never shows this, because a tarball
+ *   holds exactly what it shipped.
+ */
+function expandManifestForLocalTemplate(filesDir, manifest) {
+  const files = Object.create(null)
+  const rels = Object.keys(manifest.files)
+  for (let i = 0, { length } = rels; i < length; i += 1) {
+    const rel = rels[i]
+    const entry = manifest.files[rel]
+    const source = path.join(filesDir, normalizeBundlePath(rel))
+    let stat
+    try {
+      stat = statSync(source)
+    } catch {
+      continue
+    }
+    if (stat.isFile()) {
+      files[rel] = entry
+      continue
+    }
+    if (!stat.isDirectory()) continue
+    const nested = []
+    walkFilesRelative(source, '', nested)
+    for (let j = 0, { length: nestedLength } = nested; j < nestedLength; j += 1)
+      files[`${rel}/${nested[j]}`] = entry
+  }
+  return {
+    ...manifest,
+    files,
+  }
+}
+/**
+ * Materialize the fleet mirrors in a PRODUCER checkout from its own
+ * `template/base`, rather than from a fetched bundle.
+ *
+ * The wheelhouse holds the canon locally, so it has no bundle to fetch and is
+ * not a fleet-pack consumer. That is the only reason its mirrors stayed in
+ * version control: nothing else could put them back. Producing the payload does
+ * not require tracking the output, so this is the producer's belt.
+ *
+ * Why it must live in this dep-0 entry and not in the cascade: the cascade
+ * cannot load without the payload it would be materializing.
+ * `template/base/scripts/fleet/land-work.mts` and its siblings import the LIVE
+ * `.claude/hooks/fleet/_shared/**`, so a checkout whose mirrors are absent dies
+ * at module resolution before any fixer runs. Same reason the fetcher cannot
+ * ship inside the bundle it fetches.
+ *
+ * Returns undefined when `template/base` is absent, which is every consumer:
+ * the caller then knows this checkout is not a producer and fetches instead.
+ */
+function materializeFromLocalTemplate(dest, manifest, options) {
+  const filesDir = path.join(dest, 'template', 'base')
+  if (!existsSync(filesDir)) return
+  return installFiles(
+    filesDir,
+    dest,
+    expandManifestForLocalTemplate(
+      filesDir,
+      filterManifestForCapabilities(
+        filterManifestForShape(manifest, readBuildShape(dest)),
+        readDeclaredCapabilities(dest),
+      ),
+    ),
+    options,
+  )
+}
 function untrackGeneratedOutputs(dest, generatedPaths) {
   if (!generatedPaths || generatedPaths.length === 0) return
   if (!existsSync(path.join(dest, '.git'))) return
@@ -1453,6 +1555,14 @@ function installWorkspaceSegment(segmentsDir, dest, manifest) {
 }
 const SYNC_FLEET_SCRIPT = 'node scripts/repo/bootstrap/fleet.mjs'
 const PREPARE_FETCH = 'node scripts/repo/bootstrap/prepare.mts'
+/**
+ * The PRODUCER belt: materialize the mirrors from this checkout's own
+ * `template/base` instead of fetching a bundle. The wheelhouse's counterpart to
+ * PREPARE_FETCH, and it runs in the same slot for the same reason — the
+ * git-hooks installer it precedes is itself one of the untracked mirrors.
+ */
+const PREPARE_FROM_TEMPLATE =
+  'node scripts/repo/bootstrap/fleet.mjs --from-template'
 const FLEET_STATUS_SCRIPT = 'node scripts/repo/bootstrap/fleet.mjs --status'
 /**
  * Wire the consumer's package.json for thin distribution: a `sync-fleet` script
@@ -2621,6 +2731,7 @@ function parseArgs(argv) {
     ref: '',
     repo: DEFAULT_REPO,
     status: false,
+    fromTemplate: false,
     thin: false,
     wire: false,
   }
@@ -2633,6 +2744,7 @@ function parseArgs(argv) {
     else if (arg === '--exit-code') opts.exitCode = true
     else if (arg === '--if-current') opts.ifCurrent = true
     else if (arg === '--json') opts.json = true
+    else if (arg === '--from-template') opts.fromTemplate = true
     else if (arg === '--manifest') opts.manifest = argv[++i]
     else if (arg === '--no-header') opts.noHeader = true
     else if (arg === '--quiet') opts.quiet = true
@@ -2885,11 +2997,54 @@ function isMainModule() {
     return false
   }
 }
+/**
+ * The `--from-template` verb: materialize this checkout's fleet mirrors from
+ * its own `template/base`, then report what was placed.
+ *
+ * Exit 1 when the checkout carries no `template/base` — a consumer ran the
+ * producer verb, a wiring mistake worth failing on rather than silently
+ * no-opping into an unusable tree.
+ */
+function runFromTemplate(config) {
+  const dest = path.resolve(config.dest ?? repoRoot)
+  const manifestPath = path.join(
+    dest,
+    'scripts',
+    'repo',
+    'sync-scaffolding',
+    'manifest',
+    'fleet-files.json',
+  )
+  if (!existsSync(manifestPath)) {
+    logger.error(
+      `install-fleet: --from-template: no mirror manifest at ${manifestPath}.`,
+    )
+    return 1
+  }
+  const result = materializeFromLocalTemplate(
+    dest,
+    JSON.parse(readFileSync(manifestPath, 'utf8')),
+    { refreshTracked: config.refreshTracked },
+  )
+  if (result === void 0) {
+    logger.error(
+      'install-fleet: --from-template: no template/base here — that verb is for the payload PRODUCER; a consumer fetches its bundle.',
+    )
+    return 1
+  }
+  if (!config.quiet)
+    logger.log(
+      `install-fleet: materialized ${result.placed} file(s) from template/base (${result.skippedAlwaysTracked} always-tracked left alone).`,
+    )
+  return 0
+}
 if (isMainModule()) {
   const parsed = parseArgs(process.argv.slice(2))
   process.exitCode = parsed.status
     ? await runStatus(parsed)
-    : await installFleet(parsed)
+    : parsed.fromTemplate
+      ? runFromTemplate(parsed)
+      : await installFleet(parsed)
 }
 
 //#endregion
@@ -2900,6 +3055,7 @@ export {
   GHCR_HOST,
   MANIFEST_ACCEPT,
   PREPARE_FETCH,
+  PREPARE_FROM_TEMPLATE,
   SETTINGS_CANDIDATES,
   SYNC_FLEET_SCRIPT,
   UPDATE_NOTIFIER_OPT_OUT_ENV,
@@ -2909,6 +3065,7 @@ export {
   computeSha256,
   endMarker,
   errorMessage,
+  expandManifestForLocalTemplate,
   extractFleetBlockLines,
   extractManifestFromTarball,
   fetchBlob,
@@ -2935,6 +3092,7 @@ export {
   isMainModule,
   listOciTags,
   lockStepExitCode,
+  materializeFromLocalTemplate,
   maybeShowUpdateNotice,
   mergeWorkspaceYaml,
   mergeYamlKeyBlock,
