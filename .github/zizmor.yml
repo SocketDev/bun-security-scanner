@@ -1,6 +1,0 @@
-# Zizmor configuration
-# See: https://docs.zizmor.sh/configuration/
-
-rules:
-  secrets-outside-env:
-    disable: true
