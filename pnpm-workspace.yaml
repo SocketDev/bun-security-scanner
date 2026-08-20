@@ -73,8 +73,8 @@ catalog:
   # candidates before simulating what a port actually cuts. Published
   # 2026-06-08, past the 7-day soak.
   'npm-high-impact': 1.13.0
-  'oxfmt': 0.62.0
-  'oxlint': 1.77.0
+  'oxfmt': 0.63.0
+  'oxlint': 1.78.0
   'oxlint-tsgolint': 7.0.2001
   # parse5 — the HTML parser half of the markdown story. mdast hands raw HTML
   # back as an opaque `html` node (README `<picture>`/`<img>` blocks), so
@@ -99,7 +99,7 @@ catalog:
   'regjsparser': 0.13.2
   'semver': 7.8.5
   'shell-quote': 1.10.0
-  'taze': 19.17.2
+  'taze': 20.0.1
   # vite 8.0.16 swaps esbuild → rolldown natively (bundles rolldown
   # 1.0.2) and patches the <=8.0.15 advisories (GHSA-fx2h-pf6j-xcff
   # high, GHSA-v6wh-96g9-6wx3 medium). Tracked here so the pnpm
@@ -127,7 +127,7 @@ catalog:
   # Use in rolldown.config.mts for any repo with a Rolldown build.
   # published: 2026-05-07 (26 days, past 7-day soak)
   'comptime': 0.1.0
-  'rolldown': 1.2.3
+  'rolldown': 1.2.4
   'rolldown-plugin-dts': 0.28.0
   'svgo': 4.0.2
   'vite': 8.2.0
