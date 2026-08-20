@@ -109,6 +109,7 @@
     "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "@types/shell-quote": "catalog:",
+    "@ultrathink/acorn.rs.wasm": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "c8": "catalog:",

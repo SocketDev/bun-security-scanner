@@ -14,6 +14,7 @@
 .config/fleet/.markdownlint-cli2.jsonc linguist-generated=true
 .config/fleet/.prettierignore linguist-generated=true
 .config/fleet/egress-allowlist.json linguist-generated=true
+.config/fleet/external-tools.json linguist-generated=true
 .config/fleet/git-authors.json linguist-generated=true
 .config/fleet/lockstep.schema.json linguist-generated=true
 .config/fleet/markdownlint-rules linguist-generated=true
@@ -28,7 +29,6 @@
 .config/fleet/playwright linguist-generated=true
 .config/fleet/pnpm-workspace.fleet.yaml linguist-generated=true
 .config/fleet/rolldown/bundle-stub.mts linguist-generated=true
-.config/fleet/rolldown/define-guarded.mts linguist-generated=true
 .config/fleet/rolldown/hook-bundle-excluded.config.mts linguist-generated=true
 .config/fleet/rolldown/hook-bundle-snapshot.config.mts linguist-generated=true
 .config/fleet/rolldown/hook-bundle.config.mts linguist-generated=true
@@ -107,7 +107,6 @@ test/fleet/registry-infra/cargo/placeholder.test.mts linguist-generated=true
 test/fleet/registry-infra/npm/placeholder.test.mts linguist-generated=true
 test/fleet/scripts/setup.mts linguist-generated=true
 test/fleet/unit/comment-voice.test.mts linguist-generated=true
-test/fleet/unit/socket-state.test.mts linguist-generated=true
 # </fleet>
 # <repo>
 # </repo>
