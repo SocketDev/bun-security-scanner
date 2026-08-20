@@ -3,47 +3,53 @@
     "bun": {
       "description": "Bun — the runtime this scanner plugs into via bunfig [install.security].scanner; the version the test suite and CI run against.",
       "notes": [
-        "Release bun-v1.3.14, published 2026-05-13 — outside the 7-day soak window at pin time (2026-07-28).",
-        "Integrity values are the upstream release's own SHASUMS256.txt entries converted to sha256 SRI; darwin-arm64 re-verified locally against the downloaded asset.",
+        "Release bun-v1.4.0, published 2026-08-20 — inside the 7-day soak window at pin time; rides the dated soakBypass below (auto-disarms 2026-08-27).",
+        "Integrity values are the upstream release's own SHASUMS256.txt entries converted to sha256 SRI.",
         "CI parity: .github/workflows/ci.yml Setup Bun `bun-version` must match this pin."
       ],
       "platforms": {
         "darwin-arm64": {
           "asset": "bun-darwin-aarch64.zip",
-          "integrity": "sha256-2LliIYKK1vl6x6wKt+lYcjQa92MAHogD6CZ2UsJlJiA="
+          "integrity": "sha256-xmnpf2Fk4cluBwF0jbmN+ndJKQjL2DlMdVcTSnNd44E="
         },
         "darwin-x64": {
           "asset": "bun-darwin-x64.zip",
-          "integrity": "sha256-QYPfM3RiPlurMVxUfPoJdFM81FfYa3O2OfeoeXTNZjM="
+          "integrity": "sha256-HQIRuPHcmRGCNEaHrRXnLuhvFUhFpff6R3mUzTQd2bA="
         },
         "linux-arm64": {
           "asset": "bun-linux-aarch64.zip",
-          "integrity": "sha256-on/7Y6gxA3WDbg1vZorhf6jY0YuIw3yCHGUzGXOhmjs="
+          "integrity": "sha256-SxozLuhhmD65O8/m93D/+U4+MbLDiL2uo8jtNeWO7Q4="
         },
         "linux-arm64-musl": {
           "asset": "bun-linux-aarch64-musl.zip",
-          "integrity": "sha256-uY4K02JcXADR1bX/VWBcet3b+uFRhh5oreV7LTuHA7s="
+          "integrity": "sha256-V2MAzjP/Fv/NRVvxeMLwlfnfhFxsw9AoS6HJbKDoBHM="
         },
         "linux-x64": {
           "asset": "bun-linux-x64.zip",
-          "integrity": "sha256-lR7iruhV8IWVruxiJSJqKY0/6oOj3NZGXAnLzN9+hI8="
+          "integrity": "sha256-LQP7X7g6yLVnrKCigbLOGhoZ1Ij1bClo2Iw/Jekv5FI="
         },
         "linux-x64-musl": {
           "asset": "bun-linux-x64-musl.zip",
-          "integrity": "sha256-FL2a7e6/Hbpn6N75UxyJvJiez98d5C5b/K8bjNkpRxk="
+          "integrity": "sha256-g7XxL9JY3Y1P3K6mXt6VQ2aqcX2rOZ4gCT7KsoDVTno="
         },
         "win32-arm64": {
           "asset": "bun-windows-aarch64.zip",
-          "integrity": "sha256-iYQfWlfyNItn7Ag5txj0v06n0Hw3HJukt3tseQ+RiVM="
+          "integrity": "sha256-9HO/4t9z7ncFSMk91dOArqcSDCGOwqoa/dC7unvxjEc="
         },
         "win32-x64": {
           "asset": "bun-windows-x64.zip",
-          "integrity": "sha256-CgYgkwtmdde6RA6B9ODgDTz74JbEsUDT//AiBenhiSI="
+          "integrity": "sha256-5vCT052khrICYsqM3V7Wqei8nC8nW3jm06DFsozJWQE="
         }
       },
-      "release": "asset",
+      "origin": "gh-asset",
       "repository": "github:oven-sh/bun",
-      "version": "1.3.14"
+      "version": "1.4.0",
+      "soakBypass": {
+        "version": "1.4.0",
+        "published": "2026-08-20",
+        "removable": "2026-08-27"
+      },
+      "versionDate": "2026-08-20"
     }
   }
 }
