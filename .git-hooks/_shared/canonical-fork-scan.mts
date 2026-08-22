@@ -19,7 +19,7 @@
  *   enforcement points can never disagree about what counts as canonical.
  */
 
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 import {
@@ -28,6 +28,62 @@ import {
   isPerRepoMarkerPath,
 } from '../../.claude/hooks/fleet/_shared/fleet-fork.mts'
 import { textHasFleetBlockMarkers } from '../../.claude/hooks/fleet/_shared/fleet-markers.mts'
+
+// The template trees a live path can be cascaded from. `base` maps directly;
+// `conditional` and `overrides` interpose one directory level - a capability
+// name, or a member name - so each of their children is a candidate.
+const TEMPLATE_ROOTS: readonly string[] = ['base', 'conditional', 'overrides']
+
+/**
+ * Candidate template sources for a live repo-relative path.
+ */
+export function templateTwinPaths(repoRoot: string, file: string): string[] {
+  const candidates = [path.join(repoRoot, 'template', 'base', file)]
+  for (let i = 1, { length } = TEMPLATE_ROOTS; i < length; i += 1) {
+    const root = path.join(repoRoot, 'template', TEMPLATE_ROOTS[i]!)
+    let names: string[]
+    try {
+      names = readdirSync(root)
+    } catch {
+      continue
+    }
+    for (let j = 0, { length: namesLength } = names; j < namesLength; j += 1) {
+      candidates.push(path.join(root, names[j]!, file))
+    }
+  }
+  return candidates
+}
+
+/**
+ * Whether the live content is byte-identical to one of its template twins.
+ *
+ * Then it is cascade OUTPUT, not a fork: a fork is a live copy that DIVERGED
+ * from canonical. The cascade lands its own mirrors outside this hook chain,
+ * but when it loses the index lock to a parallel session it leaves them staged,
+ * and only the operator can land them. Refusing that commit leaves no reachable
+ * fix - the tool-call guard forbids writing the mirror by hand, and the cascade
+ * cannot retry while the lock is held - so the operator's only remaining route
+ * is skipping every hook, which is strictly worse than this exemption.
+ */
+export function matchesTemplateTwin(
+  repoRoot: string,
+  file: string,
+  content: string,
+): boolean {
+  const candidates = templateTwinPaths(repoRoot, file)
+  for (let i = 0, { length } = candidates; i < length; i += 1) {
+    let twin: string
+    try {
+      twin = readFileSync(candidates[i]!, 'utf8')
+    } catch {
+      continue
+    }
+    if (twin === content) {
+      return true
+    }
+  }
+  return false
+}
 
 export interface CanonicalForkFinding {
   file: string
@@ -92,6 +148,10 @@ export function scanCanonicalForkPaths(
       // canonical path staged unreadable is still worth surfacing.
     }
     if (textHasFleetBlockMarkers(content)) {
+      continue
+    }
+    // Byte-identical to canonical is propagation, not divergence.
+    if (matchesTemplateTwin(repoRoot, file, content)) {
       continue
     }
     findings.push({ file })

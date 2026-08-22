@@ -148,8 +148,8 @@ pnpm-debug.log
 /.claude/skills/fleet/
 /.claude/workflows/
 /.config/fleet/.markdownlint-cli2.jsonc
-/.config/fleet/egress-allowlist.json
 /.config/fleet/external-tools.json
+/.config/fleet/fetch-allowlist.json
 /.config/fleet/git-authors.json
 /.config/fleet/lockstep.schema.json
 /.config/fleet/markdownlint-rules/

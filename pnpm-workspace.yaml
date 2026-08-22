@@ -1,25 +1,26 @@
 catalog:
+  '@mdn/browser-compat-data': 8.0.11
   # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
   # change can be validated before it's pushed (see the `agent-ci` skill).
   # The published package is a self-contained Node CLI (`dist/cli.js`) — no
   # platform-binary optionalDependencies, despite the monorepo's internal
   # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
   # explicitly (not left transitive) so its version is uniform fleet-wide.
-  '@redwoodjs/agent-ci': 0.17.1
   '@ultrathink/acorn.rs.wasm': 0.1.1
   'brace-expansion': 5.0.9
-  'dtu-github-actions': 0.17.1
+  'dtu-github-actions': 0.18.1
   # shadscan — shadcn UI audit CLI for the design skills (missing UI
   # fundamentals report). Exact-pinned; the whole package is younger than
   # the soak window, so it carries a minimumReleaseAgeExclude entry below.
   '@shadscan/cli': 0.16.0
   '@sinclair/typebox': 0.34.52
   'ecc-agentshield': 1.4.0
+  'run-local-ci': 0.18.1
   # typebox 1.x — the unscoped rewrite of @sinclair/typebox. Both names are
   # pinned while the fleet migrates; the 0.x entry is deleted once no member
   # imports the scoped name. 1.3.10 is inside the 7-day soak, so it carries a
   # dated minimumReleaseAgeExclude entry above.
-  'typebox': 1.3.13
+  'typebox': 1.3.14
   '@socketregistry/packageurl-js': 1.5.2
   # -stable aliases: pnpm `overrides:` can't redirect a package's own
   # name when used INSIDE that same package — Node ESM treats it as a
@@ -47,7 +48,7 @@ catalog:
   # derivation, version compare, config validation). Runs standalone in vitest.
   # published: 2026-07-08 (past 7-day soak). See .claude/skills/fleet/property-testing.
   'fast-check': 4.9.0
-  'magic-string': 1.1.1
+  'magic-string': 1.2.0
   'markdownlint-cli2': 0.23.2
   'mdast-util-from-markdown': 2.0.3
   # GFM pair for render-faithful markdown parsing (tables, footnotes,
@@ -99,7 +100,7 @@ catalog:
   'regjsparser': 0.13.2
   'semver': 7.8.5
   'shell-quote': 1.10.0
-  'taze': 20.0.1
+  'taze': 21.1.0
   # vite 8.0.16 swaps esbuild → rolldown natively (bundles rolldown
   # 1.0.2) and patches the <=8.0.15 advisories (GHSA-fx2h-pf6j-xcff
   # high, GHSA-v6wh-96g9-6wx3 medium). Tracked here so the pnpm
@@ -402,6 +403,14 @@ minimumReleaseAgeExclude:
   # 0.27.14 (same owner directive as its entry above: build-only dts
   # emitter, never shipped to runtime). Core packages + both per-platform
   # binding families, exact-pinned so future versions re-soak.
+  - '@abitious/*'
+  - '@decmpfs/*'
+  - '@node-smol/*'
+  - 'sockeye'
+  # published: 2026-08-21 | removable: 2026-08-28
+  - 'dtu-github-actions@0.18.1'
+  # published: 2026-08-21 | removable: 2026-08-28
+  - 'run-local-ci@0.18.1'
 
 patchedDependencies:
   # default-export interop (managed by socket-wheelhouse sync; do not edit):

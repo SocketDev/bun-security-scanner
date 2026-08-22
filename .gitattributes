@@ -13,8 +13,8 @@
 .claude/workflows linguist-generated=true
 .config/fleet/.markdownlint-cli2.jsonc linguist-generated=true
 .config/fleet/.prettierignore linguist-generated=true
-.config/fleet/egress-allowlist.json linguist-generated=true
 .config/fleet/external-tools.json linguist-generated=true
+.config/fleet/fetch-allowlist.json linguist-generated=true
 .config/fleet/git-authors.json linguist-generated=true
 .config/fleet/lockstep.schema.json linguist-generated=true
 .config/fleet/markdownlint-rules linguist-generated=true
@@ -70,8 +70,8 @@
 .github/actions/fleet/setup-rust-cache linguist-generated=true
 .github/actions/fleet/setup-rust-toolchain linguist-generated=true
 .github/actions/fleet/upload-artifact linguist-generated=true
-.github/agent-ci.Dockerfile linguist-generated=true
 .github/dependabot.yml linguist-generated=true
+.github/local-ci.Dockerfile linguist-generated=true
 .github/workflows/*.lock.yml linguist-generated=true merge=ours
 .github/workflows/fuzz.yml linguist-generated=true
 .github/workflows/get-green.yml linguist-generated=true

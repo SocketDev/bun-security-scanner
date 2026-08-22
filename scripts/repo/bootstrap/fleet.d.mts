@@ -1,5 +1,6 @@
 //#region scripts/repo/gen/bootstrap/src/helpers.d.mts
 type FleetCommentStyle = 'hash' | 'html' | 'json' | 'slash';
+declare const HYBRID_BUNDLE_PATHS: ReadonlySet<string>;
 interface BundleManifest {
   readonly files: Record<string, string>;
   readonly generatedPaths?: readonly string[] | undefined;
@@ -333,10 +334,26 @@ declare function ghcrTokenUrl(repo: string, registry: string): string;
  */
 declare function tokenFromBody(body: Buffer): string | undefined;
 /**
- * Obtain an anonymous pull token. Hits the documented token endpoint first; on
- * anything but a usable token, falls back to the 401 WWW-Authenticate challenge
- * form (probe /v2/, follow the advertised realm). Fails loud when no token can
- * be obtained.
+ * `Authorization: Basic` for GHCR's token endpoint, built from the workflow
+ * token when one is in the environment.
+ *
+ * A PUBLIC package needs none of this - anonymous pull is the common path and
+ * stays first. A package that is private, or newly published and not yet made
+ * public, answers the anonymous request with 403 and no token, which reads as
+ * "confirm the package is public" and is unactionable inside a job that already
+ * holds a credential for the same repo. GHCR accepts the workflow token as the
+ * password with any username.
+ *
+ * Returns undefined when no token is in the environment, so a local run keeps
+ * its anonymous behavior. Never logged: the value only ever becomes a header.
+ */
+declare function ghcrBasicAuthHeader(env: Record<string, string | undefined>): string | undefined;
+/**
+ * Obtain a pull token. Hits the documented token endpoint first; on anything
+ * but a usable token, falls back to the 401 WWW-Authenticate challenge form
+ * (probe /v2/, follow the advertised realm), and finally retries the challenge
+ * WITH the workflow token when the environment carries one. Fails loud when no
+ * token can be obtained.
  */
 declare function getGhcrToken(repo: string, registry: string, httpFn?: GhcrHttpGetFn): Promise<string>;
 /**
@@ -467,26 +484,6 @@ interface InstallFilesResult {
 }
 declare function installFiles(filesDir: string, dest: string, manifest: BundleManifest, options?: InstallFilesOptions): InstallFilesResult;
 /**
- * Expand a manifest into one entry per FILE that `filesDir` actually carries.
- *
- * Three shapes need flattening before placement, and only the first is one
- * `installFiles` already handles:
- *
- * - A file entry with a source: kept as-is.
- * - A DIRECTORY entry: expanded into every file beneath it, each inheriting the
- *   directory's flags. 39 of the manifest's entries are whole-tree mirror roots
- *   (`scripts/fleet`, `.claude/hooks/fleet`, `docs/agents.md/fleet`) and they
- *   are the bulk of the payload. Expanding rather than special-casing keeps the
- *   always-tracked skip, the canonical splice and the per-file read-only lock
- *   all applying, with no second placement path to drift from the first.
- * - An entry with NO source: dropped. The manifest describes every shape the
- *   fleet can deliver, including conditional entries seeded by other fixers
- *   (`.cargo/config.darwin-signing.toml` under `hasRust`); 94 of them have no
- *   template source here. A fetched tarball never shows this, because a tarball
- *   holds exactly what it shipped.
- */
-declare function expandManifestForLocalTemplate<T extends BundleManifest>(filesDir: string, manifest: T): T;
-/**
  * Materialize the fleet mirrors in a PRODUCER checkout from its own
  * `template/base`, rather than from a fetched bundle.
  *
@@ -506,6 +503,16 @@ declare function expandManifestForLocalTemplate<T extends BundleManifest>(filesD
  * the caller then knows this checkout is not a producer and fetches instead.
  */
 declare function materializeFromLocalTemplate(dest: string, manifest: BundleManifest, options?: InstallFilesOptions): InstallFilesResult | undefined;
+/**
+ * Untrack the bundle's GENERATED build outputs (`manifest.generatedPaths`)
+ * from the git index after placement. The bundle SHIPS these files — placement
+ * writes them to disk — while the fleet gitignore block ignores them and
+ * `generated-outputs-are-untracked` forbids TRACKING them. A member that
+ * historically committed one (fleet-pack.cjs et al., before the ignore existed)
+ * heals on the next refresh: the file stays on disk, but leaves the index.
+ * Non-fatal by design — a non-git dest or an already-clean index is a no-op
+ * (`--ignore-unmatch`).
+ */
 declare function untrackGeneratedOutputs(dest: string, generatedPaths: readonly string[] | undefined): void;
 /**
  * Apply each fleet-canonical segment: read the `.fleetblock` file, read the
@@ -991,4 +998,4 @@ declare function runStatus(config: InstallConfig): Promise<number>;
 declare function installFleet(config: InstallConfig): Promise<number>;
 declare function isMainModule(): boolean;
 //#endregion
-export { AuthChallenge, BundleConfig, BundleFetchFn, BundleManifest, ERR_BUNDLE_BEHIND_LOCAL, ERR_LOCKSTEP_MISMATCH, FLEET_STATUS_SCRIPT, FetchedBundle, FetchedFiles, FleetBlockSpan, FleetCommentStyle, FleetFileManifest, GHCR_HOST, GhcrHttpGetFn, GhcrHttpOptions, GhcrHttpResponse, InstallConfig, InstallFilesOptions, InstallFilesResult, LockStepConfig, LockStepErrorParts, LockStepInputs, LockStepState, LockStepStateName, MANIFEST_ACCEPT, MemberBuildShape, MergeWorkspaceConfig, NoticeDecisionInputs, NoticeStore, OciLayer, OciManifest, PREPARE_FETCH, PREPARE_FROM_TEMPLATE, PullBundleConfig, RefValidation, SETTINGS_CANDIDATES, SYNC_FLEET_SCRIPT, SegmentEntry, SettingsSegmentEntry, SpliceConfig, TarExtractConfig, UPDATE_NOTIFIER_OPT_OUT_ENV, UntrackFleetPackConfig, WorkspaceSegmentEntry, YamlEntryBody, YamlEntryChunk, YamlKeyBlock, applyMovedPaths, assertLockStep, beginMarker, computeSha256, endMarker, errorMessage, expandManifestForLocalTemplate, extractFleetBlockLines, extractManifestFromTarball, fetchBlob, fetchBundleSource, fetchOciManifest, filterManifestForCapabilities, filterManifestForShape, findFleetBlockSpans, firstHeader, fleetPackOwnedPaths, formatLockStepError, formatUpdateNotice, getGhcrToken, ghcrBundleRepo, ghcrFetchBundle, ghcrTokenUrl, httpGet, installFiles, installFleet, installSegments, installSettingsSegment, installWorkspaceSegment, isBundleBehindLocalTemplate, isMainModule, listOciTags, lockStepExitCode, materializeFromLocalTemplate, maybeShowUpdateNotice, mergeWorkspaceYaml, mergeYamlKeyBlock, nextTagPageUrl, normalizeBundlePath, normalizeManifestEntryPath, packBeginMarker, packEndMarker, packTemplateSha, parseArgs, parseWwwAuthenticate, parseYamlEntryChunks, parseYamlKeyBlocks, pickBundleLayer, printStatusReport, pruneStaleFleetFiles, pullFleetBundleTarball, readAppliedFiles, readAppliedRef, readBuildShape, readBundleConfig, readBundleRef, readDeclaredCapabilities, readManifest, readNoticeStore, refreshFleetPackIgnores, removeTombstonedPaths, resolveLockStepState, resolveNewestRef, resolveRepoRoot, resolveSettingsPath, run, runStatus, segmentFileName, sha256Hex, shouldShowNotice, spliceFleetBlock, splicePackBlock, spliceYamlSeparatorRun, statusJson, stripLegacyPackBlock, stripLegacyUntrackEntriesFromFleetBlock, tarExecutable, tarExtractArgs, tokenFromBody, untrackFleetPackPaths, untrackGeneratedOutputs, validateBundleBlock, validateCascadeSha, validateRef, verifyBundleFiles, verifySegments, wirePackageJson, writeAppliedFiles, writeAppliedRef, writeNoticeStore };
+export { AuthChallenge, BundleConfig, BundleFetchFn, BundleManifest, ERR_BUNDLE_BEHIND_LOCAL, ERR_LOCKSTEP_MISMATCH, FLEET_STATUS_SCRIPT, FetchedBundle, FetchedFiles, FleetBlockSpan, FleetCommentStyle, FleetFileManifest, GHCR_HOST, GhcrHttpGetFn, GhcrHttpOptions, GhcrHttpResponse, HYBRID_BUNDLE_PATHS, InstallConfig, InstallFilesOptions, InstallFilesResult, LockStepConfig, LockStepErrorParts, LockStepInputs, LockStepState, LockStepStateName, MANIFEST_ACCEPT, MemberBuildShape, MergeWorkspaceConfig, NoticeDecisionInputs, NoticeStore, OciLayer, OciManifest, PREPARE_FETCH, PREPARE_FROM_TEMPLATE, PullBundleConfig, RefValidation, SETTINGS_CANDIDATES, SYNC_FLEET_SCRIPT, SegmentEntry, SettingsSegmentEntry, SpliceConfig, TarExtractConfig, UPDATE_NOTIFIER_OPT_OUT_ENV, UntrackFleetPackConfig, WorkspaceSegmentEntry, YamlEntryBody, YamlEntryChunk, YamlKeyBlock, applyMovedPaths, assertLockStep, beginMarker, computeSha256, endMarker, errorMessage, extractFleetBlockLines, extractManifestFromTarball, fetchBlob, fetchBundleSource, fetchOciManifest, filterManifestForCapabilities, filterManifestForShape, findFleetBlockSpans, firstHeader, fleetPackOwnedPaths, formatLockStepError, formatUpdateNotice, getGhcrToken, ghcrBasicAuthHeader, ghcrBundleRepo, ghcrFetchBundle, ghcrTokenUrl, httpGet, installFiles, installFleet, installSegments, installSettingsSegment, installWorkspaceSegment, isBundleBehindLocalTemplate, isMainModule, listOciTags, lockStepExitCode, materializeFromLocalTemplate, maybeShowUpdateNotice, mergeWorkspaceYaml, mergeYamlKeyBlock, nextTagPageUrl, normalizeBundlePath, normalizeManifestEntryPath, packBeginMarker, packEndMarker, packTemplateSha, parseArgs, parseWwwAuthenticate, parseYamlEntryChunks, parseYamlKeyBlocks, pickBundleLayer, printStatusReport, pruneStaleFleetFiles, pullFleetBundleTarball, readAppliedFiles, readAppliedRef, readBuildShape, readBundleConfig, readBundleRef, readDeclaredCapabilities, readManifest, readNoticeStore, refreshFleetPackIgnores, removeTombstonedPaths, resolveLockStepState, resolveNewestRef, resolveRepoRoot, resolveSettingsPath, run, runStatus, segmentFileName, sha256Hex, shouldShowNotice, spliceFleetBlock, splicePackBlock, spliceYamlSeparatorRun, statusJson, stripLegacyPackBlock, stripLegacyUntrackEntriesFromFleetBlock, tarExecutable, tarExtractArgs, tokenFromBody, untrackFleetPackPaths, untrackGeneratedOutputs, validateBundleBlock, validateCascadeSha, validateRef, verifyBundleFiles, verifySegments, wirePackageJson, writeAppliedFiles, writeAppliedRef, writeNoticeStore };

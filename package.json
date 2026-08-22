@@ -36,7 +36,7 @@
     "test": "bun test",
     "check": "node scripts/fleet/check.mts",
     "check:paths": "node scripts/fleet/check/paths-are-canonical.mts",
-    "ci:local": "node scripts/fleet/agent-ci-skip-locks.mts run --all --quiet --pause-on-failure --github-token",
+    "ci:local": "node scripts/fleet/local-ci-skip-locks.mts run --all --quiet --pause-on-failure --github-token",
     "clean": "node scripts/fleet/clean.mts",
     "cover": "node scripts/fleet/cover.mts",
     "doctor:auth": "node scripts/fleet/check/setup-is-prompt-less.mts",
@@ -46,7 +46,7 @@
     "lockstep": "node scripts/fleet/lockstep.mts",
     "lockstep:emit-mirror-globs": "node scripts/fleet/lockstep-emit-mirror-globs.mts",
     "lockstep:emit-schema": "node scripts/fleet/lockstep-emit-schema.mts",
-    "prepare": "node scripts/repo/bootstrap/prepare.mts && node scripts/fleet/install-git-hooks.mts && node scripts/repo/bootstrap/fleet.mjs --from-template && node scripts/fleet/install-git-hooks.mts && node scripts/fleet/prepare.mts",
+    "prepare": "node scripts/repo/bootstrap/prepare.mts && node scripts/fleet/install-git-hooks.mts && node scripts/fleet/prepare.mts",
     "security": "node scripts/fleet/security.mts",
     "setup-security-tools": "node .claude/hooks/fleet/setup-security-tools/install.mts",
     "sync-oxlint-rules": "node scripts/fleet/sync-oxlint-rules.mts",
@@ -91,11 +91,13 @@
     "prune:gha-caches": "node scripts/fleet/prune-actions-caches.mts",
     "offload:model": "node scripts/fleet/offload-model.mts",
     "setup:fireconnect": "node scripts/fleet/setup/fireconnect.mts",
-    "setup:offload-providers": "node scripts/fleet/setup/offload-providers.mts"
+    "setup:offload-providers": "node scripts/fleet/setup/offload-providers.mts",
+    "sync-global-hooks": "node scripts/fleet/sync-global-hooks.mts",
+    "backup": "node scripts/fleet/backup-work.mts"
   },
   "devDependencies": {
+    "@mdn/browser-compat-data": "catalog:",
     "@playwright/mcp": "catalog:",
-    "@redwoodjs/agent-ci": "catalog:",
     "@shadscan/cli": "catalog:",
     "@sinclair/typebox": "catalog:",
     "@socketregistry/packageurl-js": "catalog:",
@@ -133,12 +135,14 @@
     "portless": "catalog:",
     "regjsparser": "catalog:",
     "rolldown": "catalog:",
+    "run-local-ci": "catalog:",
     "semver": "catalog:",
     "shell-quote": "catalog:",
     "taze": "catalog:",
     "typebox": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml": "catalog:"
   },
   "devEngines": {
     "packageManager": {
