@@ -6,7 +6,7 @@
  *   network, so exercising them for real would either dirty a tracked file
  *   this change doesn't otherwise touch or make the suite network-flaky.
  */
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -102,19 +102,39 @@ describe('isAppliedRefCurrentOrNewer', () => {
     expect(isAppliedRefCurrentOrNewer(PINNED, 'not-a-pack-ref')).toBe(false)
   })
 
-  test('trusts a divergent applied ref outside CI with no sibling wheelhouse checkout', () => {
-    const originalCI = process.env['CI']
-    delete process.env['CI']
-    try {
-      expect(isAppliedRefCurrentOrNewer(PINNED, APPLIED)).toBe(true)
-    } finally {
-      if (originalCI === undefined) {
-        delete process.env['CI']
-      } else {
-        process.env['CI'] = originalCI
+  // The function reads a literal `../socket-wheelhouse` sibling off disk with
+  // no injection point, so this precondition can only be exercised on a
+  // machine that genuinely has none. A real sibling checkout makes
+  // `git merge-base` the deciding path instead (covered by its own
+  // machine-dependent behavior, not this fixed pair of fake shas), so skip
+  // rather than assert a result this machine's disk state cannot produce.
+  const wheelhouseSiblingExists = existsSync(
+    path.join(
+      import.meta.dirname,
+      '..',
+      '..',
+      '..',
+      '..',
+      'socket-wheelhouse',
+      '.git',
+    ),
+  )
+  test.skipIf(wheelhouseSiblingExists)(
+    'trusts a divergent applied ref outside CI with no sibling wheelhouse checkout',
+    () => {
+      const originalCI = process.env['CI']
+      delete process.env['CI']
+      try {
+        expect(isAppliedRefCurrentOrNewer(PINNED, APPLIED)).toBe(true)
+      } finally {
+        if (originalCI === undefined) {
+          delete process.env['CI']
+        } else {
+          process.env['CI'] = originalCI
+        }
       }
-    }
-  })
+    },
+  )
 
   test('never trusts a divergent applied ref in CI with no sibling wheelhouse checkout', () => {
     const originalCI = process.env['CI']

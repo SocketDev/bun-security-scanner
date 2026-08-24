@@ -3461,3 +3461,17 @@ test/fleet/registry-infra/npm/placeholder.test.mts
 test/fleet/scripts/setup.mts
 test/fleet/unit/comment-voice.test.mts
 # </fleet-pack>
+
+# <repo>
+# Hand-authored/customized copies that must stay tracked despite the
+# fleet-pack ignore enumeration above (negations must trail the whole
+# generated block to win - gitignore uses last-match-wins).
+!/patches/brace-expansion@5.0.9.patch
+!/patches/minimatch@10.2.6.patch
+!/patches/@socketsecurity__lib@6.7.0.patch
+!/assets/fleet/badge-follow-bluesky.svg
+!/assets/fleet/badge-follow-x.svg
+!/assets/fleet/socket-combomark-dark.svg
+!/assets/fleet/socket-combomark-light.svg
+!/test/fleet/_shared/lib/isolate-home-env.mts
+# </repo>

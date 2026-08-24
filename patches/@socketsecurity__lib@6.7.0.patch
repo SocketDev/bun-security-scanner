@@ -1,0 +1,173 @@
+diff --git a/dist/external/npm-pack.js b/dist/external/npm-pack.js
+index 5d23f080b94da79c294f5a19f1b4630c13e97107..ab1e5843aec0ce7b82844f800f601991fdb1bd41 100644
+--- a/dist/external/npm-pack.js
++++ b/dist/external/npm-pack.js
+@@ -8071,7 +8071,7 @@ var require_spawn = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ //#endregion
+ //#region node_modules/.pnpm/@npmcli+git@6.0.3/node_modules/@npmcli/git/lib/lines-to-revs.js
+ var require_lines_to_revs = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+-	const semver$11 = require("semver");
++	const semver$11 = require("./semver.js");
+ 	module.exports = (lines) => finish(lines.reduce(linesToRevsReducer, {
+ 		versions: {},
+ 		"dist-tags": {},
+@@ -8263,7 +8263,7 @@ var require_npa = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const path$20 = isWindows ? require("path/win32") : require("path");
+ 	const { homedir: homedir$2 } = require("os");
+ 	const HostedGit = require_lib$37();
+-	const semver$10 = require("semver");
++	const semver$10 = require("./semver.js");
+ 	const validatePackageName = require_lib$34();
+ 	const { log } = require_lib$38();
+ 	const hasSlashes = isWindows ? /\\|[/]/ : /[/]/;
+@@ -9233,7 +9233,7 @@ var require_dev_engines$1 = /* @__PURE__ */ __commonJSMin(((exports, module) =>
+ //#endregion
+ //#region node_modules/.pnpm/npm-install-checks@7.1.2/node_modules/npm-install-checks/lib/index.js
+ var require_lib$33 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+-	const semver$9 = require("semver");
++	const semver$9 = require("./semver.js");
+ 	const currentEnv = require_current_env$1();
+ 	const { checkDevEngines } = require_dev_engines$1();
+ 	const checkEngine = (target, npmVer, nodeVer, force = false) => {
+@@ -9344,7 +9344,7 @@ var require_lib$32 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ //#region node_modules/.pnpm/npm-pick-manifest@10.0.0/node_modules/npm-pick-manifest/lib/index.js
+ var require_lib$31 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const npa = require_npa();
+-	const semver$8 = require("semver");
++	const semver$8 = require("./semver.js");
+ 	const { checkEngine } = require_lib$33();
+ 	const normalizeBin = require_lib$32();
+ 	const engineOk = (manifest, npmVersion, nodeVersion) => {
+@@ -33143,7 +33143,7 @@ var require_deepest_nesting_target = /* @__PURE__ */ __commonJSMin(((exports, mo
+ //#region node_modules/.pnpm/@npmcli+arborist@9.9.0_supports-color@10.2.2/node_modules/@npmcli/arborist/lib/can-place-dep.js
+ var require_can_place_dep = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const localeCompare = require_string_locale_compare()("en");
+-	const semver$7 = require("semver");
++	const semver$7 = require("./semver.js");
+ 	const debug = require_debug();
+ 	const peerEntrySets = require_peer_entry_sets();
+ 	const deepestNestingTarget = require_deepest_nesting_target();
+@@ -34437,7 +34437,7 @@ var require_from_path = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ //#endregion
+ //#region node_modules/.pnpm/@npmcli+arborist@9.9.0_supports-color@10.2.2/node_modules/@npmcli/arborist/lib/dep-valid.js
+ var require_dep_valid = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+-	const semver$6 = require("semver");
++	const semver$6 = require("./semver.js");
+ 	const npa = require_npa();
+ 	const { relative: relative$4 } = require("path");
+ 	const fromPath = require_from_path();
+@@ -34519,7 +34519,7 @@ var require_dep_valid = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ //#region node_modules/.pnpm/@npmcli+arborist@9.9.0_supports-color@10.2.2/node_modules/@npmcli/arborist/lib/override-set.js
+ var require_override_set = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const npa = require_npa();
+-	const semver$5 = require("semver");
++	const semver$5 = require("./semver.js");
+ 	const { log } = require_lib$38();
+ 	var OverrideSet = class OverrideSet {
+ 		constructor({ overrides, key, parent }) {
+@@ -35069,7 +35069,7 @@ var require_node = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const PackageJson = require_lib$29();
+ 	const nameFromFolder = require_lib$10();
+ 	const npa = require_npa();
+-	const semver$4 = require("semver");
++	const semver$4 = require("./semver.js");
+ 	const util$1 = require("util");
+ 	const { getPaths: getBinPaths } = require_lib$4();
+ 	const { log } = require_lib$38();
+@@ -36357,7 +36357,7 @@ var require_spec_from_lock = /* @__PURE__ */ __commonJSMin(((exports, module) =>
+ //#endregion
+ //#region node_modules/.pnpm/@npmcli+arborist@9.9.0_supports-color@10.2.2/node_modules/@npmcli/arborist/lib/version-from-tgz.js
+ var require_version_from_tgz = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+-	const semver$3 = require("semver");
++	const semver$3 = require("./semver.js");
+ 	const { basename: basename$2 } = require("path");
+ 	const { URL: URL$2 } = require("url");
+ 	module.exports = (name, tgz) => {
+@@ -37463,7 +37463,7 @@ var require_dev_engines = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ //#endregion
+ //#region node_modules/.pnpm/npm-install-checks@8.0.0/node_modules/npm-install-checks/lib/index.js
+ var require_lib$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+-	const semver$2 = require("semver");
++	const semver$2 = require("./semver.js");
+ 	const currentEnv = require_current_env();
+ 	const { checkDevEngines } = require_dev_engines();
+ 	const checkEngine = (target, npmVer, nodeVer, force = false) => {
+@@ -38954,7 +38954,7 @@ var require_promise_all_reject_late = /* @__PURE__ */ __commonJSMin(((exports, m
+ //#region node_modules/.pnpm/@npmcli+arborist@9.9.0_supports-color@10.2.2/node_modules/@npmcli/arborist/lib/script-allowed.js
+ var require_script_allowed = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const npa = require_npa();
+-	const semver$1 = require("semver");
++	const semver$1 = require("./semver.js");
+ 	const versionFromTgz = require_version_from_tgz();
+ 	const isScriptAllowed = (node, policy) => {
+ 		if (node.inBundle) return null;
+@@ -39762,7 +39762,7 @@ var require_reify = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+ 	const { existsSync, realpathSync } = require("fs");
+ 	const { lstat, mkdir: mkdir$1, readdir: readdir$1, readlink, rm: rm$2, symlink } = require("fs/promises");
+ 	const { moveFile } = require_lib$8();
+-	const { subset, intersects } = require("semver");
++	const { subset, intersects } = require("./semver.js");
+ 	const { walkUp } = require_commonjs$1();
+ 	const AuditReport = require__stub_arborist_audit_report();
+ 	const Diff = require_diff();
+@@ -42507,7 +42507,7 @@ const makeFetchHappen = require_lib$14();
+ const Arborist = require_arborist();
+ const npmPackageArg = require_npa();
+ const normalizePackageData = require_normalize();
+-const semver = require("semver");
++const semver = require("./semver.js");
+ const validateNpmPackageName = require_lib$34();
+ const pacote = {
+ 	extract: (spec, dest, opts) => pacoteFetcherGet(spec, opts).extract(dest),
+diff --git a/dist/native-messaging/install.js b/dist/native-messaging/install.js
+index 0839dac9d27110a79c9b8520b866dd59b75d01b1..09d41a64696efcf98456521dd86e3d6f086e25f5 100644
+--- a/dist/native-messaging/install.js
++++ b/dist/native-messaging/install.js
+@@ -13,7 +13,7 @@ let node_fs = require("node:fs");
+ let node_url = require("node:url");
+ let node_process = require("node:process");
+ node_process = require_runtime.__toESM(node_process);
+-let _socketsecurity_lib_stable_process_spawn_child = require("@socketsecurity/lib-stable/process/spawn/child");
++let _socketsecurity_lib_stable_process_spawn_child = require("../process/spawn/child");
+ let node_path = require("node:path");
+ node_path = require_runtime.__toESM(node_path);
+ 
+diff --git a/dist/secrets/linux.js b/dist/secrets/linux.js
+index 210397915839fda4525c7fb14ca32540c12053e3..93f083fff036e21f76c72f4f9c7a1f1359728ade 100644
+--- a/dist/secrets/linux.js
++++ b/dist/secrets/linux.js
+@@ -3,7 +3,7 @@
+ Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+ const require_primordials_error = require('../primordials/error.js');
+ const require_primordials_promise = require('../primordials/promise.js');
+-let _socketsecurity_lib_stable_process_spawn_child = require("@socketsecurity/lib-stable/process/spawn/child");
++let _socketsecurity_lib_stable_process_spawn_child = require("../process/spawn/child");
+ 
+ //#region src/secrets/linux.ts
+ /**
+diff --git a/dist/secrets/macos.js b/dist/secrets/macos.js
+index 5ece329f9c14a74102e5b82213fc07777ba22f22..66afbfa00d7d3848c410ffba7a89b79d1001625c 100644
+--- a/dist/secrets/macos.js
++++ b/dist/secrets/macos.js
+@@ -2,7 +2,7 @@
+ /* Socket Lib - Built with rolldown */
+ Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+ const require_primordials_error = require('../primordials/error.js');
+-let _socketsecurity_lib_stable_process_spawn_child = require("@socketsecurity/lib-stable/process/spawn/child");
++let _socketsecurity_lib_stable_process_spawn_child = require("../process/spawn/child");
+ 
+ //#region src/secrets/macos.ts
+ /**
+diff --git a/dist/secrets/windows.js b/dist/secrets/windows.js
+index f0b2705cce44cf592c14d5ad74c031f9d5a98b2f..a67c3e05c8f6344d881ffe34cbb2078722841f4f 100644
+--- a/dist/secrets/windows.js
++++ b/dist/secrets/windows.js
+@@ -9,7 +9,7 @@ let node_process = require("node:process");
+ node_process = require_runtime.__toESM(node_process);
+ let node_os = require("node:os");
+ node_os = require_runtime.__toESM(node_os);
+-let _socketsecurity_lib_stable_process_spawn_child = require("@socketsecurity/lib-stable/process/spawn/child");
++let _socketsecurity_lib_stable_process_spawn_child = require("../process/spawn/child");
+ let node_path = require("node:path");
+ node_path = require_runtime.__toESM(node_path);
+ 
