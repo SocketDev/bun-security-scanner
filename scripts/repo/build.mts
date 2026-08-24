@@ -8,6 +8,7 @@
 import { existsSync } from 'node:fs'
 
 import { isMainModule } from '../fleet/_shared/is-main-module.mts'
+import { runMain } from '../fleet/_shared/run-main.mts'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -22,6 +23,8 @@ import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import { configs as rolldownConfigs } from '../../.config/repo/rolldown.config.mts'
 import { cleanDist, cleanTypes } from './clean.mts'
 import { REPO_ROOT } from '../fleet/paths.mts'
+
+import type { ScriptMeta } from '../fleet/_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -87,7 +90,6 @@ async function main(): Promise<void> {
   const { values } = parseArgs({
     allowPositionals: false,
     options: {
-      help: { type: 'boolean', default: false },
       needed: { type: 'boolean', default: false },
       quiet: { type: 'boolean', default: false },
       silent: { type: 'boolean', default: false },
@@ -96,16 +98,6 @@ async function main(): Promise<void> {
     },
     strict: false,
   })
-
-  if (values['help']) {
-    logger.log('Usage: pnpm build [--src] [--types] [--needed] [--quiet]')
-    logger.log('')
-    logger.log('  --src     Build the source bundle only')
-    logger.log('  --types   Build TypeScript declarations only')
-    logger.log('  --needed  Skip when dist artifacts already exist')
-    logger.log('  --quiet   Suppress progress messages')
-    return
-  }
 
   const quiet = isQuiet(values)
 
@@ -138,9 +130,17 @@ async function main(): Promise<void> {
   }
 }
 
+const SCRIPT_META: ScriptMeta = {
+  describe:
+    'bundle the source with rolldown and emit TypeScript declarations into dist/',
+  help: `Usage: node scripts/repo/build.mts [--src] [--types] [--needed] [--quiet]
+
+  --src     Build the source bundle only
+  --types   Build TypeScript declarations only
+  --needed  Skip when dist artifacts already exist
+  --quiet   Suppress progress messages`,
+}
+
 if (isMainModule(import.meta.url)) {
-  main().catch((e: unknown) => {
-    logger.error(e)
-    process.exitCode = 1
-  })
+  runMain(main, SCRIPT_META)
 }
