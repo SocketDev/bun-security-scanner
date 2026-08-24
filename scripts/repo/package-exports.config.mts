@@ -9,9 +9,6 @@
  */
 
 import type { ExportsConfig } from '../fleet/gen/package-exports.mts'
-import { REPO_ROOT } from '../fleet/paths.mts'
-
-export const packageDir: string = REPO_ROOT
 
 export const config: ExportsConfig = {
   ignore: ['dist/*.d.ts', 'dist/modes/*.d.ts'],
