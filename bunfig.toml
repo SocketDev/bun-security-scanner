@@ -1,5 +1,5 @@
 [install.security]
-scanner = "./src/index.ts"
+scanner = "./src/index.mts"
 
 [test]
 # Coverage scope mirrors the fleet vitest coverage excludes: measure `src/`

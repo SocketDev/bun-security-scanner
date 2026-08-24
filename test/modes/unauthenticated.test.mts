@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import type { Mock } from 'bun:test'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
-import { unauthenticated } from '../../src/modes/unauthenticated'
-import type { SocketArtifact } from '../../src/types'
+import { unauthenticated } from '../../src/modes/unauthenticated.mts'
+import type { SocketArtifact } from '../../src/types.mts'
 import { tolerantSleep } from '../fleet/_shared/lib/timing.mts'
 
 describe('unauthenticated', () => {
@@ -86,7 +86,7 @@ describe('unauthenticated', () => {
     const results = scanner([...multiplePackages])
 
     for await (const artifacts of results) {
-      // Process results
+      void artifacts
     }
 
     // Every purl costs one request on the free endpoint, whatever the batching.
@@ -152,6 +152,7 @@ describe('unauthenticated', () => {
     let thrown: unknown
     try {
       for await (const artifacts of results) {
+        void artifacts
         // Should throw before getting here
       }
     } catch (e) {
@@ -179,7 +180,7 @@ describe('unauthenticated', () => {
     const results = scanner([...specialPackage])
 
     for await (const artifacts of results) {
-      // Process results
+      void artifacts
     }
 
     expect(fetchSpy).toHaveBeenCalledTimes(1)

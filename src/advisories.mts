@@ -1,6 +1,6 @@
 import type Bun from 'bun'
 import { PackageURL } from '@socketregistry/packageurl-js'
-import type { SocketArtifact } from './types'
+import type { SocketArtifact } from './types.mts'
 
 /**
  * Overview URL for an artifact whose `inputPurl` does not parse into a

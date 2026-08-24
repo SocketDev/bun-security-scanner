@@ -18,7 +18,7 @@
   },
   "cover": {
     "perFileThresholds": {
-      "src/index.ts": {
+      "src/index.mts": {
         "lines": 65
       }
     },
@@ -33,6 +33,6 @@
     "packages": ["."]
   },
   "vitest": {
-    "nodeTestExclude": ["test/*.test.{ts,mts}", "test/modes/**"]
+    "nodeTestExclude": ["test/*.test.mts", "test/modes/**"]
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { artifactsToAdvisories, parseNpmPurl } from '../src/advisories'
-import type { SocketArtifact } from '../src/types'
+import { artifactsToAdvisories, parseNpmPurl } from '../src/advisories.mts'
+import type { SocketArtifact } from '../src/types.mts'
 
 describe('parseNpmPurl', () => {
   test('parses an unscoped npm purl', () => {

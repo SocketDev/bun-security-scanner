@@ -1,6 +1,6 @@
 import { SocketSdk } from '@socketsecurity/sdk'
-import type { ScannerImplementation, SocketArtifact } from '../types'
-import { userAgent } from './user-agent'
+import type { ScannerImplementation, SocketArtifact } from '../types.mts'
+import { userAgent } from './user-agent.mts'
 
 export function authenticated(apiToken: string): ScannerImplementation {
   // Batching and concurrency come from the SDK's batchPackageStream, which

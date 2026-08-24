@@ -12,5 +12,5 @@
     "sourceMap": false,
     "types": ["bun"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.mts"]
 }
