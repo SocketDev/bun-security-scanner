@@ -9,8 +9,8 @@
 import { globSync } from 'node:fs'
 
 import { isMainModule } from '../fleet/_shared/is-main-module.mts'
+import { runMain } from '../fleet/_shared/run-main.mts'
 import path from 'node:path'
-import process from 'node:process'
 
 import { isQuiet } from '@socketsecurity/lib-stable/argv/flag-predicates'
 import { parseArgs } from '@socketsecurity/lib-stable/argv/parse'
@@ -18,6 +18,8 @@ import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../fleet/paths.mts'
+
+import type { ScriptMeta } from '../fleet/_shared/run-main.mts'
 
 const logger = getDefaultLogger()
 
@@ -61,9 +63,16 @@ async function main(): Promise<void> {
   }
 }
 
+const SCRIPT_META: ScriptMeta = {
+  describe:
+    'remove build output: --dist clears dist/ + *.tsbuildinfo, --types clears only the emitted declarations',
+  help: `Usage: node scripts/repo/clean.mts [--dist] [--types] [--quiet]
+
+  --dist   Remove dist/ and *.tsbuildinfo (default when no flag is given)
+  --types  Remove only dist/**/*.d.ts
+  --quiet  Suppress the summary message`,
+}
+
 if (isMainModule(import.meta.url)) {
-  main().catch((e: unknown) => {
-    logger.error(e)
-    process.exitCode = 1
-  })
+  runMain(main, SCRIPT_META)
 }
