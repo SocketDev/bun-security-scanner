@@ -1,4 +1,4 @@
-import type { ScannerImplementation, SocketArtifact } from './types'
+import type { ScannerImplementation, SocketArtifact } from './types.mts'
 
 export type ScannerConfig = {
   /**

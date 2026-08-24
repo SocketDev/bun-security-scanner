@@ -18,7 +18,7 @@ import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
 // module under test writes to.
 import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
 import { SocketSdk } from '@socketsecurity/sdk'
-import type { SocketArtifact } from '../src/types'
+import type { SocketArtifact } from '../src/types.mts'
 
 // Every alias the token bootstrap consults, cleared before each test so a
 // stray local export can't flip the module into authenticated mode.
@@ -83,7 +83,7 @@ type ScannerModule = {
   parseNpmPurl: (purl: string) => { name: string; version: string } | undefined
 }
 async function freshScannerModule(): Promise<ScannerModule> {
-  return await import(`../src/index?index-test=${importCounter++}`)
+  return await import(`../src/index.mts?index-test=${importCounter++}`)
 }
 
 describe('index (Bun.Security.Scanner conformance)', () => {

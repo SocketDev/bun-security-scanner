@@ -70,7 +70,7 @@ export function createNodeProtocolPlugin(): Plugin {
 
 export const buildConfig: RolldownOptions & { output: OutputOptions } = {
   input: {
-    index: path.join(srcPath, 'index.ts'),
+    index: path.join(srcPath, 'index.mts'),
   },
   output: {
     banner: '/* Socket Security Scanner for Bun - Built with rolldown */',

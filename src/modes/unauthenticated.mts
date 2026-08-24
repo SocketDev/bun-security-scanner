@@ -1,6 +1,6 @@
-import type { ScannerImplementation } from '../types'
-import { createScanner } from '../scanner-factory'
-import { userAgent } from './user-agent'
+import type { ScannerImplementation } from '../types.mts'
+import { createScanner } from '../scanner-factory.mts'
+import { userAgent } from './user-agent.mts'
 
 /**
  * Free-mode scanner. The public firewall endpoint answers a single purl per

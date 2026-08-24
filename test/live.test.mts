@@ -52,7 +52,9 @@ function restoreTokenAliases(): void {
 // module cache; a counter avoids same-millisecond collisions.
 let importCounter = 0
 async function freshScanner(): Promise<Bun.Security.Scanner> {
-  const { scanner } = await import(`../src/index?live-test=${importCounter++}`)
+  const { scanner } = await import(
+    `../src/index.mts?live-test=${importCounter++}`
+  )
   return scanner
 }
 

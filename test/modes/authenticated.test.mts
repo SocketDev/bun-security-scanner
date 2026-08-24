@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import type { Mock } from 'bun:test'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { SocketSdk } from '@socketsecurity/sdk'
-import { authenticated } from '../../src/modes/authenticated'
-import type { SocketArtifact } from '../../src/types'
+import { authenticated } from '../../src/modes/authenticated.mts'
+import type { SocketArtifact } from '../../src/types.mts'
 
 describe('authenticated', () => {
   const mockPackages: Bun.Security.Package[] = [

@@ -21,8 +21,8 @@
 import { describe, expect, test } from 'bun:test'
 import fc from 'fast-check'
 
-import { createScanner } from '../src/scanner-factory'
-import type { SocketArtifact } from '../src/types'
+import { createScanner } from '../src/scanner-factory.mts'
+import type { SocketArtifact } from '../src/types.mts'
 
 // A minimal Bun.Security.Package. `name`/`version` feed pure string
 // interpolation in the SUT, so arbitrary strings (unicode, `@`, `/`, control

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { createScanner } from '../src/scanner-factory'
-import type { SocketArtifact } from '../src/types'
+import { createScanner } from '../src/scanner-factory.mts'
+import type { SocketArtifact } from '../src/types.mts'
 import { tolerantSleep } from './fleet/_shared/lib/timing.mts'
 
 const mockPackages: Bun.Security.Package[] = [
@@ -31,6 +31,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void artifacts
       capturedPurls.push(...purls)
     }
 
@@ -43,7 +44,7 @@ describe('scanner-factory', () => {
     const results = scanner([...mockPackages])
 
     for await (const artifacts of results) {
-      // Consume results
+      void artifacts
     }
 
     expect(capturedPurls).toEqual([
@@ -59,6 +60,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void artifacts
       batchSizes.push(purls.length)
     }
 
@@ -71,7 +73,7 @@ describe('scanner-factory', () => {
     const results = scanner([...mockPackages])
 
     for await (const artifacts of results) {
-      // Consume results
+      void artifacts
     }
 
     // 3 packages with maxBatchLength of 2 should create batches of [2, 1]
@@ -94,6 +96,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void purls
       artifacts.push(...mockArtifacts)
     }
 
@@ -119,6 +122,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void artifacts
       callCount++
       expect(purls.length).toBeGreaterThan(0)
     }
@@ -132,7 +136,7 @@ describe('scanner-factory', () => {
     const results = scanner([...mockPackages])
 
     for await (const artifacts of results) {
-      // Consume results
+      void artifacts
     }
 
     // 3 packages with maxBatchLength of 3 should make exactly 1 call
@@ -145,6 +149,8 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void purls
+      void artifacts
       callCount++
     }
 
@@ -157,6 +163,7 @@ describe('scanner-factory', () => {
     const results = scanner([])
 
     for await (const artifacts of results) {
+      void artifacts
       // Should not yield anything
     }
 
@@ -172,6 +179,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void artifacts
       currentInFlight += purls.length
       maxConcurrent = Math.max(maxConcurrent, currentInFlight)
 
@@ -201,7 +209,7 @@ describe('scanner-factory', () => {
     const results = scanner(manyPackages)
 
     for await (const artifacts of results) {
-      // Consume results
+      void artifacts
     }
 
     // Should never exceed maxSending
@@ -221,6 +229,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void artifacts
       currentInFlight += purls.length
       maxConcurrent = Math.max(maxConcurrent, currentInFlight)
 
@@ -261,6 +270,8 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void purls
+      void artifacts
       calls += 1
       if (calls === 1) {
         throw new Error('Socket Security Scanner: Received 404 from server')
@@ -295,6 +306,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void artifacts
       seen.push(...purls)
     }
 
@@ -324,6 +336,7 @@ describe('scanner-factory', () => {
       purls: string[],
       artifacts: SocketArtifact[],
     ) => {
+      void purls
       artifacts.push({
         inputPurl: `batch-${batchIndex++}`,
         alerts: [],
