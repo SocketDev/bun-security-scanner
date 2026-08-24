@@ -67,7 +67,7 @@ export async function buildTypes(options: BuildOptions = {}): Promise<number> {
   }
   const result = await spawn(
     'pnpm',
-    ['exec', 'tsc', '--project', 'tsconfig.dts.json'],
+    ['exec', 'tsc', '--project', '.config/repo/tsconfig.dts.json'],
     { cwd: REPO_ROOT, shell: WIN32, stdio: quiet ? 'ignore' : 'inherit' },
   )
   if (result.code !== 0 && !quiet) {

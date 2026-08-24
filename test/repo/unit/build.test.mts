@@ -38,10 +38,14 @@ function runBuildScript(args: string[]): SpawnSyncReturns<string> {
 }
 
 function runTscDirectly(): SpawnSyncReturns<string> {
-  return spawnSync('pnpm', ['exec', 'tsc', '--project', 'tsconfig.dts.json'], {
-    cwd: REPO_ROOT,
-    encoding: 'utf8',
-  })
+  return spawnSync(
+    'pnpm',
+    ['exec', 'tsc', '--project', '.config/repo/tsconfig.dts.json'],
+    {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+    },
+  )
 }
 
 describe('isBuildNeeded', () => {

@@ -424,9 +424,6 @@ importers:
       '@socketsecurity/sdk-stable':
         specifier: 'catalog:'
         version: '@socketsecurity/sdk@4.1.4'
-      '@types/bun':
-        specifier: ^1.3.14
-        version: 1.3.14
       '@types/mdast':
         specifier: 'catalog:'
         version: 4.0.4
@@ -448,6 +445,9 @@ importers:
       '@vitest/ui':
         specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.10)
+      bun-types:
+        specifier: 1.3.14
+        version: 1.3.14
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -4223,9 +4223,6 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@types/bun@1.3.14':
-    resolution: {integrity: sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw==}
-
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -6042,10 +6039,6 @@ snapshots:
   '@socketsecurity/sdk@4.1.4': {}
 
   '@standard-schema/spec@1.1.0': {}
-
-  '@types/bun@1.3.14':
-    dependencies:
-      bun-types: 1.3.14
 
   '@types/chai@5.2.3':
     dependencies:

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "noEmit": false,
+    "outDir": "../../dist",
+    "rootDir": "../../src",
+    "sourceMap": false,
+    "types": ["bun-types"]
+  },
+  "include": ["../../src/**/*.mts"]
+}
