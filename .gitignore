@@ -194,6 +194,11 @@ pnpm-debug.log
 /scripts/fleet/
 # </fleet>
 # <repo>
+# Active pnpm patches for patchedDependencies (pnpm-workspace.yaml) — hand-
+# authored and must stay tracked despite the broader /patches/ fleet ignore
+# above so `pnpm install --frozen-lockfile` can apply them.
+!/patches/brace-expansion@5.0.9.patch
+!/patches/minimatch@10.2.6.patch
 # </repo>
 
 # <fleet-pack>
