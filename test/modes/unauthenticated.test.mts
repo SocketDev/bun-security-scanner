@@ -59,7 +59,7 @@ describe('unauthenticated', () => {
       'https://firewall-api.socket.dev/purl/pkg%3Anpm%2Flodahs%400.0.1-security',
       {
         headers: {
-          'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
+          'User-Agent': expect.stringContaining('socket-bun-security-scanner'),
         },
       },
     )
@@ -191,7 +191,7 @@ describe('unauthenticated', () => {
       ),
       {
         headers: {
-          'User-Agent': expect.stringContaining('SocketBunSecurityScanner'),
+          'User-Agent': expect.stringContaining('socket-bun-security-scanner'),
         },
       },
     )
