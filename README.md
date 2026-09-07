@@ -1,7 +1,7 @@
 # Socket's Bun Security Scanner
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/logomark-inverse.svg" width="128" height="128" alt="Socket for Bun - the Bun logo knocked out of the Socket gradient shield">
+  <img width="160" height="160" alt="bun-security-scanner" src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/logomark.svg">
 </div>
 
 <a href="https://socket.dev/npm/package/@socketsecurity/bun-security-scanner"><img src="https://socket.dev/api/badge/npm/package/@socketsecurity/bun-security-scanner" alt="Socket Badge" height="20"></a>
@@ -87,10 +87,3 @@ pnpm run test
 MIT
 
 <br/>
-<div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/socket-combomark-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/socket-combomark-light.svg">
-    <img width="320" height="91" alt="Socket" src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/socket-combomark-light.svg">
-  </picture>
-</div>
