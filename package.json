@@ -63,7 +63,7 @@
     "type": "node node_modules/typescript/bin/tsc --noEmit -p .config/fleet/tsconfig.check.json",
     "npm:publish": "node scripts/fleet/publish-pipeline.mts",
     "socket-wheelhouse:emit-schema": "node scripts/fleet/socket-wheelhouse-emit-schema.mts",
-    "mcp:reset": "node scripts/fleet/mcp-reset.mts",
+    "mcp:reset": "node scripts/fleet/mcp/reset.mts",
     "setup:sfw-ca": "node scripts/fleet/setup/sfw-ca.mts",
     "get-green": "node scripts/fleet/get-green.mts",
     "weekly-update:ci": "gh workflow run weekly-update.yml",
@@ -94,7 +94,10 @@
     "setup:offload-providers": "node scripts/fleet/setup/offload-providers.mts",
     "sync-global-hooks": "node scripts/fleet/sync-global-hooks.mts",
     "backup": "node scripts/fleet/backup-work.mts",
-    "gen:glyph": "node scripts/fleet/gen/glyph.mts"
+    "gen:glyph": "node scripts/fleet/gen/glyph.mts",
+    "build:hook-bundle": "node scripts/fleet/build-hook-bundle.mts",
+    "build:hook-snapshot": "node scripts/fleet/build-hook-snapshot.mts",
+    "build:snapshot-launcher": "node scripts/fleet/build-snapshot-launcher.mts"
   },
   "devDependencies": {
     "@mdn/browser-compat-data": "catalog:",
@@ -155,8 +158,8 @@
   },
   "engines": {
     "node": ">=24",
-    "npm": ">=12.0.2",
-    "pnpm": ">=11.0.5"
+    "npm": "^11.19.0 || >=12.0.2",
+    "pnpm": "^11.25.0 || >=12.3.4"
   },
   "allowScripts": {
     "cpu-features": false,
