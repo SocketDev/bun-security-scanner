@@ -93,7 +93,8 @@
     "setup:fireconnect": "node scripts/fleet/setup/fireconnect.mts",
     "setup:offload-providers": "node scripts/fleet/setup/offload-providers.mts",
     "sync-global-hooks": "node scripts/fleet/sync-global-hooks.mts",
-    "backup": "node scripts/fleet/backup-work.mts"
+    "backup": "node scripts/fleet/backup-work.mts",
+    "gen:glyph": "node scripts/fleet/gen/glyph.mts"
   },
   "devDependencies": {
     "@mdn/browser-compat-data": "catalog:",
@@ -142,7 +143,8 @@
     "typebox": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
-    "yaml": "catalog:"
+    "yaml": "catalog:",
+    "svgo": "catalog:"
   },
   "devEngines": {
     "packageManager": {
