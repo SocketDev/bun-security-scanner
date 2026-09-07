@@ -1,11 +1,10 @@
 catalog:
   '@mdn/browser-compat-data': 8.0.11
-  # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
-  # change can be validated before it's pushed (see the `agent-ci` skill).
-  # The published package is a self-contained Node CLI (`dist/cli.js`) — no
-  # platform-binary optionalDependencies, despite the monorepo's internal
-  # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
-  # explicitly (not left transitive) so its version is uniform fleet-wide.
+  # run-local-ci (bin: local-ci, formerly published as @redwoodjs/agent-ci)
+  # runs a repo's GitHub Actions workflows locally in Docker so a change can
+  # be validated before it's pushed (see the `agent-ci` skill). dtu-github-
+  # actions is its GitHub-Actions parser, pinned explicitly (not left
+  # transitive) so its version is uniform fleet-wide.
   '@ultrathink/acorn.rs.wasm': 0.1.1
   'brace-expansion': 5.0.9
   'dtu-github-actions': 0.18.1
@@ -98,6 +97,7 @@ catalog:
   # @rolldown/binding-* + @oxc-project/types stay as soak-excluded
   # transitives (consumers depend on `rolldown` only).
   'regjsparser': 0.13.2
+  'rolldown': 1.2.4
   'semver': 7.8.5
   'shell-quote': 1.10.0
   'taze': 21.1.0
@@ -121,19 +121,19 @@ catalog:
   # platform-binary optionalDependencies, despite the monorepo's internal
   # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
   # explicitly (not left transitive) so its version is uniform fleet-wide.
-  '@anthropic-ai/claude-code': 2.1.229
+  '@anthropic-ai/claude-code': 2.1.251
   # comptime 0.1.0 — Zig-inspired build-time evaluation for Rolldown/Vite.
   # Wraps comptime(() => expr) calls; the Rolldown plugin evaluates them at
   # build time and replaces the call site with the serialized literal result.
   # Use in rolldown.config.mts for any repo with a Rolldown build.
   # published: 2026-05-07 (26 days, past 7-day soak)
   'comptime': 0.1.0
-  'rolldown': 1.2.4
-  'rolldown-plugin-dts': 0.28.0
+  'rolldown-plugin-dts': 0.28.4
   'svgo': 4.1.0
-  'vite': 8.2.0
+  'vite': 8.2.2
   'vitiate': 0.3.1
   '@vitiate/core': 0.3.1
+  'yaml': 2.9.0
 
 # pnpm `overrides` block — two purposes:
 #
@@ -191,8 +191,8 @@ overrides:
   'uuid': '11.1.1'
   'which': '7.0.0'
   'wrap-ansi@>=8': '9.0.2'
-  'yaml': '2.9.0'
   'yaml@2': '2.9.0'
+  'yaml': '2.9.0'
 
   # Repo-specific overrides below.
   # Dedup: @grpc/proto-loader 0.7 (dockerode direct) vs 0.8 (via @grpc/grpc-js,
@@ -227,7 +227,7 @@ overrides:
   # Dedup compat shim: content-type 1 (body-parser direct) vs 2 (via type-is,
   # also a body-parser dep). See the patchedDependencies comment for the API
   # break + the shim that restores it.
-  'content-type': '2.0.0'
+  'content-type': '2.1.0'
   # Dedup: css-tree 2.2.1 (csso, pinned ~2.2.0, via svgo) vs 3.2.1 (svgo
   # direct). css-tree 3's changelog lists deep AST-shape breaks (Block/Ratio/
   # MediaFeature node shape, List.getSize()->size), but none touch the
@@ -242,7 +242,7 @@ overrides:
   'is-unicode-supported': 'npm:@socketregistry/is-unicode-supported@1.0.5'
   'json-stable-stringify': 'npm:@socketregistry/json-stable-stringify@1.0.14'
   # Dependabot transitive-advisory pin (soaked, semver-compatible).
-  'markdown-it': '14.3.0'
+  'markdown-it': '14.3.1'
   # Dedup: picomatch 2 (micromatch, via fast-glob -> globby ->
   # markdownlint-cli2) vs 4 (fdir/tinyglobby, via vite/vitest). micromatch's
   # `picomatch(glob, options, returnState)` call and its
@@ -250,13 +250,13 @@ overrides:
   # toPosixSlashes) are unchanged; the one behavior diff (utils.isWindows()
   # no longer reads an options override) is never hit — neither fast-glob nor
   # globby ever pass a `windows` option. Collapse unscoped to 4.0.4.
-  'picomatch': '4.0.5'
-  'protobufjs': '7.6.5'
+  'picomatch': '4.0.7'
+  'protobufjs': '7.6.6'
   'rolldown': 'catalog:'
   # sharp 0.35.0 dropped its install script (source compile is opt-in); pin the
   # logo generator's sharp to 0.35.3 so it stays on a no-build-script line — its
   # prebuilt @img/sharp-* binaries cover the rasterize + animated-GIF encode.
-  'sharp': '0.35.3'
+  'sharp': '0.35.4'
   'string-width': '8.2.2'
   # Dedup compat shim: strip-ansi 6 (CJS yargs@17 cluster) vs 7 (ESM,
   # via string-width@8 -> markdownlint). See the patchedDependencies comment
@@ -352,9 +352,6 @@ minimumReleaseAgeExclude:
   # trumps the soak heuristic for this one pinned version. Scoped to
   - '@stuie/*'
   - '@ultrathink/*'
-  # @yuku-parser 0.5.31 — third-party native parser; the per-platform binding
-  # family pinned to the exact version (a scope glob would blanket-bypass any
-  # future @yuku-parser publish). Published within the 7-day soak.
   # oxfmt 0.55.0 — the formatter; bumped from 0.48.0 for its jsdoc fixes.
   # The main package + per-platform binding family are pinned to the exact
   # version (a scope glob would blanket-bypass any future @oxfmt publish). All
@@ -367,34 +364,14 @@ minimumReleaseAgeExclude:
   # npm freshpub typosquats, not a first-party oxc release.
   - '@sdxgen/*'
   - 'sdxgen'
-  # vite 8.1.0 — dev dep (vitest's bundler). 8.1 adds experimental.bundledDev
-  # (NOT adopted — experimental, and the fleet runs stable-only). Published
-  # within the 7-day soak; exact-pinned so a future 8.1.1 still soaks.
-  # taze 19.16.0 — the dep updater itself; forced ahead of the soak by owner
-  # directive so the regenerated single-registry patch (patchedDependencies)
-  # tracks the current release. Exact-pinned so a future version re-soaks.
-  # shadscan 0.2.0 — deterministic UI audits for shadcn apps, used by the
-  # design skills; forced ahead of the soak by owner directive. Exact-pinned
-  # so a future version re-soaks.
-  # verkit — new dev-only transitive of taze 19.16.0 (same owner directive);
-  # exact-pinned so future versions re-soak.
-  # js-yaml 5.2.2 — HIGH security fix, GHSA-pm4m-ph32-ghv5: exponential parse
-  # time in flow collections. The canonical overrides entry forces it past
-  # markdownlint-cli2 0.23.1's vulnerable 5.2.1 exact-pin. Soak bypassed per
-  # the high-severity security exception; exact-pinned so a future version
-  # re-soaks.
-  # yuku 0.8.0 — the transitive napi tree behind rolldown-plugin-dts
-  # 0.27.14 (same owner directive as its entry above: build-only dts
-  # emitter, never shipped to runtime). Core packages + both per-platform
-  # binding families, exact-pinned so future versions re-soak.
-  - '@abitious/*'
-  - '@decmpfs/*'
-  - '@node-smol/*'
-  - 'sockeye'
   # published: 2026-08-21 | removable: 2026-08-28
   - 'dtu-github-actions@0.18.1'
   # published: 2026-08-21 | removable: 2026-08-28
   - 'run-local-ci@0.18.1'
+  - '@abitious/*'
+  - '@decmpfs/*'
+  - '@node-smol/*'
+  - 'sockeye'
 
 patchedDependencies:
   # default-export interop (managed by socket-wheelhouse sync; do not edit):
@@ -440,7 +417,6 @@ patchedDependencies:
   # the relative path inside lib itself. Rides the @socketsecurity/lib catalog
   # pin: on a bump, regenerate via `pnpm patch @socketsecurity/lib` + `pnpm patch-commit`.
   '@socketsecurity/lib@6.7.0': patches/@socketsecurity__lib@6.7.0.patch
-
   # Native post-install build scripts. These three arrive transitively via
   # @redwoodjs/agent-ci's `ssh2` (optional crypto acceleration). agent-ci's
   # published CLI (`dist/cli.js`) runs without them — verified `agent-ci --help`
@@ -464,3 +440,18 @@ allowBuilds:
   '@socketsecurity/sdk': false
   # @swc/core native binding — vitiate's coverage-guided fuzz lane.
   '@swc/core': true
+
+# Proceed with a node_modules purge WITHOUT an interactive confirm. The fleet
+# runs pnpm non-interactively everywhere (skills, scripts, hooks, agents, CI) —
+# no TTY. pnpm's default ABORTS a purge for lack of a TTY
+# (ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY), wedging any commit whose
+# pre-commit re-checks deps after a workspace/.npmrc change. Purging
+# node_modules is safe (gitignored + regenerable). Unlike CI=true this does NOT
+# force a frozen lockfile; CI keeps owning frozen-vs-update policy.
+
+# Opt out of pnpm's packageManager-version self-check. CI installs pnpm from
+# its native bin via the shared setup workflow, not corepack, so the runner's
+# pnpm legitimately differs from the `packageManager` pin (which is
+# informational, not a version to enforce). Without this, pnpm hard-fails
+# ("This project is configured to use <pin> ... your current pnpm is <run>")
+# the moment the runner's pnpm differs from the pin.
