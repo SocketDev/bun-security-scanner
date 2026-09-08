@@ -147,6 +147,29 @@ describe('authenticated', () => {
     expect(packages).toHaveLength(0)
   })
 
+  test('SDK failure after a yielded artifact still rejects the scan', async () => {
+    const failure = new Error('fixture stream interrupted')
+    const stream = async function* () {
+      yield { success: true, status: 200, data: mockArtifact }
+      throw failure
+    }
+    streamSpy.mockImplementation(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the fixture yields only the SDK fields consumed by the scanner before the stream error.
+      stream as unknown as typeof SocketSdk.prototype.batchPackageStream,
+    )
+    const scan = authenticated('example-api-key')([...mockPackages])[
+      Symbol.asyncIterator
+    ]()
+    expect((await scan.next()).value).toEqual([mockArtifact])
+    let caught: unknown
+    try {
+      await scan.next()
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBe(failure)
+  })
+
   test('authenticated scanner should handle API errors', async () => {
     mockStreamResults([{ success: false, status: 500 }])
 

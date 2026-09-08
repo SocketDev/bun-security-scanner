@@ -12,9 +12,10 @@ export function authenticated(apiToken: string): ScannerImplementation {
   return async function* (packages) {
     // Drain the caller's array in place — `scan()` loops `while
     // (packages.length)`, so a non-consuming implementation would spin forever.
-    const components = packages
-      .splice(0)
-      .map(pkg => ({ purl: `pkg:npm/${pkg.name}@${pkg.version}` }))
+    const components = packages.splice(0).map(pkg => ({
+      __proto__: null,
+      purl: `pkg:npm/${pkg.name}@${pkg.version}`,
+    }))
 
     if (components.length === 0) {
       return

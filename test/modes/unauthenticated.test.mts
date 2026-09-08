@@ -197,6 +197,31 @@ describe('unauthenticated', () => {
     )
   })
 
+  test('malformed NDJSON rejects instead of reporting a clean scan', async () => {
+    fetchSpy.mockResolvedValueOnce(new Response('not-json'))
+    const scan = unauthenticated()([...mockPackages])
+    let failure: unknown
+    try {
+      for await (const artifacts of scan) {
+        void artifacts
+      }
+    } catch (error) {
+      failure = error
+    }
+    expect(failure).toBeInstanceOf(SyntaxError)
+  })
+
+  test('NDJSON accepts CRLF and skips empty records', async () => {
+    fetchSpy.mockResolvedValueOnce(
+      new Response(`\r\n${JSON.stringify(mockArtifact)}\r\n\r\n`),
+    )
+    const received: SocketArtifact[] = []
+    for await (const artifacts of unauthenticated()([...mockPackages])) {
+      received.push(...artifacts)
+    }
+    expect(received).toEqual([mockArtifact])
+  })
+
   test('unauthenticated scanner should parse NDJSON responses', async () => {
     const scanner = unauthenticated()
 

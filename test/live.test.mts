@@ -1,5 +1,6 @@
-// socket-lint: mirror-exempt — exercises the live Socket API end-to-end (token-gated), a feature suite spanning both scanner modes, not a mirror of one source file
-import { afterEach, describe, expect, spyOn, test } from 'bun:test'
+// socket-lint: mirror-exempt — exercises the live Socket API end-to-end with SOCKET_SCANNER_LIVE_TESTS=1, spanning both scanner modes.
+import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import type { Mock } from 'bun:test'
 
 import { readSocketApiTokenSync } from '@socketsecurity/lib-stable/secrets/socket-api-token'
 import { SocketSdk } from '@socketsecurity/sdk'
@@ -62,7 +63,10 @@ async function freshScanner(): Promise<Bun.Security.Scanner> {
 // skip-if-unset convention, same as socket-lib's it.skipIf(!BACKEND_OK)
 // secret-backed suites). Env-only: the skip check never triggers a keychain
 // prompt.
-const API_TOKEN = readSocketApiTokenSync({ allowEnvOnly: true })
+const LIVE_ENABLED = process.env['SOCKET_SCANNER_LIVE_TESTS'] === '1'
+const API_TOKEN = LIVE_ENABLED
+  ? readSocketApiTokenSync({ allowEnvOnly: true })
+  : undefined
 
 const EXPECTED_ADVISORY = {
   description: expect.any(String),
@@ -71,17 +75,22 @@ const EXPECTED_ADVISORY = {
   url: 'https://socket.dev/npm/package/lodahs/overview/0.0.1-security',
 }
 
-describe('live', () => {
-  const fetchSpy = spyOn(global, 'fetch')
+describe.skipIf(!LIVE_ENABLED)('live', () => {
+  let fetchSpy: Mock<typeof fetch>
   // The SDK's transport is socket-lib httpRequest over node:http — it never
   // touches global fetch — so the authenticated-path evidence is a
   // call-through spy on the SDK method itself (no mockImplementation: the
   // real request still goes out).
-  const sdkStreamSpy = spyOn(SocketSdk.prototype, 'batchPackageStream')
+  let sdkStreamSpy: Mock<typeof SocketSdk.prototype.batchPackageStream>
+
+  beforeEach(() => {
+    fetchSpy = spyOn(global, 'fetch')
+    sdkStreamSpy = spyOn(SocketSdk.prototype, 'batchPackageStream')
+  })
 
   afterEach(() => {
-    fetchSpy.mockClear()
-    sdkStreamSpy.mockClear()
+    fetchSpy.mockRestore()
+    sdkStreamSpy.mockRestore()
     restoreTokenAliases()
   })
 

@@ -1,5 +1,5 @@
 // socket-lint: mirror-exempt — smoke-tests the BUILT dist bundle end-to-end
-// (token-gated + self-skipping when dist/ is absent), guarding the rolldown
+// (live-opt-in + self-skipping when dist/ is absent), guarding the rolldown
 // lib-stub reachability: a stubbed module that IS reached at runtime crashes
 // here, not at bundle time. Not a mirror of one source file.
 import { existsSync } from 'node:fs'
@@ -62,7 +62,10 @@ async function freshDistScanner(): Promise<Bun.Security.Scanner> {
   return scanner as Bun.Security.Scanner
 }
 
-const API_TOKEN = readSocketApiTokenSync({ allowEnvOnly: true })
+const LIVE_ENABLED = process.env['SOCKET_SCANNER_LIVE_TESTS'] === '1'
+const API_TOKEN = LIVE_ENABLED
+  ? readSocketApiTokenSync({ allowEnvOnly: true })
+  : undefined
 
 const EXPECTED_ADVISORY = {
   description: expect.any(String),
@@ -71,7 +74,7 @@ const EXPECTED_ADVISORY = {
   url: 'https://socket.dev/npm/package/lodahs/overview/0.0.1-security',
 }
 
-describe('dist bundle', () => {
+describe.skipIf(!LIVE_ENABLED)('dist bundle', () => {
   afterEach(() => {
     restoreTokenAliases()
   })
