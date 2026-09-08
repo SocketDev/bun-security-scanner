@@ -6,8 +6,8 @@
   "schemaVersion": 1,
   "repoName": "bun-security-scanner",
   "bundle": {
-    "ref": "fleet-pack-34b047176c416cd46f1919ad0bba35a0bb7b84b3",
-    "cascadeSha": "34b047176c416cd46f1919ad0bba35a0bb7b84b3"
+    "ref": "fleet-pack-ff0b289699b824a9ffab5dbe631e67a4ed211b37",
+    "cascadeSha": "ff0b289699b824a9ffab5dbe631e67a4ed211b37"
   },
   "repo": {
     "type": "solo"
@@ -17,15 +17,10 @@
     "type": "js"
   },
   "cover": {
-    "perFileThresholds": {
-      "src/index.mts": {
-        "lines": 65
-      }
-    },
     "runner": "bun",
     "thresholds": {
       "functions": 100,
-      "lines": 91
+      "lines": 100
     }
   },
   "contentPolicy": {

@@ -1,4 +1,3 @@
-// oxlint-disable socket/tests-are-mirror-named -- seeded scanner-factory properties share campaign options with the fuzz runner.
 /**
  * @file Property/fuzz tests for src/scanner-factory (Tier-1 fast-check).
  *   `createScanner` returns an async generator that batches an input list of

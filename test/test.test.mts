@@ -32,7 +32,7 @@ test('test discovery includes repository tests without executing fixture or flee
 describe('scanner test scope', () => {
   const files = [
     'test/index.test.mts',
-    'test/scanner-factory.fuzz.test.mts',
+    'test/scanner-factory-properties.fuzz.test.mts',
     'test/modes/authenticated.test.mts',
   ]
   test('ordinary and --all requests include unit tests without starting fuzz', () => {
@@ -47,7 +47,7 @@ describe('scanner test scope', () => {
   test('the fuzz environment selects only the fuzz harness', () => {
     expect(scannerTestArgs(['--all'], files, { fuzz: true })).toEqual([
       'test',
-      'test/scanner-factory.fuzz.test.mts',
+      'test/scanner-factory-properties.fuzz.test.mts',
     ])
   })
   test('Bun option values do not turn a full run into unbounded directory discovery', () => {

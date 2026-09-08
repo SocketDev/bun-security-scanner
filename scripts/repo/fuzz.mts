@@ -28,7 +28,7 @@ export function recordFuzzFailure(config: {
       {
         ...config.options,
         exitCode: config.code,
-        harness: 'test/scanner-factory.fuzz.test.mts',
+        harness: 'test/scanner-factory-properties.fuzz.test.mts',
         replay: `SCANNER_FUZZ_SEED=${config.options.seed} SCANNER_FUZZ_RUNS=${config.options.numRuns} pnpm run test:fuzz`,
       },
       undefined,
@@ -58,7 +58,12 @@ export function main(): void {
   logger.log(`Scanner fuzz seed=${options.seed} runs=${options.numRuns}`)
   const result = spawnSync(
     'bun',
-    ['test', 'test/scanner-factory.fuzz.test.mts', '--timeout', '60000'],
+    [
+      'test',
+      'test/scanner-factory-properties.fuzz.test.mts',
+      '--timeout',
+      '60000',
+    ],
     {
       cwd: REPO_ROOT,
       env,
