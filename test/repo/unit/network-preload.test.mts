@@ -5,17 +5,19 @@ import https from 'node:https'
 import nock from 'nock'
 import { SCANNER_NETWORK_PRELOAD } from '../scripts/network-preload.mts'
 
+const PROVIDER_URL = 'https://example.invalid/provider'
+
 test('provider HTTP requests fail closed without a fixture', async () => {
   const error = await new Promise<Error>(resolve => {
-    https.get('https://example.invalid/provider').on('error', resolve)
+    https.get(PROVIDER_URL).on('error', resolve)
   })
   expect(error).toMatchObject({ code: 'ENETUNREACH' })
 })
 
 test('provider fetch requests fail closed without a fixture', async () => {
-  await expect(fetch('https://example.invalid/provider')).rejects.toMatchObject(
-    { code: 'ENETUNREACH' },
-  )
+  await expect(fetch(PROVIDER_URL)).rejects.toMatchObject({
+    code: 'ENETUNREACH',
+  })
 })
 
 test('mocked providers remain available', async () => {
@@ -57,7 +59,7 @@ test.each(['node', process.execPath])(
         `
     if (!globalThis[Symbol.for('scanner.test-network-guard')]) process.exit(2)
     const https = await import('node:https')
-    const code = await new Promise(resolve => https.get('https://example.invalid/provider').on('error', error => resolve(error.code)))
+    const code = await new Promise(resolve => https.get(${JSON.stringify(PROVIDER_URL)}).on('error', error => resolve(error.code)))
     process.stdout.write(code)
   `,
       ],
