@@ -2733,6 +2733,7 @@ scripts/fleet/ai/fireworks-store.mts
 scripts/fleet/ai/infra.mts
 scripts/fleet/ai/model-catalog.mts
 scripts/fleet/ai/model-choices.mts
+scripts/fleet/ai/model-fallback-tiers.mts
 scripts/fleet/ai/model-list-cache.mts
 scripts/fleet/ai/model-target-ids.mts
 scripts/fleet/ai/model-targets.mts
