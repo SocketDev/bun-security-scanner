@@ -2,6 +2,7 @@
 scanner = "./src/index.mts"
 
 [test]
+preload = ["./test/repo/scripts/network-preload.mts"]
 # Coverage scope mirrors the fleet vitest coverage excludes: measure `src/`
 # only. `dist/**` is the built bundle test/dist.test.ts smoke-tests, `test/**`
 # holds the suites plus the cascaded fleet helpers.

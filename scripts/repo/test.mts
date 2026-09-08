@@ -115,6 +115,6 @@ if (isMainModule(import.meta.url)) {
   runMain(main, {
     describe:
       'runs the scanner Bun tests with explicit offline and fuzz scopes',
-    help: 'Usage: pnpm test [--all | <test paths and Bun options>]\nSet FLEET_TEST_FUZZ=1 to select the scanner fuzz harness. Live tests require SOCKET_SCANNER_LIVE_TESTS=1.',
+    help: 'Usage: pnpm test [--all | <test paths and Bun options>]\nSet FLEET_TEST_FUZZ=1 to select the scanner fuzz harness. All provider requests must be mocked.',
   })
 }

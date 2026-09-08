@@ -29,8 +29,7 @@ describe('authenticated', () => {
   }
 
   // The SDK talks node:http, not global fetch, so the mock target is the
-  // batchPackageStream method itself (prototype spy — restored after each
-  // test so the live suite still drives the real transport).
+  // batchPackageStream method itself. Transport tests use local fixtures.
   let streamSpy: Mock<typeof SocketSdk.prototype.batchPackageStream>
 
   function mockStreamResults(

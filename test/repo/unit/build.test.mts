@@ -7,6 +7,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { spawnSync } from 'node:child_process'
+import { SCANNER_NETWORK_PRELOAD } from '../scripts/network-preload.mts'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
@@ -65,6 +66,8 @@ void invalidScanner
     const result = spawnSync(
       process.execPath,
       [
+        '--preload',
+        SCANNER_NETWORK_PRELOAD,
         path.join(REPO_ROOT, 'node_modules', 'typescript', 'bin', 'tsc'),
         '--noEmit',
         '--strict',

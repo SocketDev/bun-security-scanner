@@ -69,9 +69,7 @@ function restoreEnv(): void {
 }
 
 // The module resolves its token at init, so each test needs a fresh import
-// after arranging the env (query-busting defeats the module cache — the same
-// pattern dist.test.ts and live.test.ts use).
-//
+// after arranging the environment. A query suffix bypasses the module cache.
 let importCounter = 0
 type ScannerModule = {
   scanner: Bun.Security.Scanner
