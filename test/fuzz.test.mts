@@ -36,7 +36,7 @@ test('failed runs retain separate logs and seed settings without claiming a cras
     expect(result.seed).toBe(42)
     expect(result.numRuns).toBe(1000)
     expect(result.exitCode).toBe(124)
-    expect(result.harness).toBe('test/scanner-factory.fuzz.test.mts')
+    expect(result.harness).toBe('test/scanner-factory-properties.fuzz.test.mts')
     expect(result.replay).toContain('SCANNER_FUZZ_SEED=42')
   } finally {
     safeDeleteSync(root)
