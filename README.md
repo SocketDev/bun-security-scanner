@@ -5,7 +5,7 @@
 </div>
 
 <a href="https://socket.dev/npm/package/@socketsecurity/bun-security-scanner"><img src="https://socket.dev/api/badge/npm/package/@socketsecurity/bun-security-scanner" alt="Socket Badge" height="20"></a>
-<img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/coverage.svg?v=8c00979cb708" width="97" height="20" alt="Coverage" />
+<img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/coverage.svg?v=d4b8d9879700" height="20" alt="Coverage" />
 
 [![Follow @SocketSecurity](https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/badge-follow-x.svg)](https://twitter.com/SocketSecurity)
 [![Follow @socket.dev on Bluesky](https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/badge-follow-bluesky.svg)](https://bsky.app/profile/socket.dev)
