@@ -5,7 +5,8 @@
  *   declarations both land in dist/.
  */
 
-import { existsSync } from 'node:fs'
+import { existsSync, mkdtempSync } from 'node:fs'
+import os from 'node:os'
 
 import { isMainModule } from '../fleet/process/is-main-module.mts'
 import { runMain } from '../fleet/process/run-main.mts'
@@ -13,12 +14,12 @@ import path from 'node:path'
 import process from 'node:process'
 
 import { rolldown } from 'rolldown'
+import { dts } from 'rolldown-plugin-dts'
 
-import { isQuiet } from '@socketsecurity/lib-stable/argv/flag-predicates'
-import { parseArgs } from '@socketsecurity/lib-stable/argv/parse'
-import { WIN32 } from '@socketsecurity/lib-stable/constants/platform'
+import { parseArgs } from 'node:util'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
+import { safeDeleteSync } from '../fleet/fs/safe.mts'
 
 import { configs as rolldownConfigs } from '../../.config/repo/rolldown.config.mts'
 import { cleanDist, cleanTypes } from './clean.mts'
@@ -43,8 +44,11 @@ export async function buildSource(options: BuildOptions = {}): Promise<number> {
   try {
     for (const config of rolldownConfigs) {
       const bundle = await rolldown(config)
-      await bundle.write(config.output)
-      await bundle.close()
+      try {
+        await bundle.write(config.output)
+      } finally {
+        await bundle.close()
+      }
     }
     return 0
   } catch (e) {
@@ -60,29 +64,93 @@ export async function buildSource(options: BuildOptions = {}): Promise<number> {
  * Emit TypeScript declarations next to the bundle in dist/. Returns a process
  * exit code.
  */
-export async function buildTypes(options: BuildOptions = {}): Promise<number> {
-  const { quiet = false } = options
+export async function buildTypes(
+  options?:
+    | (BuildOptions & { outputDirectory?: string | undefined })
+    | undefined,
+): Promise<number> {
+  const opts = { __proto__: null, ...options } as NonNullable<typeof options>
+  const { quiet = false } = opts
   if (!quiet) {
     logger.substep('Building TypeScript declarations')
   }
-  const result = await spawn(
-    'pnpm',
-    ['exec', 'tsc', '--project', '.config/repo/tsconfig.dts.json'],
-    { cwd: REPO_ROOT, shell: WIN32, stdio: quiet ? 'ignore' : 'inherit' },
-  )
-  if (result.code !== 0 && !quiet) {
-    logger.error('Type declarations build failed')
+  const scratch = mkdtempSync(path.join(os.tmpdir(), 'scanner-declarations-'))
+  try {
+    const emitted = await spawn(
+      process.execPath,
+      [
+        path.join(REPO_ROOT, 'node_modules', 'typescript', 'bin', 'tsc'),
+        '--project',
+        path.join(REPO_ROOT, '.config/repo/tsconfig.dts.json'),
+        '--outDir',
+        scratch,
+      ],
+      {
+        cwd: REPO_ROOT,
+        stdio: quiet ? 'ignore' : 'inherit',
+        throws: false,
+        timeout: 30_000,
+      },
+    )
+    if (emitted.code !== 0) {
+      return emitted.code ?? 1
+    }
+    const bundle = await rolldown({
+      cwd: scratch,
+      input: path.join(scratch, 'index.d.mts'),
+      external: ['bun'],
+      plugins: [
+        dts({
+          cwd: scratch,
+          generator: 'oxc',
+          dtsInput: true,
+          emitDtsOnly: true,
+        }),
+      ],
+    })
+    try {
+      await bundle.write({
+        file: path.join(
+          opts.outputDirectory ?? path.join(REPO_ROOT, 'dist'),
+          'index.d.mts',
+        ),
+        format: 'esm',
+        plugins: [
+          {
+            name: 'declaration-location-comments',
+            renderChunk(code) {
+              // Remove generated region lines containing temporary input paths.
+              return code.replace(/^\/\/#(?:end)?region[^\n]*(?:\n|$)/gm, '')
+            },
+          },
+        ],
+      })
+    } finally {
+      await bundle.close()
+    }
+    return 0
+  } catch (error) {
+    if (!quiet) {
+      logger.error('Type declarations build failed')
+      logger.fail(error)
+    }
+    return 1
+  } finally {
+    safeDeleteSync(scratch, { allowedDirs: [os.tmpdir()] })
   }
-  return result.code ?? 1
 }
 
 /**
  * Check whether the built artifacts already exist (`--needed` fast path).
  */
-export function isBuildNeeded(): boolean {
+export function isBuildNeeded(
+  options?: { root?: string | undefined } | undefined,
+): boolean {
+  const opts = { __proto__: null, ...options } as NonNullable<typeof options>
+  const root = opts.root ?? REPO_ROOT
   return (
-    !existsSync(path.join(REPO_ROOT, 'dist', 'index.js')) ||
-    !existsSync(path.join(REPO_ROOT, 'dist', 'index.d.ts'))
+    !existsSync(path.join(root, 'dist', 'index.js')) ||
+    !existsSync(path.join(root, 'dist', 'index.d.mts'))
   )
 }
 
@@ -99,7 +167,7 @@ async function main(): Promise<void> {
     strict: false,
   })
 
-  const quiet = isQuiet(values)
+  const quiet = values['quiet'] === true || values['silent'] === true
 
   if (values['needed'] && !isBuildNeeded()) {
     if (!quiet) {
@@ -116,7 +184,7 @@ async function main(): Promise<void> {
     exitCode = await buildSource({ quiet })
   } else {
     cleanDist()
-    const [srcExit, typesExit] = await Promise.all([
+    const { 0: srcExit, 1: typesExit } = await Promise.all([
       buildSource({ quiet }),
       buildTypes({ quiet }),
     ])

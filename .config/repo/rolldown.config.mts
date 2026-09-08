@@ -58,10 +58,10 @@ export function createNodeProtocolPlugin(): Plugin {
     name: 'node-protocol',
     resolveId(source) {
       if (builtins.has(source)) {
-        return { id: `node:${source}`, external: true }
+        return { __proto__: null, id: `node:${source}`, external: true }
       }
       if (source === 'bun' || source.startsWith('bun:')) {
-        return { id: source, external: true }
+        return { __proto__: null, id: source, external: true }
       }
       return undefined
     },

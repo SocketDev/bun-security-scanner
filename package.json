@@ -146,6 +146,7 @@
     "portless": "catalog:",
     "regjsparser": "catalog:",
     "rolldown": "catalog:",
+    "rolldown-plugin-dts": "catalog:",
     "run-local-ci": "catalog:",
     "semver": "catalog:",
     "shell-quote": "catalog:",

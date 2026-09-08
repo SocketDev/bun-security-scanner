@@ -2,8 +2,8 @@
  * @file Clean runner for build artifacts. Flag-scoped like the reference fleet
  *   clean scripts (socket-packageurl-js / socket-sdk-js): `--dist` removes the
  *   bundled output + tsbuildinfo, `--types` removes only the emitted
- *   declarations. Everything is a fixed path under the repo root, so plain
- *   `rmSync` covers it without dragging del/fast-glob into the repo.
+ *   declarations. Deletion uses the fleet root-refusal guard within the chosen
+ *   root.
  */
 
 import { globSync } from 'node:fs'
@@ -12,9 +12,8 @@ import { isMainModule } from '../fleet/process/is-main-module.mts'
 import { runMain } from '../fleet/process/run-main.mts'
 import path from 'node:path'
 
-import { isQuiet } from '@socketsecurity/lib-stable/argv/flag-predicates'
-import { parseArgs } from '@socketsecurity/lib-stable/argv/parse'
-import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
+import { parseArgs } from 'node:util'
+import { strictDeleteSync } from '../fleet/fs/strict.mts'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 
 import { REPO_ROOT } from '../fleet/paths.mts'
@@ -23,16 +22,24 @@ import type { ScriptMeta } from '../fleet/process/run-main.mts'
 
 const logger = getDefaultLogger()
 
-export function cleanDist(): void {
-  safeDeleteSync(path.join(REPO_ROOT, 'dist'))
-  for (const info of globSync(path.join(REPO_ROOT, '*.tsbuildinfo'))) {
-    safeDeleteSync(info)
+export function cleanDist(
+  options?: { root?: string | undefined } | undefined,
+): void {
+  const opts = { __proto__: null, ...options } as NonNullable<typeof options>
+  const root = opts.root ?? REPO_ROOT
+  strictDeleteSync(path.join(root, 'dist'), { base: root })
+  for (const info of globSync(path.join(root, '*.tsbuildinfo'))) {
+    strictDeleteSync(info, { base: root })
   }
 }
 
-export function cleanTypes(): void {
-  for (const dts of globSync(path.join(REPO_ROOT, 'dist/**/*.d.ts'))) {
-    safeDeleteSync(dts)
+export function cleanTypes(
+  options?: { root?: string | undefined } | undefined,
+): void {
+  const opts = { __proto__: null, ...options } as NonNullable<typeof options>
+  const root = opts.root ?? REPO_ROOT
+  for (const dts of globSync(path.join(root, 'dist/**/*.d.{ts,mts,cts}'))) {
+    strictDeleteSync(dts, { base: root })
   }
 }
 
@@ -48,7 +55,7 @@ async function main(): Promise<void> {
     strict: false,
   })
 
-  const quiet = isQuiet(values)
+  const quiet = values['quiet'] === true || values['silent'] === true
 
   if (values['dist'] || (!values['dist'] && !values['types'])) {
     cleanDist()
