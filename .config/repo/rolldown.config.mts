@@ -75,6 +75,7 @@ export const buildConfig: RolldownOptions & { output: OutputOptions } = {
   output: {
     banner: '/* Socket Security Scanner for Bun - Built with rolldown */',
     codeSplitting: false,
+    comments: { legal: true, annotation: true, jsdoc: false },
     dir: distPath,
     entryFileNames: '[name].js',
     format: 'esm',
