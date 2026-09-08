@@ -9,6 +9,20 @@ import type { SocketArtifact } from './types.mts'
  */
 const FALLBACK_OVERVIEW_URL = 'https://socket.dev/'
 
+export function alertNotes(
+  props: SocketArtifact['alerts'][number]['props'],
+): string[] {
+  const values: string[] = []
+  const notes = props['notes']
+  if (typeof notes === 'string' && notes) {
+    values.push(notes)
+  }
+  if (props.note && props.note !== notes) {
+    values.push(props.note)
+  }
+  return values
+}
+
 /**
  * Map Socket artifacts to Bun security advisories. Pure — no I/O — so the
  * alert→advisory mapping (level, description assembly, overview URL) is unit
@@ -58,9 +72,7 @@ export function artifactsToAdvisories(
         description.push(alert.props.description)
       }
 
-      if (alert.props.note) {
-        description.push(alert.props.note)
-      }
+      description.push(...alertNotes(alert.props))
 
       const fix = alert.fix?.description
 

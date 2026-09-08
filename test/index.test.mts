@@ -20,6 +20,8 @@ import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
 import { SocketSdk } from '@socketsecurity/sdk'
 import type { SocketArtifact } from '../src/types.mts'
 
+const logger = getDefaultLogger()
+
 // Every alias the token bootstrap consults, cleared before each test so a
 // stray local export can't flip the module into authenticated mode.
 // socket-api-token-env: bootstrap -- this array clears the alias-normalization chain.
@@ -70,13 +72,6 @@ function restoreEnv(): void {
 // after arranging the env (query-busting defeats the module cache — the same
 // pattern dist.test.ts and live.test.ts use).
 //
-// Coverage caveat: every query-busted import is a distinct module instance,
-// and `bun test --coverage` attributes src/index.ts to ONE representative
-// instance rather than the union — so the report can list init-branch lines
-// as uncovered even though a test in this file executes and asserts them
-// (run this file alone with --coverage and the "missed" set shifts). The
-// suite covers every src/index.ts line across instances; treat the per-file
-// percentage for this module as a tooling artifact, not a gap.
 let importCounter = 0
 type ScannerModule = {
   scanner: Bun.Security.Scanner
@@ -197,10 +192,16 @@ describe('index settings-file token fallback', () => {
   // base64-decode token fallback the env-alias path skips.
   let dataHome: string
 
-  function writeSettings(contents: string): void {
-    const settingsDir = path.join(dataHome, 'socket')
-    mkdirSync(settingsDir, { recursive: true })
-    writeFileSync(path.join(settingsDir, 'settings'), contents)
+  function writeSettings(
+    contents: string,
+    options?: { directory?: boolean | undefined } | undefined,
+  ): void {
+    const settingsRoot = path.join(dataHome, 'socket', 'settings')
+    const filename = options?.directory
+      ? path.join(settingsRoot, 'config.json')
+      : settingsRoot
+    mkdirSync(path.dirname(filename), { recursive: true })
+    writeFileSync(filename, contents)
   }
 
   beforeEach(() => {
@@ -217,52 +218,56 @@ describe('index settings-file token fallback', () => {
     await safeDelete(dataHome)
   })
 
-  test('reads the base64 apiToken and enters authenticated mode', async () => {
-    writeSettings(
-      Buffer.from(JSON.stringify({ apiToken: 'settings-token' })).toString(
-        'base64',
-      ),
-    )
+  test.each(['flat', 'directory'])(
+    'reads the %s layout base64 apiToken and enters authenticated mode',
+    async layout => {
+      writeSettings(
+        Buffer.from(JSON.stringify({ apiToken: 'settings-token' })).toString(
+          'base64',
+        ),
+        { directory: layout === 'directory' },
+      )
 
-    // Prove the authenticated (SDK) path is taken rather than free-mode fetch.
-    const streamSpy = spyOn(
-      SocketSdk.prototype,
-      'batchPackageStream',
-    ).mockImplementation(
-      // Empty stream — this test only proves the SDK path runs, not what it
-      // yields. An empty async generator is assignable to the method type, so
-      // no cast is needed.
-      async function* () {},
-    )
-    const fetchSpy = spyOn(global, 'fetch')
+      // Prove the authenticated (SDK) path is taken rather than free-mode fetch.
+      const streamSpy = spyOn(
+        SocketSdk.prototype,
+        'batchPackageStream',
+      ).mockImplementation(
+        // Empty stream — this test only proves the SDK path runs, not what it
+        // yields. An empty async generator is assignable to the method type, so
+        // no cast is needed.
+        async function* () {},
+      )
+      const fetchSpy = spyOn(global, 'fetch')
 
-    try {
-      const { scanner } = await freshScannerModule()
-      const advisories = await scanner.scan({
-        packages: [
-          {
-            name: 'lodash',
-            version: '4.17.21',
-            requestedRange: '^4.0.0',
-            tarball: 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
-          },
-        ],
-      })
+      try {
+        const { scanner } = await freshScannerModule()
+        const advisories = await scanner.scan({
+          packages: [
+            {
+              name: 'lodash',
+              version: '4.17.21',
+              requestedRange: '^4.0.0',
+              tarball: 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
+            },
+          ],
+        })
 
-      expect(advisories).toEqual([])
-      expect(streamSpy).toHaveBeenCalledTimes(1)
-      expect(fetchSpy).not.toHaveBeenCalled()
-    } finally {
-      streamSpy.mockRestore()
-      fetchSpy.mockRestore()
-    }
-  })
+        expect(advisories).toEqual([])
+        expect(streamSpy).toHaveBeenCalledTimes(1)
+        expect(fetchSpy).not.toHaveBeenCalled()
+      } finally {
+        streamSpy.mockRestore()
+        fetchSpy.mockRestore()
+      }
+    },
+  )
 
   test('degrades to free mode with an actionable warning when the settings file is unreadable', async () => {
     // Not valid base64-of-JSON → the JSON.parse in the fallback throws.
     writeSettings('%%% not base64 json %%%')
 
-    const warnSpy = spyOn(getDefaultLogger(), 'warn')
+    const warnSpy = spyOn(logger, 'warn')
     const fetchSpy = spyOn(global, 'fetch').mockImplementation(
       Object.assign(() => Promise.resolve(new Response('')), {
         preconnect: () => undefined,
