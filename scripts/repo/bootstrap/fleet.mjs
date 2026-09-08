@@ -22,6 +22,115 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import https from 'node:https'
 
+//#region template/base/universal/scripts/fleet/gitignore/compose.mts
+function updateGitignoreOwners(stack, marker) {
+  const name = marker[2]
+  if (marker[1] === '/') {
+    if (stack.pop() !== name)
+      throw new TypeError(
+        'Invalid .gitignore: unmatched ownership marker. Balance its ownership markers.',
+      )
+    return
+  }
+  const isChild = name === 'fleet-allowlist' || name === 'fleet-pack'
+  if (stack.length && (!isChild || stack.at(-1) !== 'fleet'))
+    throw new TypeError(
+      'Invalid .gitignore: nested ownership region. Balance its ownership markers.',
+    )
+  stack.push(name)
+}
+function gitignoreOwner(stack) {
+  const name = stack.at(-1)
+  if (name === 'fleet-pack') return 'pack'
+  if (name === 'fleet-allowlist') return 'fleetAllowlist'
+  return name === 'fleet' ? 'fleet' : 'repo'
+}
+function parseGitignoreSections(source) {
+  const sections = {
+    __proto__: null,
+    fleet: [],
+    fleetAllowlist: [],
+    pack: [],
+    repo: [],
+    denyByDefault: false,
+  }
+  const stack = []
+  const lines = source.split(/\r?\n/)
+  for (let index = 0, { length } = lines; index < length; index += 1) {
+    const line = lines[index]
+    const marker = /^# <(\/?)(fleet|repo|fleet-pack|fleet-allowlist)>$/.exec(
+      line,
+    )
+    if (marker) {
+      updateGitignoreOwners(stack, marker)
+      continue
+    }
+    const owner = gitignoreOwner(stack)
+    if (line === '*' && (owner === 'fleet' || owner === 'repo'))
+      sections.denyByDefault = true
+    else sections[owner].push(line)
+  }
+  if (stack.length)
+    throw new TypeError(
+      'Invalid .gitignore: unclosed ownership region. Balance its ownership markers.',
+    )
+  if (sections.denyByDefault) {
+    sections.fleet = sections.fleet.filter(line => line !== '!*/')
+    sections.repo = sections.repo.filter(line => line !== '!*/')
+  }
+  sections.fleet = trimGitignoreLines(sections.fleet)
+  sections.fleetAllowlist = trimGitignoreLines(sections.fleetAllowlist)
+  sections.pack = trimGitignoreLines(sections.pack)
+  sections.repo = trimGitignoreLines(sections.repo)
+  return sections
+}
+function trimGitignoreLines(lines) {
+  const result = [...lines]
+  while (result[0]?.trim() === '') result.shift()
+  while (result.at(-1)?.trim() === '') result.pop()
+  return result
+}
+function composeGitignore(config) {
+  const options = {
+    __proto__: null,
+    ...config,
+  }
+  const current = parseGitignoreSections(options.target)
+  const fleet =
+    options.fleetBlock === void 0
+      ? current.fleet
+      : parseGitignoreSections(options.fleetBlock).fleet
+  const allowed =
+    options.fleetAllowlist === void 0
+      ? current.fleetAllowlist
+      : parseGitignoreSections(options.fleetAllowlist).fleetAllowlist
+  const pack =
+    options.packBlock === void 0
+      ? current.pack
+      : parseGitignoreSections(options.packBlock).pack
+  const repo =
+    options.repoBlock === void 0
+      ? current.repo
+      : parseGitignoreSections(options.repoBlock).repo
+  return [
+    '# <fleet>',
+    ...((options.denyByDefault ?? current.denyByDefault) ? ['*', '!*/'] : []),
+    ...(allowed.length
+      ? ['# <fleet-allowlist>', ...allowed, '# </fleet-allowlist>']
+      : []),
+    ...trimGitignoreLines(fleet),
+    ...(pack.length
+      ? ['# <fleet-pack>', ...trimGitignoreLines(pack), '# </fleet-pack>']
+      : []),
+    '# </fleet>',
+    '# <repo>',
+    ...trimGitignoreLines(repo),
+    '# </repo>',
+    '',
+  ].join('\n')
+}
+
+//#endregion
 //#region scripts/repo/gen/bootstrap/src/helpers.mts
 const HYBRID_BUNDLE_PATHS = /* @__PURE__ */ new Set(['.gitignore', 'CLAUDE.md'])
 /**
@@ -93,31 +202,13 @@ function packEndMarker() {
   return '# </fleet-pack>'
 }
 /**
- * Splice the fetcher-owned `<fleet-pack>` block into `target`. When the
- * markers exist the whole region (markers inclusive) is REPLACED — that is
- * what prunes a stale entry; the region is wholly fetcher-owned, so hand
- * ignores belong outside it. When absent, the block is appended at end of
- * file, after the cascade's `<fleet>` region and the member's `<repo>`
- * wrapper, so the fleet splice's repo-region adjacency is never broken.
+ * Replace the nested fleet-pack inventory and preserve repo overrides.
  */
 function splicePackBlock(config) {
-  const { packBlock, target } = {
-    __proto__: null,
-    ...config,
-  }
-  const begin = packBeginMarker()
-  const end = packEndMarker()
-  const lines = target.split('\n')
-  const startIdx = lines.findIndex(l => l === begin)
-  const endIdx = lines.findIndex(l => l === end)
-  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-    const before = lines.slice(0, startIdx)
-    const after = lines.slice(endIdx + 1)
-    return [...before, packBlock, ...after].join('\n')
-  }
-  const trimmed = target.replace(/\n+$/, '')
-  if (trimmed === '') return `${packBlock}\n`
-  return `${trimmed}\n\n${packBlock}\n`
+  return composeGitignore({
+    target: config.target,
+    packBlock: config.packBlock,
+  })
 }
 /**
  * Every balanced fleet block in `lines`, in document order. Each open marker
@@ -936,12 +1027,8 @@ function extractFleetBlockLines(target) {
   const beginAt = target.indexOf(begin)
   if (beginAt === -1) return []
   const bodyStart = beginAt + begin.length
-  const endAt = target.indexOf(end, bodyStart)
-  if (endAt === -1) return []
-  return target
-    .slice(bodyStart, endAt)
-    .split(/\r?\n/)
-    .filter(line => line.trim() !== '')
+  if (target.indexOf(end, bodyStart) === -1) return []
+  return parseGitignoreSections(target).fleet.filter(line => line.trim() !== '')
 }
 /**
  * Non-Claude harness surfaces the fleet GENERATES, never tracks.
@@ -1034,25 +1121,33 @@ function stripLegacyUntrackEntriesFromFleetBlock(target) {
   ].join('\n')
 }
 /**
- * Write the fetcher-owned `<fleet-pack>` `.gitignore` region: `.agents/` (the
- * regenerated agent mirror — dead weight in a thin consumer; the fetch
- * repopulates it) plus the wholly-fleet bundle untrack paths (see
- * fleetPackOwnedPaths). The region is REGENERATED from the manifest on every
- * run — replaced whole, so a stale entry from an earlier pack is pruned
- * instead of carried forward (the old append-only refresh accreted every
- * prior line forever). Hand-added ignores belong outside the markers and are
- * untouched, as is the cascade's `<fleet>` region — the two writers own
- * disjoint regions, so neither can discard the other's rules. The dep-0
- * bootstrap (`scripts/repo/bootstrap/`) is NOT listed: it ships via the
- * manual cascade, never the release bundle, so it never enters this untrack
- * set and stays tracked by default.
- *
- * This is the HALF that is safe to run unconditionally for a thin consumer. It
- * only edits `.gitignore`; it never touches the git index, so a member whose
- * payload is still tracked keeps every file it has committed (gitignore has no
- * effect on tracked paths). The index-mutating half lives in
- * untrackFleetPackPaths and stays behind an explicit `--thin`.
+ * Refresh exact tracked fleet paths using the active ownership classification.
  */
+function fleetTrackedAllowlist(manifest, current) {
+  const candidates = [
+    ...Object.keys(manifest.files),
+    ...current.filter(line => line.startsWith('!/')).map(line => line.slice(2)),
+  ]
+  const removed = manifest.removedPaths ?? []
+  return [
+    '# <fleet-allowlist>',
+    ...[
+      ...new Set(
+        candidates.filter(
+          entry =>
+            isAlwaysTrackedSurface(entry) &&
+            !removed.some(
+              removedPath =>
+                entry === removedPath || entry.startsWith(`${removedPath}/`),
+            ),
+        ),
+      ),
+    ]
+      .toSorted()
+      .map(entry => `!/${entry}`),
+    '# </fleet-allowlist>',
+  ].join('\n')
+}
 function refreshFleetPackIgnores(config) {
   const { dest, manifest } = {
     __proto__: null,
@@ -1060,10 +1155,13 @@ function refreshFleetPackIgnores(config) {
   }
   const sortedRoots = fleetPackOwnedPaths(manifest)
   const gitignorePath = path.join(dest, '.gitignore')
+  const existing = existsSync(gitignorePath)
+    ? readFileSync(gitignorePath, 'utf8')
+    : ''
   const migrated = stripLegacyPackBlock(
-    stripLegacyUntrackEntriesFromFleetBlock(
-      existsSync(gitignorePath) ? readFileSync(gitignorePath, 'utf8') : '',
-    ),
+    existing.includes(packBeginMarker())
+      ? existing
+      : stripLegacyUntrackEntriesFromFleetBlock(existing),
   )
   const packBlock = [
     packBeginMarker(),
@@ -1074,9 +1172,14 @@ function refreshFleetPackIgnores(config) {
     ...sortedRoots,
     packEndMarker(),
   ].join('\n')
-  const updated = splicePackBlock({
+  const sections = parseGitignoreSections(migrated)
+  const fleetAllowlist = sections.denyByDefault
+    ? fleetTrackedAllowlist(manifest, sections.fleetAllowlist)
+    : void 0
+  const updated = composeGitignore({
     packBlock,
     target: migrated,
+    fleetAllowlist,
   })
   writeFileSync(gitignorePath, updated)
 }
@@ -2195,11 +2298,17 @@ function installSegments(segmentsDir, dest, manifest) {
     const existing = existsSync(targetPath)
       ? readFileSync(targetPath, 'utf8')
       : ''
-    const updated = spliceFleetBlock({
-      commentStyle: entry.commentStyle,
-      fleetBlock,
-      target: existing,
-    })
+    const updated =
+      entry.path === '.gitignore'
+        ? composeGitignore({
+            target: existing,
+            fleetBlock,
+          })
+        : spliceFleetBlock({
+            commentStyle: entry.commentStyle,
+            fleetBlock,
+            target: existing,
+          })
     mkdirSync(path.dirname(targetPath), { recursive: true })
     writeFileSync(targetPath, updated)
   }
@@ -3659,6 +3768,7 @@ export {
   findFleetBlockSpans,
   firstHeader,
   fleetPackOwnedPaths,
+  fleetTrackedAllowlist,
   formatLockStepError,
   formatUpdateNotice,
   getGhcrToken,
