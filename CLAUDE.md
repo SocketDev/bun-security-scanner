@@ -115,7 +115,7 @@
 - 🚨 An AI agent acts ONLY through fleet scripts/hooks/skills. (`scripts/fleet/check/working-tree-is-clean.mts`) [`agent-actions-via-scripts`](docs/fleet/agents.md/agent-actions-via-scripts.md) <!-- enforcement: human-review - behavioral -->
 - Fleet-wide data (rosters, pins, pricing) lives in ONE canonical file. [`single-source-of-truth`](docs/fleet/agents.md/single-source-of-truth.md)
 - Per-repo config lives in ONE member surface: a new `.config/*.{json,yaml,toml}` is blocked. [`config-segregation`](docs/fleet/agents.md/config-segregation.md)
-- One `.gitignore` per repo: every ignore entry lives in the ROOT `.gitignore` (fleet block + repo-owned block). [`single-gitignore`](docs/fleet/agents.md/single-gitignore.md)
+- One deny-by-default root `.gitignore`: allow intentional files inside one fleet block followed by one repo block. [`single-gitignore`](docs/fleet/agents.md/single-gitignore.md)
 - 🚨 Generated build outputs are NEVER tracked. (`scripts/fleet/check/generated-outputs-are-untracked.mts`) [`generated-outputs-are-untracked`](docs/fleet/agents.md/generated-outputs-are-untracked.md)
 - `/* c8 ignore next N */` is broken for multi-line bodies: use `/* c8 ignore start - <reason> */` … `/* c8 ignore stop */`. [`c8-ignore-directives`](docs/fleet/agents.md/c8-ignore-directives.md)
 - A repo declaring cargo/go/cpp gets that lane in `pnpm run cover`. (`scripts/fleet/check/coverage-lanes-are-wired.mts`) [`coverage-lanes`](docs/fleet/agents.md/coverage-lanes.md)

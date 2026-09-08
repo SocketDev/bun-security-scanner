@@ -147,12 +147,17 @@
 # so each is ignored in BOTH the repo-root live copy AND the template/base/universal/
 # mirror — the fleet keeps ignores in this root block, not nested per-dir
 # files. Keep in lock-step with RELEASE_ONLY_DIR_MIRROR_FILES (scripts/repo/
-# sync-scaffolding/dir-mirror-skip.mts). See docs/fleet/agents.md/release-vs-cascade.md.
+# commit-cascade/dir-mirror-skip.mts). See docs/fleet/agents.md/release-vs-cascade.md.
 **/.claude/hooks/fleet/_dist/fleet-pack.cjs
+# The model-pricing module gen/model-pricing-module.mts bakes from the pricing
+# JSON so rolldown inlines the prices into fleet-pack.cjs. A build output in
+# BOTH trees, shipped in the pack, never cascaded.
+**/scripts/fleet/constants/model-pricing.generated.mts
+**/scripts/fleet/constants/fleet-pack-version.generated.mts
 # Prebuilt dispatch-launcher variants (one per platform-arch), CI
 # cross-compiled and hydrated from the release bundle; the host build
 # copies its match into _shared/ instead of invoking cc. Contract:
-# scripts/fleet/_shared/launcher-variants.mts.
+# scripts/fleet/pack/launcher-variants.mts.
 **/.claude/hooks/fleet/_dist/launchers/
 # Legacy pre-v1.0.16 dispatch layout: socket-sdk-js still tracks the
 # _dispatch/index.cjs loader, which requires ./fleet-pack.cjs — that generated
@@ -197,6 +202,7 @@
 /.github/copilot-instructions.md
 /.janus/
 /.kiro/
+/.opencode/
 /.windsurf/
 /AGENTS.md
 /opencode.json
@@ -221,6 +227,7 @@ Thumbs.db
 # generated-globs.mts) by generated-globs-are-consistent.mts.
 **/build/
 **/dist/
+**/tmp/
 /template/generated/
 **/out/
 **/.cache/
@@ -2741,7 +2748,6 @@ docs/fleet/agents.md/worktree-hygiene.md
 docs/fleet/agents.md/writing-skills-well.md
 docs/fleet/ai-balancer.md
 docs/references/fleet/sfw-local-install.md
-opencode.json
 patches/brace-expansion@5.0.9.patch
 patches/minimatch@10.2.6.patch
 scripts/fleet/agent-orphan-sweep.mts
@@ -3438,6 +3444,7 @@ scripts/fleet/github/security-alert-feeds.mts
 scripts/fleet/github/token.mts
 scripts/fleet/github/tracked-surface.mts
 scripts/fleet/github/workflow-display-names.mts
+scripts/fleet/gitignore/compose.mts
 scripts/fleet/gitmodules-contract.mts
 scripts/fleet/go-publish.mts
 scripts/fleet/grant-ruleset-bypass.mts
