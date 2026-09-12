@@ -1,4 +1,3 @@
-// socket-lint: mirror-exempt — fast-check fuzz suite complementing the unit mirror scanner-factory.test.ts; renaming to the source basename would collide with it
 /**
  * @file Property/fuzz tests for src/scanner-factory (Tier-1 fast-check).
  *   `createScanner` returns an async generator that batches an input list of
@@ -20,6 +19,8 @@
 
 import { describe, expect, test } from 'bun:test'
 import fc from 'fast-check'
+import process from 'node:process'
+import { scannerFuzzOptions } from '../scripts/repo/fuzz-options.mts'
 
 import { createScanner } from '../src/scanner-factory.mts'
 import type { SocketArtifact } from '../src/types.mts'
@@ -27,6 +28,8 @@ import type { SocketArtifact } from '../src/types.mts'
 // A minimal Bun.Security.Package. `name`/`version` feed pure string
 // interpolation in the SUT, so arbitrary strings (unicode, `@`, `/`, control
 // chars) are all valid inputs — nothing parses them.
+const fuzzOptions = scannerFuzzOptions(process.env)
+
 const packageArb = fc
   .record({ name: fc.string(), version: fc.string() })
   .map(({ name, version }) => ({
@@ -72,6 +75,7 @@ describe('scanner-factory (fuzz)', () => {
         const expected = pkgs.map(purlOf)
         expect(seen).toEqual(expected)
       }),
+      fuzzOptions,
     )
   })
 
@@ -105,6 +109,7 @@ describe('scanner-factory (fuzz)', () => {
           expect(sizes[i]).toBe(cfg.maxBatchLength)
         }
       }),
+      fuzzOptions,
     )
   })
 
@@ -136,6 +141,7 @@ describe('scanner-factory (fuzz)', () => {
         const ids = got.map(a => a.inputPurl)
         expect(new Set(ids).size).toBe(ids.length)
       }),
+      fuzzOptions,
     )
   })
 
@@ -159,6 +165,7 @@ describe('scanner-factory (fuzz)', () => {
         }
         expect(sawEmpty).toBe(false)
       }),
+      fuzzOptions,
     )
   })
 

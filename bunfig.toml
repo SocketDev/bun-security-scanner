@@ -2,11 +2,12 @@
 scanner = "./src/index.mts"
 
 [test]
+preload = ["./test/repo/scripts/network-preload.mts"]
 # Coverage scope mirrors the fleet vitest coverage excludes: measure `src/`
 # only. `dist/**` is the built bundle test/dist.test.ts smoke-tests, `test/**`
 # holds the suites plus the cascaded fleet helpers.
 coverageSkipTestFiles = true
-coveragePathIgnorePatterns = ["dist/**", "test/**"]
+coveragePathIgnorePatterns = [".config/**", "dist/**", "scripts/**", "test/**"]
 # Thresholds are NOT set here. The fleet coverage runner reads bun's lcov and
 # applies `cover.thresholds` + `cover.perFileThresholds` from
 # .config/repo/socket-wheelhouse.json itself, because bun's own

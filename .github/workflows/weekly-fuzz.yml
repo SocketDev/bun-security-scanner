@@ -329,6 +329,30 @@ jobs:
           # Both stay empty on a member with no payload App, skipping the mint.
           payload-token-client-id: ${{ vars.SOCKET_PAYLOAD_CLIENT_ID }}
           payload-token-private-key: ${{ secrets.SOCKET_PAYLOAD_APP_PRIVATE_KEY }}
+      - name: Resolve JS fuzz runtime
+        id: js-runtime
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const configPath = '.config/repo/socket-wheelhouse.json'
+          const config = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, 'utf8')) : {}
+          const runner = config.cover?.runner === 'bun' ? 'bun' : 'vitest'
+          let version = ''
+          if (runner === 'bun') {
+            const tools = JSON.parse(fs.readFileSync('.config/repo/external-tools.json', 'utf8'))
+            version = tools.tools?.bun?.version
+            if (typeof version !== 'string' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+              throw new Error('Bun fuzz runtime requires an exact pin in .config/repo/external-tools.json')
+            }
+          }
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `runner=${runner}\nbun-version=${version}\n`)
+          NODE
+      - name: Setup Bun fuzz runtime
+        if: steps.js-runtime.outputs.runner == 'bun'
+        uses: oven-sh/setup-bun@22457c87c1b161cf7dde222c3e82b2b5f8d2bed2 # post-v2.0.2 main (2025-07-10)
+        with:
+          bun-version: ${{ steps.js-runtime.outputs.bun-version }}
+          no-cache: true
       # The vitest-runnable harnesses (`*.fuzz.test.mts` — Tier 1 property,
       # Tier 3 seeded). The ordinary suite EXCLUDES these, so this is the only
       # place they run: FLEET_TEST_FUZZ=1 flips the vitest config's include to
@@ -353,6 +377,13 @@ jobs:
             exit 0
           fi
           pnpm run test:fuzz
+      - name: Upload JS fuzz failure evidence
+        if: failure()
+        uses: ./.github/actions/fleet/upload-artifact
+        with:
+          if-no-files-found: ignore
+          name: fuzz-js-failure-evidence
+          path: .cache/repo/fuzz/
 
   # Weekly Go campaign: 10 min per fuzz function.
   fuzz-go:

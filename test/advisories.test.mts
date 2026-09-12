@@ -249,3 +249,33 @@ describe('artifactsToAdvisories', () => {
     ])
   })
 })
+
+describe('firewall explanation notes', () => {
+  test.each([
+    [{ notes: 'Plural API explanation' }, '\n\nPlural API explanation\n'],
+    [{ note: 'Singular explanation' }, '\n\nSingular explanation\n'],
+    [
+      { notes: 'Same explanation', note: 'Same explanation' },
+      '\n\nSame explanation\n',
+    ],
+    [
+      { notes: 'API explanation', note: 'Additional context' },
+      '\n\nAPI explanation\n\nAdditional context\n',
+    ],
+    [
+      { notes: { untrusted: true }, note: 'Readable explanation' },
+      '\n\nReadable explanation\n',
+    ],
+  ] as const)(
+    'preserves readable explanation fields without duplicate text',
+    (props, expected) => {
+      const advisories = artifactsToAdvisories([
+        {
+          inputPurl: 'pkg:npm/example-package@1.0.0',
+          alerts: [{ action: 'warn', type: 'gptMalware', props }],
+        },
+      ])
+      expect(advisories[0]!.description).toBe(expected)
+    },
+  )
+})

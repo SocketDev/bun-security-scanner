@@ -1,7 +1,119 @@
-node_modules
-.DS_Store
-
 # <fleet>
+*
+!*/
+# <fleet-allowlist>
+!/.claude/output-styles/fleet.md
+!/.config/fleet/.prettierignore
+!/.config/fleet/oxlintrc.json
+!/.config/fleet/tsconfig.check.json
+!/.config/repo/external-tools.json
+!/.editorconfig
+!/.git-hooks/_shared/canonical-fork-scan.mts
+!/.git-hooks/_shared/check-output.mts
+!/.git-hooks/_shared/commit-format.mts
+!/.git-hooks/_shared/commit-subject.mts
+!/.git-hooks/_shared/cross-repo.mts
+!/.git-hooks/_shared/external-issue-ref.mts
+!/.git-hooks/_shared/file-scan.mts
+!/.git-hooks/_shared/git-identity.mts
+!/.git-hooks/_shared/git.mts
+!/.git-hooks/_shared/helpers.mts
+!/.git-hooks/_shared/isolate-git-env.mts
+!/.git-hooks/_shared/logger-leaks.mts
+!/.git-hooks/_shared/personal-path.mts
+!/.git-hooks/_shared/pkg-script-target.mts
+!/.git-hooks/_shared/push-commit-messages.mts
+!/.git-hooks/_shared/push-durable-ref.mts
+!/.git-hooks/_shared/push-file-scan.mts
+!/.git-hooks/_shared/push-range.mts
+!/.git-hooks/_shared/push-release-tags.mts
+!/.git-hooks/_shared/push-repo-gates.mts
+!/.git-hooks/_shared/push-signatures.mts
+!/.git-hooks/_shared/push-squash-history.mts
+!/.git-hooks/_shared/resolve-node.sh
+!/.git-hooks/_shared/run-step.sh
+!/.git-hooks/_shared/sanitize-token-env.sh
+!/.git-hooks/_shared/scan-code-refs.mts
+!/.git-hooks/_shared/scan-comments.mts
+!/.git-hooks/_shared/scan-commit-msg.mts
+!/.git-hooks/_shared/scan-core.mts
+!/.git-hooks/_shared/scan-package-conventions.mts
+!/.git-hooks/_shared/scan-secrets.mts
+!/.git-hooks/_shared/scan-supply-chain.mts
+!/.git-hooks/_shared/staged-gates.mts
+!/.git-hooks/_shared/typecheck-cache.mts
+!/.git-hooks/commit-msg
+!/.git-hooks/fleet/commit-msg
+!/.git-hooks/fleet/commit-msg.mts
+!/.git-hooks/fleet/post-commit
+!/.git-hooks/fleet/pre-commit
+!/.git-hooks/fleet/pre-commit.mts
+!/.git-hooks/fleet/pre-merge-commit
+!/.git-hooks/fleet/pre-merge-commit.mts
+!/.git-hooks/fleet/pre-push
+!/.git-hooks/fleet/pre-push.mts
+!/.git-hooks/post-commit
+!/.git-hooks/pre-commit
+!/.git-hooks/pre-merge-commit
+!/.git-hooks/pre-push
+!/.github/actions/fleet/_shared/install-tool.d.mts
+!/.github/actions/fleet/_shared/install-tool.mjs
+!/.github/actions/fleet/_shared/jq.d.mts
+!/.github/actions/fleet/_shared/jq.mjs
+!/.github/actions/fleet/_shared/platform-key.mjs
+!/.github/actions/fleet/_shared/platform.d.mts
+!/.github/actions/fleet/_shared/platform.mjs
+!/.github/actions/fleet/_shared/resolve-external-tool-asset.d.mts
+!/.github/actions/fleet/_shared/resolve-external-tool-asset.mjs
+!/.github/actions/fleet/_shared/verify-integrity-provenance.d.mts
+!/.github/actions/fleet/_shared/verify-integrity-provenance.mjs
+!/.github/actions/fleet/cache-pnpm-store/action.yml
+!/.github/actions/fleet/cache-pnpm-store/resolve-store-cache.d.mts
+!/.github/actions/fleet/cache-pnpm-store/resolve-store-cache.mjs
+!/.github/actions/fleet/checkout/action.yml
+!/.github/actions/fleet/debug/action.yml
+!/.github/actions/fleet/expose-actions-runtime/action.yml
+!/.github/actions/fleet/expose-actions-runtime/index.cjs
+!/.github/actions/fleet/github-payload-app-token/action.yml
+!/.github/actions/fleet/github-payload-app-token/mint-app-installation-token.mjs
+!/.github/actions/fleet/github-status-check/action.yml
+!/.github/actions/fleet/github-status-check/probe-github-status.d.mts
+!/.github/actions/fleet/github-status-check/probe-github-status.mjs
+!/.github/actions/fleet/install/action.yml
+!/.github/actions/fleet/install/verify-lib-floor.d.mts
+!/.github/actions/fleet/install/verify-lib-floor.mjs
+!/.github/actions/fleet/setup-and-install/action.yml
+!/.github/actions/fleet/setup/action.yml
+!/.github/actions/fleet/setup/bootstrap-pnpm.d.mts
+!/.github/actions/fleet/setup/bootstrap-pnpm.mjs
+!/.github/actions/fleet/setup/export-fleet-env.mjs
+!/.github/actions/fleet/setup/fleet-env.json
+!/.github/actions/fleet/setup/plan-setup-node.d.mts
+!/.github/actions/fleet/setup/plan-setup-node.mjs
+!/.github/actions/fleet/setup/plan-setup-tools.d.mts
+!/.github/actions/fleet/setup/plan-setup-tools.mjs
+!/.github/dependabot.yml
+!/.github/workflows/ci.yml
+!/.github/workflows/get-green.yml
+!/.github/workflows/github-release.yml
+!/.github/workflows/npm-publish.yml
+!/.github/workflows/prune-workflow-runs.yml
+!/.github/workflows/weekly-fuzz.yml
+!/.github/workflows/weekly-odai-cache.yml
+!/.github/workflows/weekly-update.yml
+!/.npmrc
+!/assets/fleet/badge-follow-bluesky.svg
+!/assets/fleet/badge-follow-x.svg
+!/assets/fleet/important.LICENSE
+!/assets/fleet/important.svg
+!/assets/fleet/socket-combomark-dark.svg
+!/assets/fleet/socket-combomark-light.svg
+!/patches/run-local-ci@0.18.1.patch
+!/scripts/repo/bootstrap/fetch-session.mts
+!/scripts/repo/bootstrap/fleet.d.mts
+!/scripts/repo/bootstrap/fleet.mjs
+!/scripts/repo/bootstrap/prepare.mts
+# </fleet-allowlist>
 # Managed by socket-wheelhouse. Don't edit locally — edit upstream
 # in scripts/repo/commit-cascade/checks/gitignore-fleet-block.mts and
 # re-cascade via `pnpm run sync`. Project-specific ignores stay
@@ -140,15 +252,6 @@ node_modules
 npm-debug.log
 pnpm-debug.log
 *.tgz
-# </fleet>
-# <repo>
-# Active pnpm patches for patchedDependencies (pnpm-workspace.yaml) — hand-
-# authored and must stay tracked despite the broader /patches/ fleet ignore
-# above so `pnpm install --frozen-lockfile` can apply them.
-!/patches/brace-expansion@5.0.9.patch
-!/patches/minimatch@10.2.6.patch
-# </repo>
-
 # <fleet-pack>
 # Fleet-pack untrack set — managed by scripts/repo/bootstrap/fleet.mjs.
 # REGENERATED from the release-bundle manifest on every hydrate; stale
@@ -2791,6 +2894,10 @@ scripts/fleet/balancer/gauge-ramp.mts
 scripts/fleet/balancer/latency.mts
 scripts/fleet/balancer/liveness.mts
 scripts/fleet/balancer/settings.mts
+scripts/fleet/bench/chart-report.mts
+scripts/fleet/bench/chart-theme.mts
+scripts/fleet/bench/charts.mts
+scripts/fleet/bench/query-chart.mts
 scripts/fleet/brew-publish.mts
 scripts/fleet/browser-control-graft.mts
 scripts/fleet/browser/chrome-cdp.mts
@@ -3215,6 +3322,8 @@ scripts/fleet/cover/lane-budget.mts
 scripts/fleet/cover/lane-contract.mts
 scripts/fleet/cover/lane-paths.mts
 scripts/fleet/cover/lanes.mts
+scripts/fleet/cover/measure-reporter.mts
+scripts/fleet/cover/measure.mts
 scripts/fleet/cover/native-lanes.mts
 scripts/fleet/cover/native-phases.mts
 scripts/fleet/cover/phases.mts
@@ -3288,6 +3397,7 @@ scripts/fleet/fuzz/report-crash.mts
 scripts/fleet/gen/agents-skills-mirror.mts
 scripts/fleet/gen/api-md.mts
 scripts/fleet/gen/aw-token-shapes.mts
+scripts/fleet/gen/chart-references.mts
 scripts/fleet/gen/coverage-badge.mts
 scripts/fleet/gen/fleet-pack-version.mts
 scripts/fleet/gen/gitmodules-hash.mts
@@ -3334,6 +3444,7 @@ scripts/fleet/github/security-alert-feeds.mts
 scripts/fleet/github/token.mts
 scripts/fleet/github/tracked-surface.mts
 scripts/fleet/github/workflow-display-names.mts
+scripts/fleet/gitignore/compose.mts
 scripts/fleet/gitmodules-contract.mts
 scripts/fleet/go-publish.mts
 scripts/fleet/grant-ruleset-bypass.mts
@@ -3667,7 +3778,6 @@ scripts/fleet/setup/claude-config.mts
 scripts/fleet/setup/developer-tools.mts
 scripts/fleet/setup/ecosystems.mts
 scripts/fleet/setup/external-tools.json
-scripts/fleet/setup/fireconnect.mts
 scripts/fleet/setup/go.mts
 scripts/fleet/setup/hook-snapshot.mts
 scripts/fleet/setup/index.mts
@@ -3842,17 +3952,32 @@ test/fleet/registry-infra/npm/placeholder.test.mts
 test/fleet/scripts/setup.mts
 test/fleet/unit/comment-voice.test.mts
 # </fleet-pack>
-
+# </fleet>
 # <repo>
-# Hand-authored/customized copies that must stay tracked despite the
-# fleet-pack ignore enumeration above (negations must trail the whole
-# generated block to win - gitignore uses last-match-wins).
-!/patches/brace-expansion@5.0.9.patch
-!/patches/minimatch@10.2.6.patch
-!/patches/@socketsecurity__lib@6.7.0.patch
-!/assets/fleet/badge-follow-bluesky.svg
-!/assets/fleet/badge-follow-x.svg
-!/assets/fleet/socket-combomark-dark.svg
-!/assets/fleet/socket-combomark-light.svg
+!/.env.test
+!/.gitattributes
+!/.gitignore
+!/.node-version
+!/CHANGELOG.md
+!/CLAUDE.md
+!/DISCLOSURE
+!/LICENSE
+!/README.md
+!/bun.lock
+!/bunfig.toml
+!/package.json
+!/pnpm-lock.yaml
+!/pnpm-workspace.yaml
+!/tsconfig.json
+!/.config/repo/*.json
+!/.config/repo/**/*.mts
+!/assets/repo/*.svg
+!/patches/*.patch
+!/scripts/repo/**/*.mts
+!/scripts/repo/**/*.mjs
+!/src/**/*.mts
+!/test/*.mts
+!/test/modes/**/*.mts
+!/test/repo/**/*.mts
 !/test/fleet/_shared/lib/isolate-home-env.mts
 # </repo>

@@ -18,11 +18,11 @@
     "DISCLOSURE"
   ],
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
       "source": "./src/index.mts",
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.mts",
       "default": "./dist/index.js"
     }
   },
@@ -33,7 +33,8 @@
   "scripts": {
     "build": "node scripts/repo/build.mts",
     "prepublishOnly": "echo 'ERROR: Use GitHub Actions workflow for publishing' && exit 1",
-    "test": "bun test",
+    "test": "node scripts/repo/test.mts",
+    "test:fuzz": "node scripts/repo/fuzz.mts",
     "check": "node scripts/fleet/check.mts",
     "check:paths": "node scripts/fleet/check/paths-are-canonical.mts",
     "ci:local": "node scripts/fleet/local-ci-skip-locks.mts run --all --quiet --pause-on-failure --github-token",
@@ -90,14 +91,20 @@
     "npm:auth:cli": "node scripts/fleet/npm-auth-cli.mts",
     "prune:gha-caches": "node scripts/fleet/prune-actions-caches.mts",
     "offload:model": "node scripts/fleet/offload-model.mts",
-    "setup:fireconnect": "node scripts/fleet/setup/fireconnect.mts",
     "setup:offload-providers": "node scripts/fleet/setup/offload-providers.mts",
     "sync-global-hooks": "node scripts/fleet/sync-global-hooks.mts",
     "backup": "node scripts/fleet/backup-work.mts",
     "gen:glyph": "node scripts/fleet/gen/glyph.mts",
     "build:hook-bundle": "node scripts/fleet/build-hook-bundle.mts",
     "build:hook-snapshot": "node scripts/fleet/build-hook-snapshot.mts",
-    "build:snapshot-launcher": "node scripts/fleet/build-snapshot-launcher.mts"
+    "build:snapshot-launcher": "node scripts/fleet/build-snapshot-launcher.mts",
+    "ai-balancer": "node scripts/fleet/ai/balancer/launch.mts",
+    "ai-balancer:auth": "node scripts/fleet/ai/balancer/login.mts",
+    "ai-balancer:refresh": "node scripts/fleet/ai/balancer/service.mts refresh",
+    "ai-balancer:service": "node scripts/fleet/ai/balancer/service.mts",
+    "ai:read": "node scripts/fleet/ai/bounded-reader.mts",
+    "setup:ai-clients": "node scripts/fleet/setup/ai-clients.mts",
+    "npm:inventory": "node scripts/fleet/registry-infra/npm/account-inventory-read.mts"
   },
   "devDependencies": {
     "@mdn/browser-compat-data": "catalog:",
@@ -139,6 +146,7 @@
     "portless": "catalog:",
     "regjsparser": "catalog:",
     "rolldown": "catalog:",
+    "rolldown-plugin-dts": "catalog:",
     "run-local-ci": "catalog:",
     "semver": "catalog:",
     "shell-quote": "catalog:",

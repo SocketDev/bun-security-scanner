@@ -1,25 +1,26 @@
-/**
- * @file Unit tests for clean.mts. Exercises cleanDist/cleanTypes against real
- *   files under the repo's own dist/ — the functions target REPO_ROOT
- *   directly, so there is no fixture root to inject.
- */
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
 
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
-import { REPO_ROOT } from '../../../scripts/fleet/paths.mts'
 import { cleanDist, cleanTypes } from '../../../scripts/repo/clean.mts'
 
-const DIST_DIR = path.join(REPO_ROOT, 'dist')
-const TSBUILDINFO = path.join(REPO_ROOT, 'clean-test.tsbuildinfo')
-
-function reset(): void {
-  rmSync(DIST_DIR, { force: true, recursive: true })
-  rmSync(TSBUILDINFO, { force: true })
-}
-
-afterEach(reset)
+let root: string
+let DIST_DIR: string
+let TSBUILDINFO: string
+beforeEach(() => {
+  root = mkdtempSync(path.join(os.tmpdir(), 'scanner-clean-test-'))
+  DIST_DIR = path.join(root, 'dist')
+  TSBUILDINFO = path.join(root, 'clean-test.tsbuildinfo')
+})
+afterEach(() => rmSync(root, { force: true, recursive: true }))
 
 describe('cleanDist', () => {
   test('removes the dist directory and root tsbuildinfo files', () => {
@@ -27,14 +28,14 @@ describe('cleanDist', () => {
     writeFileSync(path.join(DIST_DIR, 'index.js'), '', 'utf8')
     writeFileSync(TSBUILDINFO, '{}', 'utf8')
 
-    cleanDist()
+    cleanDist({ root })
 
     expect(existsSync(DIST_DIR)).toBe(false)
     expect(existsSync(TSBUILDINFO)).toBe(false)
   })
 
   test('is a no-op when nothing exists', () => {
-    expect(() => cleanDist()).not.toThrow()
+    expect(() => cleanDist({ root })).not.toThrow()
   })
 })
 
@@ -49,7 +50,11 @@ describe('cleanTypes', () => {
       'utf8',
     )
 
-    cleanTypes()
+    writeFileSync(path.join(DIST_DIR, 'module.d.mts'), 'export {}')
+    writeFileSync(path.join(DIST_DIR, 'module.d.cts'), 'export {}')
+    cleanTypes({ root })
+    expect(existsSync(path.join(DIST_DIR, 'module.d.mts'))).toBe(false)
+    expect(existsSync(path.join(DIST_DIR, 'module.d.cts'))).toBe(false)
 
     expect(existsSync(path.join(DIST_DIR, 'index.d.ts'))).toBe(false)
     expect(existsSync(path.join(DIST_DIR, 'nested', 'index.d.ts'))).toBe(false)

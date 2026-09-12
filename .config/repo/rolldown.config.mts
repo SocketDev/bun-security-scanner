@@ -58,10 +58,10 @@ export function createNodeProtocolPlugin(): Plugin {
     name: 'node-protocol',
     resolveId(source) {
       if (builtins.has(source)) {
-        return { id: `node:${source}`, external: true }
+        return { __proto__: null, id: `node:${source}`, external: true }
       }
       if (source === 'bun' || source.startsWith('bun:')) {
-        return { id: source, external: true }
+        return { __proto__: null, id: source, external: true }
       }
       return undefined
     },
@@ -75,6 +75,7 @@ export const buildConfig: RolldownOptions & { output: OutputOptions } = {
   output: {
     banner: '/* Socket Security Scanner for Bun - Built with rolldown */',
     codeSplitting: false,
+    comments: { legal: true, annotation: true, jsdoc: false },
     dir: distPath,
     entryFileNames: '[name].js',
     format: 'esm',

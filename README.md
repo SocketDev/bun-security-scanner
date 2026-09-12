@@ -1,11 +1,7 @@
-# Socket's Bun Security Scanner
-
-<div align="center">
-  <img width="160" height="160" alt="bun-security-scanner" src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/logomark.svg">
-</div>
+# <picture><img width="32" height="32" alt="bun-security-scanner" src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/logomark.svg"></picture> Socket Bun Security Scanner
 
 <a href="https://socket.dev/npm/package/@socketsecurity/bun-security-scanner"><img src="https://socket.dev/api/badge/npm/package/@socketsecurity/bun-security-scanner" alt="Socket Badge" height="20"></a>
-<img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/coverage.svg?v=d4b8d9879700" height="20" alt="Coverage" />
+<picture><img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/coverage.svg?v=4b7ce6d0e5bf" height="20" alt="Coverage" /></picture>
 
 [![Follow @SocketSecurity](https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/badge-follow-x.svg)](https://twitter.com/SocketSecurity)
 [![Follow @socket.dev on Bluesky](https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/badge-follow-bluesky.svg)](https://bsky.app/profile/socket.dev)

@@ -504,6 +504,12 @@ patchedDependencies:
   # works with the builds skipped — so we decline to run their post-install
   # scripts. Declining is the safe default; running native build scripts from a
   # transitive dep is unnecessary attack surface here.
+  # dedup: workflow variable presence (managed by socket-wheelhouse sync):
+  # Local CI must accept explicitly supplied empty workflow variables.
+  # The fleet payload client ID defaults to empty when no app is configured.
+  # Check own-property presence in run preflight and job validation;
+  # absent variables remain errors.
+  run-local-ci@0.18.1: patches/run-local-ci@0.18.1.patch
 allowBuilds:
   # The CLI's postinstall is its own installer bootstrap; unneeded as a dep.
   '@anthropic-ai/claude-code': false
