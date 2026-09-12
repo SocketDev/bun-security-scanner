@@ -346,14 +346,6 @@ minimumReleaseAgeExclude:
   - 'socket'
   - 'sdxgen'
   - 'sockeye'
-  # published: 2026-09-01 | removable: 2026-09-08
-  - 'oxfmt@0.66.0'
-  # published: 2026-09-01 | removable: 2026-09-08
-  - 'oxlint@1.81.0'
-  # published: 2026-09-02 | removable: 2026-09-09
-  - 'rolldown@1.2.7'
-  # published: 2026-09-03 | removable: 2026-09-10
-  - 'vitest@5.0.0'
 
 patchedDependencies:
   # default-export interop (managed by socket-wheelhouse sync; do not edit):
