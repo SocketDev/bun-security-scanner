@@ -6,8 +6,8 @@
   "schemaVersion": 1,
   "repoName": "bun-security-scanner",
   "bundle": {
-    "ref": "fleet-pack-ff0b289699b824a9ffab5dbe631e67a4ed211b37",
-    "cascadeSha": "ff0b289699b824a9ffab5dbe631e67a4ed211b37"
+    "ref": "fleet-pack-e670893ac860d1aa90bcd8994759534ffc503adb",
+    "cascadeSha": "e670893ac860d1aa90bcd8994759534ffc503adb"
   },
   "repo": {
     "type": "solo"
