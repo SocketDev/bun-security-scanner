@@ -61,7 +61,7 @@
     "setup:refero": "node scripts/fleet/setup/refero.mts",
     "setup:rust": "node scripts/fleet/setup/rust.mts",
     "lint": "node scripts/fleet/lint.mts",
-    "type": "node node_modules/typescript/bin/tsc --noEmit -p .config/fleet/tsconfig.check.json",
+    "type": "node scripts/fleet/type.mts",
     "npm:publish": "node scripts/fleet/publish-pipeline.mts",
     "socket-wheelhouse:emit-schema": "node scripts/fleet/socket-wheelhouse-emit-schema.mts",
     "mcp:reset": "node scripts/fleet/mcp/reset.mts",
@@ -80,7 +80,7 @@
     "soak:bypass": "node scripts/fleet/soak-bypass.mts",
     "npm:trust": "node scripts/fleet/registry-infra/npm/settings/trust.mts",
     "prune:branch-backups": "node scripts/fleet/backup-branches.mts prune",
-    "preflight": "node scripts/fleet/preflight.mts",
+    "preflight": "node scripts/repo/bootstrap/fleet.mjs --quiet && node scripts/fleet/preflight.mts",
     "check:fleet": "node scripts/fleet/check.mts",
     "fix:js": "node scripts/fleet/fix.mts --js",
     "fix:repo": "node scripts/fleet/fix.mts --repo",
@@ -109,13 +109,13 @@
     "ai:odai:cache": "node scripts/fleet/ai/odai/run.mts cache",
     "ai:odai:diagnose": "node scripts/fleet/ai/odai/run.mts diagnose",
     "spend-usage": "node scripts/fleet/spend-usage.mts",
-    "update:chrome": "node scripts/fleet/ai/odai/run.mts verify-chrome",
+    "update:chrome": "node scripts/fleet/update/chrome.mts",
     "build:oxlint-bundle": "node scripts/fleet/build-oxlint-bundle.mts",
     "check:test-budget-headroom": "node scripts/fleet/check/test-budget-headroom.mts",
     "check:workspace-installation": "node scripts/fleet/check/workspace-installation.mts",
     "cover:types": "node scripts/fleet/cover/types/run.mts",
     "depot:auth": "node scripts/fleet/registry-infra/depot/browser-auth.mts",
-    "fleet:update": "node scripts/repo/bootstrap/fleet.mjs --if-current",
+    "fleet:update": "node scripts/repo/bootstrap/fleet.mjs",
     "integrity-refresh": "node scripts/fleet/external-tools/refresh.mts",
     "setup:1password": "node scripts/fleet/setup/one-password.mts",
     "setup:ci:local": "node scripts/fleet/ci/local/setup.mts",
@@ -130,7 +130,15 @@
     "sweep:worktrees": "node scripts/fleet/worktree-sweep.mts",
     "sweep:worktrees:visit": "node scripts/fleet/worktree/sweep/run.mts",
     "test:profile": "node scripts/fleet/test/profile.mts",
-    "update:pnpm": "node scripts/fleet/update/pnpm.mts"
+    "update:pnpm": "node scripts/fleet/update/pnpm.mts",
+    "release:hint": "node scripts/fleet/release/hint.mts",
+    "slack:auth": "node scripts/fleet/mcp/connect.mts slack --client claude --reauthenticate",
+    "slack:token": "node scripts/fleet/setup/slack-token.mts",
+    "lockstep:assist": "node scripts/fleet/lockstep/assist/run.mts",
+    "mcp:1password": "node scripts/fleet/mcp/1password/run.mts",
+    "github:browser": "node scripts/fleet/browser/github-auth.mts",
+    "remote:github:release": "node scripts/fleet/release/github/remote.mts",
+    "worktree:create": "node scripts/fleet/worktree/create/run.mts"
   },
   "devDependencies": {
     "@bcoe/v8-coverage": "catalog:",
@@ -189,7 +197,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": ">=12.1.0",
+      "version": "^11.25.0 || >=12.3.4",
       "onFail": "error"
     }
   },
