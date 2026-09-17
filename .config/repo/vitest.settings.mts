@@ -14,6 +14,8 @@
 import { existsSync, globSync, lstatSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
+import { normalizePath } from '@socketsecurity/lib-stable/paths/normalize'
+
 export interface VitestRepoConfig {
   // Module resolve aliases for the test transform, e.g.
   // `{ "@socketsecurity/sdk": "./dist/index.browser.js" }`. A key is a LITERAL
@@ -44,9 +46,10 @@ export interface VitestRepoConfig {
  * (.config/repo/socket-wheelhouse.json; see paths.mts's resolver order for the
  * fallbacks). `slow` = heavy suites (subprocess-per-case, e.g. hook integration
  * specs); `mid` = isolated in-process suites (env-mutating / vi.mock /
- * fs-heavy); `fast` = pure in-process. When `fast` is declared, `fast` and
- * `mid` use their explicit membership and `slow` owns every unclassified test.
- * Without it, `fast` remains the complement of `mid` and `slow`. The runner's
+ * fs-heavy); `fast` = pure in-process. `slow` selects its declared patterns.
+ * `mid` selects its declared patterns except tests selected by `slow`.
+ * `fast` selects every remaining test, regardless of its declared patterns.
+ * The runner's
  * `--lane <fast|mid|slow>` flag (scripts/fleet/test.mts) selects one, and bare
  * `pnpm test` defaults to `fast` for a quick local loop. The lane filter is
  * active under coverage too. An unset FLEET_LANE traverses every lane; the
@@ -79,26 +82,27 @@ export function discoverSharedTestFiles(
   const exactFiles = new Set<string>()
   const globExcludes: string[] = []
   for (const pattern of options.exclude) {
+    const normalizedPattern = normalizePath(pattern)
     // Positive literal grammar: no escape, extglob, brace or bracket syntax;
     // segments cannot be dot/dotdot. Unrecognized forms use native glob.
     const literal =
       /^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\.test\.(?:js|ts|mjs|mts|cjs)$/u.test(
-        pattern,
+        normalizedPattern,
       )
     let regularFile = false
     if (literal) {
       try {
         regularFile = lstatSync(
-          path.resolve(options.cwd ?? '.', pattern),
+          path.resolve(options.cwd ?? '.', normalizedPattern),
         ).isFile()
       } catch {
         // Missing or unreadable candidates retain native exclusion behavior.
       }
     }
     if (regularFile) {
-      exactFiles.add(pattern)
+      exactFiles.add(normalizedPattern)
     } else {
-      globExcludes.push(pattern)
+      globExcludes.push(normalizedPattern)
     }
   }
   return [

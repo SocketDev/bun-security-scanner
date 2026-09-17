@@ -3,7 +3,7 @@
 # under .github/actions/fleet/ (cascade-updated), referenced by ./ path — no
 # cross-repo reusable workflow, no first-party `uses:@sha`. Add repo-specific
 # jobs anywhere under `jobs:`.
-name: ⚡ CI
+name: "ci: gates"
 
 on:
   push:
