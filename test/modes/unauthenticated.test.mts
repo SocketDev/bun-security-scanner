@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import type { Mock } from 'bun:test'
+import timers from 'node:timers/promises'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { unauthenticated } from '../../src/modes/unauthenticated.mts'
 import type { SocketArtifact } from '../../src/types.mts'
@@ -29,6 +30,7 @@ describe('unauthenticated', () => {
   }
 
   let fetchSpy: Mock<typeof fetch>
+  let retryDelaySpy: Mock<typeof timers.setTimeout>
 
   beforeEach(() => {
     // `typeof fetch` carries the `preconnect` property, so the mock
@@ -38,10 +40,12 @@ describe('unauthenticated', () => {
       { preconnect: () => undefined },
     )
     fetchSpy = spyOn(global, 'fetch').mockImplementation(mockFetch)
+    retryDelaySpy = spyOn(timers, 'setTimeout').mockResolvedValue(undefined)
   })
 
   afterEach(() => {
     fetchSpy.mockRestore()
+    retryDelaySpy.mockRestore()
   })
 
   test('unauthenticated scanner should call firewall API without auth', async () => {
@@ -162,6 +166,121 @@ describe('unauthenticated', () => {
     expect(errorMessage(thrown)).toContain(
       'Socket Security Scanner: Received 404 from server',
     )
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(retryDelaySpy).not.toHaveBeenCalled()
+  })
+
+  test('transient connection failure retries and retains security alerts', async () => {
+    const otherArtifact: SocketArtifact = {
+      inputPurl: 'pkg:npm/example-dependency@1.0.0',
+      alerts: [{ action: 'warn', type: 'deprecation', props: {} }],
+    }
+    fetchSpy.mockRejectedValueOnce(
+      Object.assign(new Error('Connection closed'), { code: 'ECONNRESET' }),
+    )
+    fetchSpy.mockResolvedValueOnce(new Response(JSON.stringify(otherArtifact)))
+    const received: SocketArtifact[] = []
+    for await (const artifacts of unauthenticated()([
+      ...mockPackages,
+      {
+        name: 'example-dependency',
+        version: '1.0.0',
+        requestedRange: '^1.0.0',
+        tarball:
+          'https://registry.npmjs.org/example-dependency/-/example-dependency-1.0.0.tgz',
+      },
+    ])) {
+      received.push(...artifacts)
+    }
+    expect(received).toHaveLength(2)
+    expect(received).toEqual(
+      expect.arrayContaining([mockArtifact, otherArtifact]),
+    )
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    expect(retryDelaySpy.mock.calls.map(([delay]) => delay)).toEqual([1000])
+  })
+
+  test.each([408, 429, 500, 502, 503, 504])(
+    'transient HTTP %i retries and retains security alerts',
+    async status => {
+      fetchSpy.mockResolvedValueOnce(new Response('Unavailable', { status }))
+      const received: SocketArtifact[] = []
+      for await (const artifacts of unauthenticated()([...mockPackages])) {
+        received.push(...artifacts)
+      }
+      expect(received).toEqual([mockArtifact])
+      expect(fetchSpy).toHaveBeenCalledTimes(2)
+      expect(retryDelaySpy.mock.calls.map(([delay]) => delay)).toEqual([1000])
+    },
+  )
+
+  test('response body disconnect retries the complete request', async () => {
+    const response = new Response('')
+    spyOn(response, 'text').mockRejectedValueOnce(
+      Object.assign(new Error('Connection closed'), { code: 'ECONNRESET' }),
+    )
+    fetchSpy.mockResolvedValueOnce(response)
+    const received: SocketArtifact[] = []
+    for await (const artifacts of unauthenticated()([...mockPackages])) {
+      received.push(...artifacts)
+    }
+    expect(received).toEqual([mockArtifact])
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+  })
+
+  test('connection failures stop after five attempts and reject', async () => {
+    const failure = Object.assign(new Error('Connection closed'), {
+      code: 'ECONNRESET',
+    })
+    fetchSpy.mockRejectedValue(failure)
+    const result = await Array.fromAsync(
+      unauthenticated()([...mockPackages]),
+    ).catch((error: unknown) => error)
+    expect(result).toBe(failure)
+    expect(fetchSpy).toHaveBeenCalledTimes(5)
+    expect(retryDelaySpy.mock.calls.map(([delay]) => delay)).toEqual([
+      1000, 2000, 4000, 8000,
+    ])
+  })
+
+  test('transient HTTP failures stop after five attempts and reject', async () => {
+    fetchSpy.mockImplementation(
+      Object.assign(
+        () => Promise.resolve(new Response('Unavailable', { status: 503 })),
+        { preconnect: () => undefined },
+      ),
+    )
+    const result = await Array.fromAsync(
+      unauthenticated()([...mockPackages]),
+    ).catch((error: unknown) => error)
+    expect(result).toBeInstanceOf(Error)
+    expect(fetchSpy).toHaveBeenCalledTimes(5)
+    expect(retryDelaySpy.mock.calls.map(([delay]) => delay)).toEqual([
+      1000, 2000, 4000, 8000,
+    ])
+  })
+
+  test.each([400, 401, 403])('HTTP %i fails without retry', async status => {
+    fetchSpy.mockResolvedValueOnce(new Response('Rejected', { status }))
+    const result = await Array.fromAsync(
+      unauthenticated()([...mockPackages]),
+    ).catch((error: unknown) => error)
+    expect(result).toBeInstanceOf(Error)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(retryDelaySpy).not.toHaveBeenCalled()
+  })
+
+  test('interrupted retry delay rejects instead of reporting a clean scan', async () => {
+    fetchSpy.mockRejectedValueOnce(new TypeError('Connection closed'))
+    retryDelaySpy.mockRejectedValueOnce(
+      new DOMException('Aborted', 'AbortError'),
+    )
+    const result = await Array.fromAsync(
+      unauthenticated()([...mockPackages]),
+    ).catch((error: unknown) => error)
+    expect(result).toBeInstanceOf(Error)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(retryDelaySpy).toHaveBeenCalledTimes(1)
   })
 
   test('unauthenticated scanner should properly encode PURLs', async () => {
@@ -209,6 +328,8 @@ describe('unauthenticated', () => {
       failure = error
     }
     expect(failure).toBeInstanceOf(SyntaxError)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(retryDelaySpy).not.toHaveBeenCalled()
   })
 
   test('NDJSON accepts CRLF and skips empty records', async () => {

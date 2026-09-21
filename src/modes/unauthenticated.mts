@@ -1,3 +1,4 @@
+import { pRetry } from '@socketsecurity/lib-stable/promises/retry'
 import type { ScannerImplementation } from '../types.mts'
 import { createScanner } from '../scanner-factory.mts'
 import { userAgent } from './user-agent.mts'
@@ -22,22 +23,38 @@ export function unauthenticated(): ScannerImplementation {
       // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast scan
       await Promise.all(
         urls.map(async url => {
-          // Tests mock global fetch; Bun ships fetch natively in this plugin
-          // runtime.
-          // oxlint-disable-next-line socket/no-fetch-prefer-http-request -- bun
-          const res = await fetch(url, {
-            headers: {
-              'User-Agent': userAgent,
+          const result = await pRetry(
+            async () => {
+              // oxlint-disable-next-line socket/no-fetch-prefer-http-request -- bun
+              const response = await fetch(url, {
+                headers: { 'User-Agent': userAgent },
+              })
+              const data = await response.text()
+              if (!response.ok) {
+                const error = new Error(
+                  `Socket Security Scanner: Received ${response.status} from server`,
+                )
+                if (
+                  response.status === 408 ||
+                  response.status === 429 ||
+                  response.status >= 500
+                ) {
+                  throw error
+                }
+                return { __proto__: null, error }
+              }
+              return { __proto__: null, data }
             },
-          })
-          if (!res.ok) {
-            throw new Error(
-              `Socket Security Scanner: Received ${res.status} from server`,
-            )
+            { retries: 4, baseDelayMs: 1000, jitter: false },
+          )
+          if (!result) {
+            throw new Error('Socket Security Scanner: Request aborted')
           }
-          const data = await res.text()
+          if (result.error) {
+            throw result.error
+          }
           artifacts.push(
-            ...data
+            ...result.data
               .split(/\r?\n/)
               .filter(Boolean)
               .map(line => JSON.parse(line)),
