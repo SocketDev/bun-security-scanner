@@ -69,6 +69,7 @@ export function createNodeProtocolPlugin(): Plugin {
 }
 
 export const buildConfig: RolldownOptions & { output: OutputOptions } = {
+  experimental: { attachDebugInfo: 'none' },
   input: {
     index: path.join(srcPath, 'index.mts'),
   },
