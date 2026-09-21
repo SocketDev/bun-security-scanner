@@ -1,4 +1,5 @@
 catalog:
+  'bun-types': 1.4.0
   '@mdn/browser-compat-data': 8.1.1
   '@modelcontextprotocol/client': 2.0.0
   # run-local-ci (bin: local-ci, formerly published as @redwoodjs/agent-ci)

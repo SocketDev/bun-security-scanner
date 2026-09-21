@@ -4856,6 +4856,7 @@ test/fleet/unit/registry-infra/npm/placeholder.test.mts
 # </fleet-pack>
 # </fleet>
 # <repo>
+!/AGENTS.md
 !/.env.test
 !/.gitattributes
 !/.gitignore
