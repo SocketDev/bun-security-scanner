@@ -1,5 +1,4 @@
 catalog:
-  'bun-types': 1.4.0
   '@mdn/browser-compat-data': 8.1.1
   '@modelcontextprotocol/client': 2.0.0
   # run-local-ci (bin: local-ci, formerly published as @redwoodjs/agent-ci)
@@ -124,6 +123,7 @@ catalog:
   # init script (see .config/fleet/playwright/).
   '@playwright/mcp': 0.0.80
   '@vitest/ui': 5.0.0
+  'bun-types': 1.4.0
   c8: 12.0.0
   # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
   # change can be validated before it's pushed (see the `agent-ci` skill).
