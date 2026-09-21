@@ -3,7 +3,7 @@
 # under .github/actions/fleet/ (cascade-updated), referenced by ./ path — no
 # cross-repo reusable workflow, no first-party `uses:@sha`. Add repo-specific
 # jobs anywhere under `jobs:`.
-name: "ci: gates"
+name: 'ci: gates'
 
 on:
   push:
@@ -81,8 +81,8 @@ jobs:
           # empty on a non-thin member (var/secret unset) - the mint is skipped
           # and the fetch no-ops. A thin member sets a dedicated read-only App's
           # client-id var + private-key secret.
-          payload-token-client-id: ${{ vars.SOCKET_PAYLOAD_CLIENT_ID }}
-          payload-token-private-key: ${{ secrets.SOCKET_PAYLOAD_APP_PRIVATE_KEY }}
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
       - uses: ./.github/actions/fleet/run-script
         with:
           main-script: pnpm run check --all
@@ -130,8 +130,8 @@ jobs:
           # empty on a non-thin member (var/secret unset) - the mint is skipped
           # and the fetch no-ops. A thin member sets a dedicated read-only App's
           # client-id var + private-key secret.
-          payload-token-client-id: ${{ vars.SOCKET_PAYLOAD_CLIENT_ID }}
-          payload-token-private-key: ${{ secrets.SOCKET_PAYLOAD_APP_PRIVATE_KEY }}
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
       # The fleet setup-and-install action installs node + pnpm only; this
       # repo's `test` script is `bun test`, so bun must be on PATH before the
       # run-script step or it dies with `bun: command not found`. Pinned to the
