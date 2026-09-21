@@ -1,5 +1,5 @@
 name: 'publish: npm'
-run-name: '${{ inputs.task-name }}'
+run-name: 'publish: npm · ${{ inputs.task-name }}'
 
 # Cascade-owned — every npm-publishing repo carries the byte-identical copy
 # (adopt by copying the template once; the sync then keeps it in lock-step;
