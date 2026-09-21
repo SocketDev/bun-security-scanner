@@ -14,13 +14,16 @@ import path from 'node:path'
 
 import { parseArgs } from 'node:util'
 import { strictDeleteSync } from '../fleet/fs/strict.mts'
-import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
+import {
+  getScriptArgs,
+  getScriptLogger,
+} from '../fleet/process/script-output.mts'
 
 import { REPO_ROOT } from '../fleet/paths.mts'
 
 import type { ScriptMeta } from '../fleet/process/run-main.mts'
 
-const logger = getDefaultLogger()
+const logger = getScriptLogger()
 
 export function cleanDist(
   options?: { root?: string | undefined } | undefined,
@@ -45,6 +48,7 @@ export function cleanTypes(
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
+    args: getScriptArgs(),
     allowPositionals: false,
     options: {
       dist: { type: 'boolean', default: false },
@@ -78,6 +82,7 @@ const SCRIPT_META: ScriptMeta = {
   --dist   Remove dist/ and *.tsbuildinfo (default when no flag is given)
   --types  Remove only dist/**/*.d.ts
   --quiet  Suppress the summary message`,
+  json: 'result',
 }
 
 if (isMainModule(import.meta.url)) {

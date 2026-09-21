@@ -18,8 +18,12 @@ import { dts } from 'rolldown-plugin-dts'
 
 import { parseArgs } from 'node:util'
 import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
-import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
+import {
+  getScriptArgs,
+  getScriptLogger,
+  scriptStdio,
+} from '../fleet/process/script-output.mts'
 
 import { configs as rolldownConfigs } from '../../.config/repo/rolldown.config.mts'
 import { cleanDist, cleanTypes } from './clean.mts'
@@ -27,7 +31,7 @@ import { REPO_ROOT } from '../fleet/paths.mts'
 
 import type { ScriptMeta } from '../fleet/process/run-main.mts'
 
-const logger = getDefaultLogger()
+const logger = getScriptLogger()
 
 type BuildOptions = {
   quiet?: boolean | undefined
@@ -87,7 +91,7 @@ export async function buildTypes(
       ],
       {
         cwd: REPO_ROOT,
-        stdio: quiet ? 'ignore' : 'inherit',
+        stdio: scriptStdio(quiet ? 'ignore' : 'inherit'),
         throws: false,
         timeout: 30_000,
       },
@@ -157,6 +161,7 @@ export function isBuildNeeded(
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
+    args: getScriptArgs(),
     allowPositionals: false,
     options: {
       needed: { type: 'boolean', default: false },
@@ -208,6 +213,7 @@ const SCRIPT_META: ScriptMeta = {
   --types   Build TypeScript declarations only
   --needed  Skip when dist artifacts already exist
   --quiet   Suppress progress messages`,
+  json: 'result',
 }
 
 if (isMainModule(import.meta.url)) {
