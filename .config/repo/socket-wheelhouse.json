@@ -28,6 +28,10 @@
     "packages": ["."]
   },
   "vitest": {
+    "lanes": {
+      "fast": ["test/*.test.mts", "test/modes/**/*.test.mts"],
+      "mid": ["test/repo/**/*.test.mts"]
+    },
     "nodeTestExclude": ["test/*.test.mts", "test/modes/**"]
   },
   "sharedModuleTests": {
