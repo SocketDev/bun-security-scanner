@@ -1,5 +1,5 @@
 name: 'publish: npm'
-run-name: 'publish: npm · ${{ inputs.task-name }}'
+run-name: 'publish: npm (${{ inputs.task-name }})'
 
 # Cascade-owned — every npm-publishing repo carries the byte-identical copy
 # (adopt by copying the template once; the sync then keeps it in lock-step;
@@ -117,6 +117,7 @@ jobs:
         shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
     steps:
       - name: Bootstrap checkout
+        id: source_checkout
         shell: bash
         env:
           CHECKOUT_REF: ${{ inputs.checkout-ref || github.sha }}
@@ -145,6 +146,7 @@ jobs:
             git fetch "${FETCH_ARGS[@]}"
           fi
           git checkout -q --detach FETCH_HEAD
+          printf 'source-sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           if [ "$RESUME_RESERVED" = "true" ] && [ "$TRIGGER_REF" = "refs/heads/$DEFAULT_BRANCH" ]; then
             if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
               git fetch --no-tags --depth=32 origin "$FETCH_REF"
@@ -176,6 +178,7 @@ jobs:
         uses: ./.github/actions/fleet/run-script
         env:
           GH_TOKEN: ${{ github.token }}
+          FLEET_COVERAGE_SOURCE_SHA: ${{ steps.source_checkout.outputs.source-sha }}
           COVERAGE_SHARD: ${{ matrix.shard }}
           COVERAGE_SHARD_COUNT: ${{ strategy.job-total }}
         with:
@@ -212,6 +215,7 @@ jobs:
             exit 1
           fi
       - name: Bootstrap checkout
+        id: source_checkout
         shell: bash
         env:
           CHECKOUT_REF: ${{ inputs.checkout-ref || github.sha }}
@@ -240,6 +244,7 @@ jobs:
             git fetch "${FETCH_ARGS[@]}"
           fi
           git checkout -q --detach FETCH_HEAD
+          printf 'source-sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           if [ "$RESUME_RESERVED" = "true" ] && [ "$TRIGGER_REF" = "refs/heads/$DEFAULT_BRANCH" ]; then
             if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
               git fetch --no-tags --depth=32 origin "$FETCH_REF"
@@ -291,6 +296,7 @@ jobs:
         run: pnpm run setup:rust-coverage
       - name: Aggregate coverage
         env:
+          FLEET_COVERAGE_SOURCE_SHA: ${{ steps.source_checkout.outputs.source-sha }}
           COVERAGE_SHARD_COUNT: ${{ needs.coverage-shards.outputs.shard-count }}
         run: pnpm run cover:aggregate --shards="$COVERAGE_SHARD_COUNT"
 
