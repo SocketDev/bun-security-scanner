@@ -4,6 +4,7 @@
 # cross-repo reusable workflow, no first-party `uses:@sha`. Add repo-specific
 # jobs anywhere under `jobs:`.
 name: 'ci: gates'
+run-name: 'ci: gates'
 
 on:
   push:
@@ -40,7 +41,7 @@ jobs:
   # `strategy.job-total < 2` skip runs it in the non-matrix check job, skips it
   # in the test matrix).
   check:
-    name: 🔎 Check
+    name: Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -53,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SERVER_URL: ${{ github.server_url }}
           REPOSITORY: ${{ github.repository }}
-          TRIGGER_REF: ${{ github.ref }}
+          TRIGGER_REF: ${{ github.sha }}
         run: |
           set -euo pipefail
           git init -q
@@ -63,12 +64,16 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
           git checkout -q --detach FETCH_HEAD
-      - uses: ./.github/actions/fleet/setup-and-install
+      - name: 'Set up and install'
+        uses: ./.github/actions/fleet/setup-and-install
         with:
           # Full history: the commit-history checks (AI-attribution,
           # release-boundary) read the default branch's history and refuse a
@@ -83,12 +88,13 @@ jobs:
           # client-id var + private-key secret.
           payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
           payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
-      - uses: ./.github/actions/fleet/run-script
+      - name: 'Check'
+        uses: ./.github/actions/fleet/run-script
         with:
-          main-script: pnpm run check --all
+          main-script: pnpm run ci:gates --stage=check
 
   test:
-    name: 🧪 Test
+    name: 'Test (${{ matrix.os }})'
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -106,7 +112,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SERVER_URL: ${{ github.server_url }}
           REPOSITORY: ${{ github.repository }}
-          TRIGGER_REF: ${{ github.ref }}
+          TRIGGER_REF: ${{ github.sha }}
         run: |
           set -euo pipefail
           git init -q
@@ -116,12 +122,16 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
           git checkout -q --detach FETCH_HEAD
-      - uses: ./.github/actions/fleet/setup-and-install
+      - name: 'Set up and install'
+        uses: ./.github/actions/fleet/setup-and-install
         with:
           socket-api-token: ${{ secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW }}
           # Thin-distribution CI auth: mint a contents:read-only token so the
@@ -150,12 +160,14 @@ jobs:
           # the cache off for tag refs only — ordinary branch/PR CI keeps
           # a warm bun cache. See https://docs.zizmor.sh/audits/#cache-poisoning
           no-cache: ${{ startsWith(github.ref, 'refs/tags/') }}
-      - uses: ./.github/actions/fleet/run-script
+      - name: 'Run tests'
+        uses: ./.github/actions/fleet/run-script
         env:
           # Authenticate build-time GitHub API reads (release listings,
           # prebuilt-artifact downloads). Unauthenticated calls share the
           # hosted runner's IP-scoped rate limit and 403 under load.
           GH_TOKEN: ${{ github.token }}
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         with:
           setup-script: pnpm run build
-          main-script: pnpm run test --all
+          main-script: pnpm run ci:gates --stage=test
