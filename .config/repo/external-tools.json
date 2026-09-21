@@ -10,47 +10,42 @@
       "platforms": {
         "darwin-arm64": {
           "asset": "bun-darwin-aarch64.zip",
-          "integrity": "sha256-xmnpf2Fk4cluBwF0jbmN+ndJKQjL2DlMdVcTSnNd44E="
+          "integrity": "sha256-kJh6OhbX21VtiGrD1VHnttPt8KHPQ6yu1iLoZ2vh0S8="
         },
         "darwin-x64": {
           "asset": "bun-darwin-x64.zip",
-          "integrity": "sha256-HQIRuPHcmRGCNEaHrRXnLuhvFUhFpff6R3mUzTQd2bA="
+          "integrity": "sha256-gFINfhdSYwjJGF0mFnmsbSd5jTgDoOn3/5Ehq4r/sBI="
         },
         "linux-arm64": {
           "asset": "bun-linux-aarch64.zip",
-          "integrity": "sha256-SxozLuhhmD65O8/m93D/+U4+MbLDiL2uo8jtNeWO7Q4="
+          "integrity": "sha256-VDKLvC2cjgyfiSxUTWbFeoO4QTnjSQnl7oF1jxrI/ac="
         },
         "linux-arm64-musl": {
           "asset": "bun-linux-aarch64-musl.zip",
-          "integrity": "sha256-V2MAzjP/Fv/NRVvxeMLwlfnfhFxsw9AoS6HJbKDoBHM="
+          "integrity": "sha256-cXYLbI6jBiO4GkkHy4FdSOLqJm8uc+dRU0pEoGB5UN8="
         },
         "linux-x64": {
           "asset": "bun-linux-x64.zip",
-          "integrity": "sha256-LQP7X7g6yLVnrKCigbLOGhoZ1Ij1bClo2Iw/Jekv5FI="
+          "integrity": "sha256-NjaPrvdSeHXV/6UuU81IAhdB8qg+tiCKjdZAaNQiqRM="
         },
         "linux-x64-musl": {
           "asset": "bun-linux-x64-musl.zip",
-          "integrity": "sha256-g7XxL9JY3Y1P3K6mXt6VQ2aqcX2rOZ4gCT7KsoDVTno="
+          "integrity": "sha256-SDXspZ1tpw9GdPVkL25Fncrat3NpWy7Zki0TEFeYl0I="
         },
         "win32-arm64": {
           "asset": "bun-windows-aarch64.zip",
-          "integrity": "sha256-9HO/4t9z7ncFSMk91dOArqcSDCGOwqoa/dC7unvxjEc="
+          "integrity": "sha256-p6Frh2owX9ECnGbb0nAHtPYRKuiWUy9nWHhzGiHlDP0="
         },
         "win32-x64": {
           "asset": "bun-windows-x64.zip",
-          "integrity": "sha256-5vCT052khrICYsqM3V7Wqei8nC8nW3jm06DFsozJWQE="
+          "integrity": "sha256-zkwXSXsvKXEqmdPVPwKN4ozULjusuFiVmefwAOSbZAU="
         }
       },
       "origin": "gh-asset",
       "repository": "github:oven-sh/bun",
-      "tag": "bun-v1.4.0",
-      "version": "1.4.0",
-      "soakBypass": {
-        "version": "1.4.0",
-        "published": "2026-08-20",
-        "removable": "2026-08-27"
-      },
-      "versionDate": "2026-08-20"
+      "tag": "bun-v1.4.2",
+      "version": "1.4.2",
+      "versionDate": "2026-09-05"
     }
   }
 }
