@@ -2,8 +2,13 @@ import crypto from 'node:crypto'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
+import { getEnvValue } from '@socketsecurity/lib-stable/env/rewire'
+import {
+  getDefaultFormatting,
+  stringifyWithFormatting,
+} from '@socketsecurity/lib-stable/json/format'
 import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
-import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
+import { getScriptLogger } from '../fleet/process/script-output.mts'
 import { scannerFuzzOptions } from './fuzz-options.mts'
 import type { ScannerFuzzParameters } from './fuzz-options.mts'
 import { REPO_CACHE_DIR, REPO_ROOT } from '../fleet/paths.mts'
@@ -11,7 +16,7 @@ import { isMainModule } from '../fleet/process/is-main-module.mts'
 import { runMain } from '../fleet/process/run-main.mts'
 import type { ScriptMeta } from '../fleet/process/run-main.mts'
 
-const logger = getDefaultLogger()
+const logger = getScriptLogger()
 
 export function recordFuzzFailure(config: {
   directory: string
@@ -24,16 +29,15 @@ export function recordFuzzFailure(config: {
   const directory = mkdtempSync(path.join(config.directory, 'run-'))
   writeFileSync(
     path.join(directory, 'result.json'),
-    JSON.stringify(
+    stringifyWithFormatting(
       {
         ...config.options,
         exitCode: config.code,
         harness: 'test/scanner-factory-properties.fuzz.test.mts',
         replay: `SCANNER_FUZZ_SEED=${config.options.seed} SCANNER_FUZZ_RUNS=${config.options.numRuns} pnpm run test:fuzz`,
       },
-      undefined,
-      2,
-    ) + '\n',
+      getDefaultFormatting(),
+    ),
   )
   writeFileSync(path.join(directory, 'stdout.log'), config.stdout)
   writeFileSync(path.join(directory, 'stderr.log'), config.stderr)
@@ -44,9 +48,9 @@ export function main(): void {
   const options = scannerFuzzOptions({
     ...process.env,
     SCANNER_FUZZ_SEED:
-      process.env['SCANNER_FUZZ_SEED'] ??
+      getEnvValue('SCANNER_FUZZ_SEED') ??
       String(crypto.randomInt(2_147_483_648)),
-    SCANNER_FUZZ_RUNS: process.env['SCANNER_FUZZ_RUNS'] ?? '1000',
+    SCANNER_FUZZ_RUNS: getEnvValue('SCANNER_FUZZ_RUNS') ?? '1000',
   })
   const env = {
     ...process.env,
@@ -98,6 +102,7 @@ const SCRIPT_META: ScriptMeta = {
   describe:
     'run seeded scanner properties with Bun and save failure logs plus replay settings',
   help: 'Usage: pnpm run test:fuzz\n\nSCANNER_FUZZ_SEED sets a signed 32-bit seed (default: random, printed before execution).\nSCANNER_FUZZ_RUNS sets cases per property (default 1000; maximum 100000).\nFailure evidence is stored in .cache/repo/fuzz/run-*.',
+  json: 'result',
 }
 
 if (isMainModule(import.meta.url)) {
