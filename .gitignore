@@ -230,6 +230,7 @@ pnpm-debug.log
 !/.git-hooks/pre-commit
 !/.git-hooks/pre-merge-commit
 !/.git-hooks/pre-push
+!/.gitattributes
 !/.github/
 !/.github/actions/
 !/.github/actions/fleet/
@@ -308,7 +309,9 @@ pnpm-debug.log
 !/.github/workflows/weekly-fuzz.yml
 !/.github/workflows/weekly-odai-cache.yml
 !/.github/workflows/weekly-update.yml
+!/.gitignore
 !/.npmrc
+!/AGENTS.md
 !/assets/
 !/assets/fleet/
 !/assets/fleet/badge-follow-bluesky.svg
@@ -2773,7 +2776,6 @@ opencode.json
 .github/local-ci.Dockerfile
 .github/zizmor.yml
 .mcp.json
-AGENTS.md
 docs/design/fleet/README.md
 docs/design/fleet/components.css
 docs/design/fleet/tokens.css
@@ -3882,6 +3884,7 @@ scripts/fleet/cover/rust-lane.mts
 scripts/fleet/cover/scope.mts
 scripts/fleet/cover/scratch-isolation.mts
 scripts/fleet/cover/shard-gate.mts
+scripts/fleet/cover/shard-revision.mts
 scripts/fleet/cover/shard-run.mts
 scripts/fleet/cover/shards-coverage.mts
 scripts/fleet/cover/shards-discovery.mts
@@ -4117,6 +4120,7 @@ scripts/fleet/lib/ecosystem-impact.mts
 scripts/fleet/lib/enforcer-inventory.mts
 scripts/fleet/lib/ensure-node.mts
 scripts/fleet/lib/exports-conditions.mts
+scripts/fleet/lib/external-tools-schema-fields.mts
 scripts/fleet/lib/external-tools-schema.mts
 scripts/fleet/lib/gh-aw-action-pin-soak.mts
 scripts/fleet/lib/gh-aw-frontmatter-hash.mts
@@ -4454,6 +4458,7 @@ scripts/fleet/registry-infra/npm/publish-command.mts
 scripts/fleet/registry-infra/npm/publish-context.mts
 scripts/fleet/registry-infra/npm/publish-dispatch-context.mts
 scripts/fleet/registry-infra/npm/publish-failure.mts
+scripts/fleet/registry-infra/npm/region-comments.mts
 scripts/fleet/registry-infra/npm/registry.mts
 scripts/fleet/registry-infra/npm/release-assets.mts
 scripts/fleet/registry-infra/npm/remote-scan-receipt.mts
@@ -4802,11 +4807,13 @@ scripts/fleet/weekly-update/delivery-policy.mts
 scripts/fleet/weekly-update/dep-changes.mts
 scripts/fleet/weekly-update/deterministic-chain.mts
 scripts/fleet/weekly-update/diff-narrow.mts
+scripts/fleet/weekly-update/gate.mts
 scripts/fleet/weekly-update/odai-decisions.mts
 scripts/fleet/weekly-update/pr-body-cli.mts
 scripts/fleet/weekly-update/pr-body.mts
 scripts/fleet/weekly-update/pricing.mts
 scripts/fleet/weekly-update/shed-out-of-surface.mts
+scripts/fleet/weekly-update/stale-pr.mts
 scripts/fleet/weekly-update/superseded-cli.mts
 scripts/fleet/weekly-update/superseded.mts
 scripts/fleet/whose-work.mts

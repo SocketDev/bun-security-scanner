@@ -15298,7 +15298,51 @@ function ruleStat(file) {
 function isRulePointer(body) {
   const oldBody = POINTER_BODY.slice(21)
   return [POINTER_BODY, oldBody].some(
-    pointer => body === pointer || body === pointer + '\n@AGENTS.md\n',
+    pointer =>
+      body.trim() === pointer.trim() ||
+      body.trim() === (pointer + '\n@AGENTS.md\n').trim(),
+  )
+}
+function isGeneratedRuleBody(body) {
+  const normalized = body.replaceAll('\r\n', '\n')
+  if (isRulePointer(normalized)) return true
+  const oldBody = POINTER_BODY.slice(21)
+  if (
+    ![
+      '# Engineering rules\n\nThe authoritative engineering rules for this repository are in `./AGENTS.md` (`./CLAUDE.md` imports the same file). Read and follow them.\n',
+      oldBody,
+    ].some(pointer => normalized.trimStart().startsWith(pointer.trimEnd()))
+  )
+    return false
+  const lines = normalized.split(/\r?\n/)
+  const markers = lines.filter(line =>
+    /^\s*<!--\s*(?:(?:BEGIN|END)\s+)?<?\/?\s*fleet\b/i.test(line),
+  )
+  const starts = lines.flatMap((line, index) => {
+    const match =
+      /^\s*<!--\s*(?:BEGIN\s+)?<(fleet(?:-canonical)?)>\s*-->\s*$/i.exec(line)
+    return match ? [[index, match[1].toLowerCase()]] : []
+  })
+  const ends = lines.flatMap((line, index) => {
+    const match =
+      /^\s*<!--\s*(?:END\s+)?<\/(fleet(?:-canonical)?)>\s*-->\s*$/i.exec(line)
+    return match ? [[index, match[1].toLowerCase()]] : []
+  })
+  if (markers.length === 0) return false
+  if (
+    markers.length !== 2 ||
+    starts.length !== 1 ||
+    ends.length !== 1 ||
+    starts[0][0] >= ends[0][0] ||
+    starts[0][1] !== ends[0][1]
+  )
+    throw new Error(
+      'Cannot classify engineering rules. Where: generated rule pointer. Saw: ambiguous fleet markers; wanted: one complete fleet block. Fix: restore authored AGENTS.md before continuing.',
+    )
+  return isRulePointer(
+    [...lines.slice(0, starts[0][0]), ...lines.slice(ends[0][0] + 1)].join(
+      '\n',
+    ),
   )
 }
 function committedRuleBody(dest, revision) {
@@ -15335,7 +15379,7 @@ function recoverRuleAuthority(dest) {
   for (let i = 0, { length } = revisions; i < length; i += 1) {
     const revision = revisions[i]
     const body = committedRuleBody(dest, revision)
-    if (body?.trim() && !isRulePointer(body)) return body
+    if (body?.trim() && !isGeneratedRuleBody(body)) return body
   }
   throw new Error(
     `Cannot recover engineering rules in ${dest}: the latest 32 first-parent commits contain no authored CLAUDE.md. Restore authored AGENTS.md before continuing.`,
@@ -15356,7 +15400,7 @@ function migrateRuleFile(dest) {
       throw new Error(
         `Cannot migrate engineering rules at ${current}: expected a regular file. Restore authored AGENTS.md before continuing.`,
       )
-    if (!isRulePointer(readFileSync(current, 'utf8'))) return false
+    if (!isGeneratedRuleBody(readFileSync(current, 'utf8'))) return false
   }
   const legacyStat = ruleStat(legacy)
   if (!legacyStat && !currentStat) return false
@@ -15365,7 +15409,7 @@ function migrateRuleFile(dest) {
       `Cannot migrate engineering rules at ${legacy}: expected a regular authored file. Restore authored AGENTS.md before continuing.`,
     )
   const body = readFileSync(legacy, 'utf8')
-  if (!isRulePointer(body)) {
+  if (!isGeneratedRuleBody(body)) {
     if (!body.trim())
       throw new Error(
         `Cannot migrate engineering rules at ${legacy}: the file is empty. Restore authored AGENTS.md before continuing.`,
