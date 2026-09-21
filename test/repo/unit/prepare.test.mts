@@ -10,24 +10,24 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { afterAll, describe, expect, test } from 'bun:test'
+import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
 
 import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
 
 import {
   ensureWorkspacePackages,
-  isAppliedRefCurrent,
   isMainModule,
   log,
   resolveRepoRoot,
   tryRun,
+  workspaceInstallFingerprint,
 } from '../../../scripts/repo/bootstrap/prepare.mts'
 
 const tmpDirs: string[] = []
 
 afterAll(() => {
   for (const dir of tmpDirs) {
-    safeDeleteSync(dir, { force: true, recursive: true })
+    safeDeleteSync(dir, { allowedDirs: [os.tmpdir()] })
   }
 })
 
@@ -85,26 +85,51 @@ describe('ensureWorkspacePackages', () => {
   })
 })
 
-describe('isAppliedRefCurrent', () => {
-  const PINNED = `fleet-pack-${'0'.repeat(40)}`
-  const APPLIED = `fleet-pack-${'1'.repeat(40)}`
+describe('workspaceInstallFingerprint', () => {
+  let root: string
 
-  test('is false when either ref is missing', () => {
-    expect(isAppliedRefCurrent(undefined, APPLIED)).toBe(false)
-    expect(isAppliedRefCurrent(PINNED, undefined)).toBe(false)
-    expect(isAppliedRefCurrent('', '')).toBe(false)
+  beforeEach(() => {
+    root = makeTmpDir('prepare-fingerprint-')
+    writeFileSync(path.join(root, 'package.json'), '{}')
+    writeFileSync(path.join(root, 'pnpm-workspace.yaml'), 'packages: []\n')
   })
 
-  test('is true when the applied ref equals the pin', () => {
-    expect(isAppliedRefCurrent(PINNED, PINNED)).toBe(true)
+  test('keeps unchanged workspace inputs stable', () => {
+    const options = { root, ecosystemConfig: {} }
+    const fingerprint = workspaceInstallFingerprint(options)
+    expect(fingerprint).toMatch(/^[a-f0-9]{64}$/u)
+    expect(workspaceInstallFingerprint(options)).toBe(fingerprint)
   })
 
-  test('is false when a ref does not parse as a fleet-pack sha', () => {
-    expect(isAppliedRefCurrent(PINNED, 'not-a-pack-ref')).toBe(false)
-  })
+  test.each(['package.json', 'pnpm-workspace.yaml'])(
+    'changes when %s changes',
+    filename => {
+      const options = { root, ecosystemConfig: {} }
+      const fingerprint = workspaceInstallFingerprint(options)
+      writeFileSync(path.join(root, filename), '\n')
+      expect(workspaceInstallFingerprint(options)).not.toBe(fingerprint)
+    },
+  )
 
-  test('rejects an applied ref that differs from the pin', () => {
-    expect(isAppliedRefCurrent(PINNED, APPLIED)).toBe(false)
+  test('tracks workspace package additions, edits, and removals', () => {
+    const options = { root, ecosystemConfig: {} }
+    const fingerprint = workspaceInstallFingerprint(options)
+    const directory = path.join(
+      root,
+      '.claude',
+      'hooks',
+      'repo',
+      'example-hook',
+    )
+    mkdirSync(directory, { recursive: true })
+    const manifest = path.join(directory, 'package.json')
+    writeFileSync(manifest, '{"version":"1.0.0"}')
+    const withPackage = workspaceInstallFingerprint(options)
+    expect(withPackage).not.toBe(fingerprint)
+    writeFileSync(manifest, '{"version":"1.0.1"}')
+    expect(workspaceInstallFingerprint(options)).not.toBe(withPackage)
+    safeDeleteSync(directory, { allowedDirs: [root] })
+    expect(workspaceInstallFingerprint(options)).toBe(fingerprint)
   })
 })
 

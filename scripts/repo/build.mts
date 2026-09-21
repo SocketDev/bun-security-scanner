@@ -17,9 +17,9 @@ import { rolldown } from 'rolldown'
 import { dts } from 'rolldown-plugin-dts'
 
 import { parseArgs } from 'node:util'
+import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
 import { getDefaultLogger } from '@socketsecurity/lib-stable/logger/default'
 import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
-import { safeDeleteSync } from '../fleet/fs/safe.mts'
 
 import { configs as rolldownConfigs } from '../../.config/repo/rolldown.config.mts'
 import { cleanDist, cleanTypes } from './clean.mts'

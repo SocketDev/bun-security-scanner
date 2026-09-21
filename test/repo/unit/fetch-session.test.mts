@@ -1,7 +1,7 @@
 import {
-  existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs'
@@ -29,7 +29,7 @@ describe('thin-member session bootstrap', () => {
     expect(ensurePayload(root)).toBe(0)
   })
 
-  test('an existing hook sentinel prevents fetching', () => {
+  test('an existing hook sentinel needs no fetcher', () => {
     const hooks = path.join(root, '.claude', 'hooks', 'fleet')
     mkdirSync(hooks, { recursive: true })
     writeFileSync(path.join(hooks, 'index.cjs'), '')
@@ -38,9 +38,19 @@ describe('thin-member session bootstrap', () => {
     expect(ensurePayload(root)).toBe(0)
   })
 
-  test.each([0, 1])(
-    'executes only the local fixture fetcher and remains fail-open for exit%s',
-    exitCode => {
+  test.each([
+    [0, false],
+    [0, true],
+    [1, false],
+    [1, true],
+  ] as const)(
+    'executes the local fetcher and remains fail-open for exit %s with payload present %s',
+    (exitCode, present) => {
+      if (present) {
+        const hooks = path.join(root, '.claude', 'hooks', 'fleet')
+        mkdirSync(hooks, { recursive: true })
+        writeFileSync(path.join(hooks, 'index.cjs'), '')
+      }
       const directory = path.join(root, 'scripts', 'repo', 'bootstrap')
       mkdirSync(directory, { recursive: true })
       const fleet = path.join(directory, 'fleet.mjs')
@@ -48,9 +58,11 @@ describe('thin-member session bootstrap', () => {
         fleet,
         `import { writeFileSync } from 'node:fs'; writeFileSync('invoked.json', JSON.stringify(process.argv.slice(2))); process.exitCode = ${exitCode};`,
       )
-      expect(planFetch(root)).toEqual({ action: 'fetch', fleet })
+      expect(planFetch(root)).toEqual({ action: 'ensure', fleet })
       expect(ensurePayload(root)).toBe(0)
-      expect(existsSync(path.join(root, 'invoked.json'))).toBe(true)
+      expect(
+        JSON.parse(readFileSync(path.join(root, 'invoked.json'), 'utf8')),
+      ).toEqual(['--quiet'])
     },
   )
 
