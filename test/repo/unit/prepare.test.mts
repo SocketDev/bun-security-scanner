@@ -6,7 +6,7 @@
  *   network, so exercising them for real would either dirty a tracked file
  *   this change doesn't otherwise touch or make the suite network-flaky.
  */
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
@@ -16,7 +16,7 @@ import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
 
 import {
   ensureWorkspacePackages,
-  isAppliedRefCurrentOrNewer,
+  isAppliedRefCurrent,
   isMainModule,
   log,
   resolveRepoRoot,
@@ -85,69 +85,26 @@ describe('ensureWorkspacePackages', () => {
   })
 })
 
-describe('isAppliedRefCurrentOrNewer', () => {
+describe('isAppliedRefCurrent', () => {
   const PINNED = `fleet-pack-${'0'.repeat(40)}`
   const APPLIED = `fleet-pack-${'1'.repeat(40)}`
 
   test('is false when either ref is missing', () => {
-    expect(isAppliedRefCurrentOrNewer(undefined, APPLIED)).toBe(false)
-    expect(isAppliedRefCurrentOrNewer(PINNED, undefined)).toBe(false)
+    expect(isAppliedRefCurrent(undefined, APPLIED)).toBe(false)
+    expect(isAppliedRefCurrent(PINNED, undefined)).toBe(false)
+    expect(isAppliedRefCurrent('', '')).toBe(false)
   })
 
   test('is true when the applied ref equals the pin', () => {
-    expect(isAppliedRefCurrentOrNewer(PINNED, PINNED)).toBe(true)
+    expect(isAppliedRefCurrent(PINNED, PINNED)).toBe(true)
   })
 
   test('is false when a ref does not parse as a fleet-pack sha', () => {
-    expect(isAppliedRefCurrentOrNewer(PINNED, 'not-a-pack-ref')).toBe(false)
+    expect(isAppliedRefCurrent(PINNED, 'not-a-pack-ref')).toBe(false)
   })
 
-  // The function reads a literal `../socket-wheelhouse` sibling off disk with
-  // no injection point, so this precondition can only be exercised on a
-  // machine that genuinely has none. A real sibling checkout makes
-  // `git merge-base` the deciding path instead (covered by its own
-  // machine-dependent behavior, not this fixed pair of fake shas), so skip
-  // rather than assert a result this machine's disk state cannot produce.
-  const wheelhouseSiblingExists = existsSync(
-    path.join(
-      import.meta.dirname,
-      '..',
-      '..',
-      '..',
-      '..',
-      'socket-wheelhouse',
-      '.git',
-    ),
-  )
-  test.skipIf(wheelhouseSiblingExists)(
-    'trusts a divergent applied ref outside CI with no sibling wheelhouse checkout',
-    () => {
-      const originalCI = process.env['CI']
-      delete process.env['CI']
-      try {
-        expect(isAppliedRefCurrentOrNewer(PINNED, APPLIED)).toBe(true)
-      } finally {
-        if (originalCI === undefined) {
-          delete process.env['CI']
-        } else {
-          process.env['CI'] = originalCI
-        }
-      }
-    },
-  )
-
-  test('never trusts a divergent applied ref in CI with no sibling wheelhouse checkout', () => {
-    const originalCI = process.env['CI']
-    process.env['CI'] = '1'
-    try {
-      expect(isAppliedRefCurrentOrNewer(PINNED, APPLIED)).toBe(false)
-    } finally {
-      if (originalCI === undefined) {
-        delete process.env['CI']
-      } else {
-        process.env['CI'] = originalCI
-      }
-    }
+  test('rejects an applied ref that differs from the pin', () => {
+    expect(isAppliedRefCurrent(PINNED, APPLIED)).toBe(false)
   })
 })
 

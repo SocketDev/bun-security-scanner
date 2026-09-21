@@ -43,6 +43,7 @@
       },
       "origin": "gh-asset",
       "repository": "github:oven-sh/bun",
+      "tag": "bun-v1.4.0",
       "version": "1.4.0",
       "soakBypass": {
         "version": "1.4.0",
