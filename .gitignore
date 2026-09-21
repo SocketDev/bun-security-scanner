@@ -4861,7 +4861,6 @@ test/fleet/unit/registry-infra/npm/placeholder.test.mts
 !/.gitignore
 !/.node-version
 !/CHANGELOG.md
-!/CLAUDE.md
 !/DISCLOSURE
 !/LICENSE
 !/README.md
