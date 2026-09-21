@@ -31,8 +31,8 @@
 # Rust repo contract: `fuzz/run.sh <target> [seconds]` and
 # `fuzz/no-unsafe-without-fuzz.sh` are required; `fuzz/seed-corpus.py` is
 # optional and runs only where it exists.
-name: 🔁 Weekly fuzz
-run-name: Weekly fuzz
+name: 'cron: weekly fuzz'
+run-name: 'cron: weekly fuzz'
 
 # Fuzzing is NOT a per-commit gate, which is why there is no push or
 # pull_request trigger here. A randomized harness is budgeted by wall-clock, so
@@ -76,6 +76,7 @@ jobs:
   # Which toolchain legs fire, and the rust target list, read from the repo so
   # no job below hard-codes names.
   discover:
+    cache-mode: none
     name: Discover fuzz targets
     runs-on: ubuntu-latest
     outputs:
@@ -107,7 +108,10 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
@@ -147,6 +151,7 @@ jobs:
 
   # Weekly coverage-guided campaign: 10 min/rust target, corpus cached across runs.
   fuzz-rust:
+    cache-mode: write
     name: 'Fuzz Rust (${{ matrix.target }})'
     if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.discover.outputs.hasRust == 'true'
     needs: discover
@@ -175,7 +180,10 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
@@ -184,8 +192,8 @@ jobs:
         uses: ./.github/actions/fleet/setup-and-install
         with:
           socket-api-token: ${{ secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW }}
-          payload-token-client-id: ${{ vars.SOCKET_PR_CLIENT_ID }}
-          payload-token-private-key: ${{ secrets.SOCKET_PR_APP_PRIVATE_KEY }}
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
       - name: Rust toolchain
         uses: ./.github/actions/fleet/setup-rust-toolchain
         with:
@@ -202,32 +210,32 @@ jobs:
           # `cargo install` would build it from source — minutes on a cold
           # cache, and it verifies nothing.
           SHARED=".github/actions/fleet/_shared"
-          # The fleet registry has ONE home. The _shared/ .mjs helpers beside
-          # the composites are code that ships with them; the pins are not.
-          TOOLS_FILE="scripts/fleet/setup/external-tools.json"
-          JQ="$SHARED/jq.mjs"
-          NS="tools"
-          node "$JQ" "$TOOLS_FILE" tools >/dev/null 2>&1 || NS=""
-          PLATFORM="$(node "$SHARED/platform.mjs")"
-          # Upstream ships x86_64 only. On anything else fall back to the
-          # source build rather than failing the run — the fallback is slower
-          # and unverified, so it says so.
-          ASSET=""
-          if TRY="$(node "$JQ" "$TOOLS_FILE" $NS cargo-fuzz platforms "$PLATFORM" asset 2>/dev/null)"; then
-            ASSET="$TRY"
-          fi
-          if [ -z "$ASSET" ]; then
-            echo "cargo-fuzz publishes no asset for ${PLATFORM}; building from source (slower, unverified)."
+          TOOLS_FILE=".github/actions/fleet/setup/external-tools.generated.json"
+          PLATFORM_KEY="$(node "$SHARED/platform-key.mjs")"
+          RESOLVER="$SHARED/resolve-external-tool-asset.generated.mjs"
+          # cargo-fuzz publishes x86_64 assets only. Build from source when
+          # the validated catalog has no asset for this runner. Every other
+          # resolver failure stops the job.
+          if PLAN_JSON="$(node "$RESOLVER" --tool cargo-fuzz --tools-file "$TOOLS_FILE" --platform-key "$PLATFORM_KEY")"; then
+            ASSET="$(node "$SHARED/jq.mjs" - asset <<<"$PLAN_JSON")"
+            INTEGRITY="$(node "$SHARED/jq.mjs" - integrity <<<"$PLAN_JSON")"
+            SRC="$(node "$SHARED/jq.mjs" - src 2>/dev/null <<<"$PLAN_JSON" || true)"
+            DATE="$(node "$SHARED/jq.mjs" - date 2>/dev/null <<<"$PLAN_JSON" || true)"
+          else
+            RESOLVER_STATUS=$?
+            if [ "$RESOLVER_STATUS" -ne 42 ]; then
+              exit "$RESOLVER_STATUS"
+            fi
+            echo "cargo-fuzz has no verified $PLATFORM_KEY asset; building from source."
             cargo install cargo-fuzz --locked --version "$CARGO_FUZZ_VERSION"
             exit 0
           fi
-          INTEGRITY="$(node "$JQ" "$TOOLS_FILE" $NS cargo-fuzz platforms "$PLATFORM" integrity)"
           DEST="$HOME/.cargo/bin"
           mkdir -p "$DEST"
-          node "$SHARED/install-tool.mjs" \
-            "https://github.com/rust-fuzz/cargo-fuzz/releases/download/${CARGO_FUZZ_VERSION}/${ASSET}" \
-            "$INTEGRITY" \
-            "$DEST"
+          INSTALL_ARGS=("$ASSET" "$INTEGRITY" "$DEST")
+          [[ -n "$SRC" ]] && INSTALL_ARGS+=(--src "$SRC")
+          [[ -n "$DATE" ]] && INSTALL_ARGS+=(--date "$DATE")
+          node "$SHARED/install-tool.mjs" "${INSTALL_ARGS[@]}"
           echo "$DEST" >> "$GITHUB_PATH"
       # The corpus grows across nightly runs because the fuzzer is
       # coverage-guided. Save under a run-unique key and restore the most recent
@@ -322,7 +330,10 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
@@ -333,11 +344,11 @@ jobs:
           # Without this the install runs the firewall unauthenticated while the
           # job still reports green.
           socket-api-token: ${{ secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW }}
-          # Reuse the PR App for a contents:read token scoped to wheelhouse.
+          # Reuse the Release App for a contents:read token scoped to wheelhouse.
           # Both credentials enable the private release fallback. Without the
           # key, hydration still pulls public GHCR anonymously.
-          payload-token-client-id: ${{ vars.SOCKET_PR_CLIENT_ID }}
-          payload-token-private-key: ${{ secrets.SOCKET_PR_APP_PRIVATE_KEY }}
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
       - name: Resolve JS fuzz runtime
         id: js-runtime
         run: |
@@ -431,7 +442,10 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
@@ -439,8 +453,8 @@ jobs:
       - name: 'Hydrate fleet Actions'
         uses: ./.github/actions/fleet/checkout
         with:
-          payload-token-client-id: ${{ vars.SOCKET_PR_CLIENT_ID }}
-          payload-token-private-key: ${{ secrets.SOCKET_PR_APP_PRIVATE_KEY }}
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
       - name: Go toolchain
         uses: ./.github/actions/fleet/setup-go-toolchain
         with:
@@ -492,7 +506,10 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
@@ -551,7 +568,10 @@ jobs:
           FETCH_ARGS=(--no-tags --prune --depth 1 origin "${TRIGGER_REF}")
           if [ -n "${GITHUB_TOKEN}" ]; then
             AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
-            git -c "http.${SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_B64}" fetch "${FETCH_ARGS[@]}"
+            export GIT_CONFIG_COUNT=1
+            export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+            export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+            git fetch "${FETCH_ARGS[@]}"
           else
             git fetch "${FETCH_ARGS[@]}"
           fi
@@ -562,23 +582,23 @@ jobs:
           # Without this the install runs the firewall unauthenticated while the
           # job still reports green.
           socket-api-token: ${{ secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW }}
-          payload-token-client-id: ${{ vars.SOCKET_PR_CLIENT_ID }}
-          payload-token-private-key: ${{ secrets.SOCKET_PR_APP_PRIVATE_KEY }}
-      # The PR App carries the issues:write grant this needs and already owns
-      # the comment surface. The default GITHUB_TOKEN is deliberately not used:
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
+      # The PR App issue profile carries only the issues:write grant. The
+      # default GITHUB_TOKEN is deliberately not used:
       # an issue it opens is attributed to github-actions[bot] and, more to the
       # point, cannot trigger the on:issues workflows a member may hang off a
       # filed crash.
-      - name: 'Mint PR token'
-        id: pr-app
-        uses: ./.github/actions/fleet/github-pr-app-token
+      - name: 'Mint issue token'
+        id: issue-app
+        uses: ./.github/actions/fleet/github-issue-app-token
         with:
-          client-id: ${{ vars.SOCKET_PR_CLIENT_ID }}
+          client-id: ${{ secrets.SOCKET_PR_CLIENT_ID || vars.SOCKET_PR_CLIENT_ID }}
           private-key: ${{ secrets.SOCKET_PR_APP_PRIVATE_KEY }}
           repositories: ${{ github.event.repository.name }}
       - name: File an issue for each failed leg
         env:
-          GH_TOKEN: ${{ steps.pr-app.outputs.token }}
+          GH_TOKEN: ${{ steps.issue-app.outputs.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           COMMIT_SHA: ${{ github.sha }}
           # Routed through env, never interpolated into the shell body.
