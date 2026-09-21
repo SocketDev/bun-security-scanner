@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
-import { createScanner } from '../src/scanner-factory.mts'
-import type { SocketArtifact } from '../src/types.mts'
-import { tolerantSleep } from './fleet/_shared/lib/timing.mts'
+import { createScanner } from '../../../src/scanner-factory.mts'
+import type { SocketArtifact } from '../../../src/types.mts'
+import { tolerantSleep } from '../../fleet/_shared/lib/timing.mts'
 
 const mockPackages: Bun.Security.Package[] = [
   {
