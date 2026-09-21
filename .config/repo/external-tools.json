@@ -3,9 +3,9 @@
     "bun": {
       "description": "Bun — the runtime this scanner plugs into via bunfig [install.security].scanner; the version the test suite and CI run against.",
       "notes": [
-        "Release bun-v1.4.0, published 2026-08-20 — inside the 7-day soak window at pin time; rides the dated soakBypass below (auto-disarms 2026-08-27).",
+        "Release bun-v1.4.2, published 2026-09-05 — the exact runtime pin used by tests and CI.",
         "Integrity values are the upstream release's own SHASUMS256.txt entries converted to sha256 SRI.",
-        "CI parity: .github/workflows/ci.yml Setup Bun `bun-version` must match this pin."
+        "CI parity: .github/workflows/ci-gates.yml resolves Bun through the shared external-tool manager."
       ],
       "platforms": {
         "darwin-arm64": {
