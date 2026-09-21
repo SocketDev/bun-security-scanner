@@ -97,6 +97,7 @@ export async function buildTypes(
     }
     const bundle = await rolldown({
       cwd: scratch,
+      experimental: { attachDebugInfo: 'none' },
       input: path.join(scratch, 'index.d.mts'),
       external: ['bun'],
       plugins: [
