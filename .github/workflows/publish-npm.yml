@@ -164,7 +164,7 @@ jobs:
           fi
       - name: 'Set up and install'
         uses: ./.github/actions/fleet/setup-and-install
-        with: &coverage-setup-inputs
+        with:
           socket-api-token: ${{ inputs.checkout-ref == '' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW || '' }}
           payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
           payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
@@ -236,9 +236,10 @@ jobs:
       - name: 'Set up and install'
         uses: ./.github/actions/fleet/setup-and-install
         with:
+          socket-api-token: ${{ inputs.checkout-ref == '' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && secrets.SOCKET_API_TOKEN_FOR_CLI_AND_SFW || '' }}
           payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
           payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
-        with: *coverage-setup-inputs
+          checkout-ref: ${{ inputs.checkout-ref || github.sha }}
       - name: Build
         run: pnpm run build
       - name: Restore reserved coverage tooling
@@ -762,6 +763,31 @@ jobs:
             echo "::error::Required secret SOCKET_API_TOKEN_FOR_CLI_AND_SFW is unavailable." >&2
             exit 1
           fi
+      - name: Recover verified scan source rules
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SERVER_URL: ${{ github.server_url }}
+          SOURCE_SHA: ${{ inputs.scan-source-sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          AUTH_B64="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 | tr -d '\n')"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0="http.${SERVER_URL}/.extraheader"
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${AUTH_B64}"
+          git fetch --no-tags --depth=32 origin "$SOURCE_SHA"
+          git checkout -q --detach "$SOURCE_SHA"
+          git fetch --no-tags origin "$WORKFLOW_SHA"
+          BOOTSTRAP_DIR="$(mktemp -d "$GITHUB_WORKSPACE/.release-bootstrap.XXXXXX")"
+          trap 'rm -rf "$BOOTSTRAP_DIR"' EXIT
+          BOOTSTRAP="$BOOTSTRAP_DIR/fleet.mjs"
+          git show "$WORKFLOW_SHA:scripts/repo/bootstrap/fleet.mjs" > "$BOOTSTRAP"
+          node --input-type=module -e '
+            const { pathToFileURL } = await import("node:url");
+            const { migrateRuleFile } = await import(pathToFileURL(process.argv[2]).href);
+            migrateRuleFile(process.argv[3]);
+          ' scan-rule-recovery "$BOOTSTRAP" "$GITHUB_WORKSPACE"
       - name: Set up and install
         uses: ./.github/actions/fleet/setup-and-install
         with:
