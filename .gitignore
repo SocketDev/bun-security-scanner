@@ -2267,6 +2267,7 @@ opencode.json
 .claude/skills/fleet/managing-pnpm-workspaces/SKILL.md
 .claude/skills/fleet/managing-pnpm-workspaces/references/catalog-policy.md
 .claude/skills/fleet/managing-worktrees/SKILL.md
+.claude/skills/fleet/managing-worktrees/lib/gate-dependencies.mts
 .claude/skills/fleet/managing-worktrees/lib/gate-hydration.mts
 .claude/skills/fleet/managing-worktrees/lib/land.mts
 .claude/skills/fleet/managing-worktrees/references/land-mode.md
@@ -3563,6 +3564,7 @@ scripts/fleet/check/hook-snapshot-is-wired.mts
 scripts/fleet/check/hook-verdicts-are-typed.mts
 scripts/fleet/check/hooks-have-no-guard-nudge-overlap.mts
 scripts/fleet/check/hooks-have-unit-tests.mts
+scripts/fleet/check/hosted-runners-are-pinned.mts
 scripts/fleet/check/human-gate-lanes-are-runnable.mts
 scripts/fleet/check/ignored-files-are-untracked.mts
 scripts/fleet/check/jev-review-policy-is-enforced.mts
@@ -4057,6 +4059,10 @@ scripts/fleet/git/staging-branch.mts
 scripts/fleet/git/worktree.mts
 scripts/fleet/github/action-port-map.mts
 scripts/fleet/github/actions-runtime.mts
+scripts/fleet/github/app-credentials-expressions.mts
+scripts/fleet/github/app-credentials-inputs.mts
+scripts/fleet/github/app-credentials-workflows.mts
+scripts/fleet/github/app-credentials-yaml.mts
 scripts/fleet/github/app-credentials.mts
 scripts/fleet/github/apps.mts
 scripts/fleet/github/ci/catalog.mts
@@ -4070,6 +4076,8 @@ scripts/fleet/github/ghcr-package.mts
 scripts/fleet/github/managed-ruleset-identity.mts
 scripts/fleet/github/raw-url.mts
 scripts/fleet/github/repo-visibility.mts
+scripts/fleet/github/runner-images.mts
+scripts/fleet/github/runner-workflows.mts
 scripts/fleet/github/security-alert-feeds.mts
 scripts/fleet/github/settings/security.mts
 scripts/fleet/github/settings/sweep.mts
@@ -4098,6 +4106,7 @@ scripts/fleet/land-work/ai-summary.mts
 scripts/fleet/land-work/message.mts
 scripts/fleet/lib/api-docs/docs-artifact.mts
 scripts/fleet/lib/api-docs/export-rows.mts
+scripts/fleet/lib/ata-loader.mts
 scripts/fleet/lib/audit-hook-documentation.mts
 scripts/fleet/lib/auth-status.mts
 scripts/fleet/lib/catalog-diff.mts
@@ -4446,6 +4455,7 @@ scripts/fleet/registry-infra/npm/backfill.mts
 scripts/fleet/registry-infra/npm/browser-extensions.mts
 scripts/fleet/registry-infra/npm/browser-session.mts
 scripts/fleet/registry-infra/npm/bump.mts
+scripts/fleet/registry-infra/npm/cancel-failed-run.mts
 scripts/fleet/registry-infra/npm/challenge-gate.mts
 scripts/fleet/registry-infra/npm/lifecycle-scripts.mts
 scripts/fleet/registry-infra/npm/login.mts
@@ -4538,6 +4548,10 @@ scripts/fleet/release/pipeline/staged-commit.mts
 scripts/fleet/release/pipeline/stages.mts
 scripts/fleet/release/pipeline/state.mts
 scripts/fleet/release/pipeline/summary.mts
+scripts/fleet/release/reservation/archive.mts
+scripts/fleet/release/reservation/attestation.mts
+scripts/fleet/release/reservation/provenance.mts
+scripts/fleet/release/reservation/read.mts
 scripts/fleet/release/subject.mts
 scripts/fleet/release/version-source.mts
 scripts/fleet/report-claude-usage.mts
@@ -4713,6 +4727,8 @@ scripts/fleet/statusline/session.mts
 scripts/fleet/statusline/snapshot.mts
 scripts/fleet/strings/lines.mts
 scripts/fleet/strip-ai-tags.mts
+scripts/fleet/sweep.mts
+scripts/fleet/sweep/worktree.mts
 scripts/fleet/sync-gh-aw-action-pins.mts
 scripts/fleet/sync-global-hooks.mts
 scripts/fleet/sync-inline-action-pins.mts
@@ -4769,6 +4785,7 @@ scripts/fleet/trim-claude-md.mts
 scripts/fleet/trimming-bundle/measure-bundle.mts
 scripts/fleet/type.mts
 scripts/fleet/types/fix.mts
+scripts/fleet/types/prepare.mts
 scripts/fleet/update-model-pricing.mts
 scripts/fleet/update.mts
 scripts/fleet/update/_shared.mts
@@ -4787,6 +4804,7 @@ scripts/fleet/update/patched-deps.mts
 scripts/fleet/update/pnpm.mts
 scripts/fleet/update/pnpm/lock.mts
 scripts/fleet/update/repo.mts
+scripts/fleet/update/runner-images.mts
 scripts/fleet/update/scoped.mts
 scripts/fleet/util/coverage-children.mts
 scripts/fleet/util/coverage-functions.mts
