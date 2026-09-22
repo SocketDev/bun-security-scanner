@@ -1,165 +1,151 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import type { Mock } from 'bun:test'
-import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { SocketSdk } from '@socketsecurity/sdk'
+import nock from 'nock'
 import { authenticated } from '../../src/modes/authenticated.mts'
 import type { SocketArtifact } from '../../src/types.mts'
 
-describe('authenticated', () => {
-  const mockPackages: Bun.Security.Package[] = [
-    {
-      name: 'lodahs',
-      version: '0.0.1-security',
-      requestedRange: '^0.0.0',
-      tarball: 'https://registry.npmjs.org/lodahs/-/lodahs-0.0.1-security.tgz',
-    },
-  ]
-
-  const mockArtifact: SocketArtifact = {
-    inputPurl: 'pkg:npm/lodahs@0.0.1-security',
-    alerts: [
-      {
-        action: 'error',
-        type: 'malware',
-        props: {
-          description: 'Known malicious package',
-        },
-      },
-    ],
+function createPackages(count: number): Bun.Security.Package[] {
+  const packages: Bun.Security.Package[] = []
+  for (let index = 0; index < count; index += 1) {
+    packages.push({
+      name: `example-package-${index}`,
+      version: '1.0.0',
+      requestedRange: '^1.0.0',
+      tarball: `https://registry.npmjs.org/example-package-${index}/-/example-package-${index}-1.0.0.tgz`,
+    })
   }
+  return packages
+}
 
-  // The SDK talks node:http, not global fetch, so the mock target is the
-  // batchPackageStream method itself. Transport tests use local fixtures.
-  let streamSpy: Mock<typeof SocketSdk.prototype.batchPackageStream>
+const artifact: SocketArtifact = {
+  alerts: [
+    {
+      action: 'error',
+      type: 'malware',
+      props: { description: 'Fixture alert' },
+    },
+  ],
+  inputPurl: 'pkg:npm/example-package-0@1.0.0',
+}
+const fetchPackages = SocketSdk.prototype.batchPackageFetch
 
-  function mockStreamResults(
-    results: Array<{
-      success: boolean
-      status: number
-      data?: unknown | undefined
-    }>,
-  ): void {
-    const impl = async function* () {
-      yield* results
-    }
-    streamSpy.mockImplementation(
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the mock yields the success/status/data subset the scanner consumes; the sdk's full generated result type is irrelevant to these behavior tests.
-      impl as unknown as typeof SocketSdk.prototype.batchPackageStream,
+describe('authenticated', () => {
+  let fetchSpy: Mock<typeof SocketSdk.prototype.batchPackageFetch>
+
+  function mockArtifacts(records: unknown[] = [artifact]): void {
+    fetchSpy.mockResolvedValue(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fixtures contain the SDK fields consumed by the scanner, including control records.
+      { success: true, status: 200, data: records } as Awaited<
+        ReturnType<typeof fetchPackages>
+      >,
     )
   }
 
   beforeEach(() => {
-    streamSpy = spyOn(SocketSdk.prototype, 'batchPackageStream')
+    fetchSpy = spyOn(SocketSdk.prototype, 'batchPackageFetch')
+    nock.disableNetConnect()
   })
 
   afterEach(() => {
-    streamSpy.mockRestore()
+    fetchSpy.mockRestore()
+    nock.cleanAll()
+    nock.enableNetConnect()
   })
 
-  test('authenticated scanner should stream purls through the Socket SDK', async () => {
-    mockStreamResults([{ success: true, status: 200, data: mockArtifact }])
-
-    const scanner = authenticated('test-api-key-123')
-    const results = scanner([...mockPackages])
-
-    for await (const artifacts of results) {
-      expect(artifacts).toHaveLength(1)
-      expect(artifacts[0]).toEqual(mockArtifact)
+  test('yields each artifact with the action filter and full record shape', async () => {
+    mockArtifacts([artifact, artifact])
+    const packages = createPackages(2)
+    const results: SocketArtifact[][] = []
+    for await (const artifacts of authenticated('example-api-key')(packages)) {
+      results.push(artifacts)
     }
-
-    expect(streamSpy).toHaveBeenCalledTimes(1)
-    expect(streamSpy).toHaveBeenCalledWith(
-      {
-        components: [{ purl: 'pkg:npm/lodahs@0.0.1-security' }],
-      },
-      { queryParams: { actions: 'error,warn' } },
-    )
-  })
-
-  test('authenticated scanner returns without a batch call on an empty drain', async () => {
-    const scanner = authenticated('test-api-key-123')
-
-    const yielded: SocketArtifact[][] = []
-    for await (const artifacts of scanner([])) {
-      yielded.push(artifacts)
-    }
-
-    expect(yielded).toEqual([])
-    expect(streamSpy).not.toHaveBeenCalled()
-  })
-
-  test('authenticated scanner should batch every package into one stream', async () => {
-    mockStreamResults([])
-
-    const scanner = authenticated('test-api-key-123')
-
-    const multiplePackages: Bun.Security.Package[] = [
-      {
-        name: 'package1',
-        version: '1.0.0',
-        requestedRange: '^1.0.0',
-        tarball: 'https://registry.npmjs.org/package1/-/package1-1.0.0.tgz',
-      },
-      {
-        name: '@scope/package2',
-        version: '2.0.0',
-        requestedRange: '^2.0.0',
-        tarball:
-          'https://registry.npmjs.org/@scope/package2/-/package2-2.0.0.tgz',
-      },
-    ]
-
-    const results = scanner([...multiplePackages])
-
-    for await (const artifacts of results) {
-      // Drain the generator; assertions follow.
-      void artifacts
-    }
-
-    // The SDK owns chunking/concurrency, so all purls go in a single call.
-    expect(streamSpy).toHaveBeenCalledTimes(1)
-    expect(streamSpy).toHaveBeenCalledWith(
+    expect(results).toEqual([[artifact], [artifact]])
+    expect(packages).toHaveLength(0)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(fetchSpy).toHaveBeenCalledWith(
       {
         components: [
-          { purl: 'pkg:npm/package1@1.0.0' },
-          { purl: 'pkg:npm/@scope/package2@2.0.0' },
+          { purl: 'pkg:npm/example-package-0@1.0.0' },
+          { purl: 'pkg:npm/example-package-1@1.0.0' },
         ],
       },
-      { queryParams: { actions: 'error,warn' } },
+      { actions: 'error,warn', compact: false },
     )
   })
 
-  test('authenticated scanner should drain the packages array it is handed', async () => {
-    mockStreamResults([])
+  test('does not request an empty package list', async () => {
+    const results: SocketArtifact[][] = []
+    for await (const artifacts of authenticated('example-api-key')([])) {
+      results.push(artifacts)
+    }
+    expect(results).toEqual([])
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
 
-    const scanner = authenticated('test-api-key-123')
-    const packages = [...mockPackages]
-    const results = scanner(packages)
-
-    for await (const artifacts of results) {
-      // Drain the generator; assertions follow.
+  test('keeps scoped package PURLs intact', async () => {
+    mockArtifacts([])
+    const packages = createPackages(1)
+    packages[0]!.name = '@example/scoped-package'
+    for await (const artifacts of authenticated('example-api-key')(packages)) {
       void artifacts
     }
-
-    // `scan()` loops `while (packages.length)` — a non-consuming
-    // implementation would spin forever.
-    expect(packages).toHaveLength(0)
+    expect(fetchSpy).toHaveBeenCalledWith(
+      { components: [{ purl: 'pkg:npm/@example/scoped-package@1.0.0' }] },
+      { actions: 'error,warn', compact: false },
+    )
   })
 
-  test('SDK failure after a yielded artifact still rejects the scan', async () => {
-    const failure = new Error('fixture stream interrupted')
-    const stream = async function* () {
-      yield { success: true, status: 200, data: mockArtifact }
-      throw failure
-    }
-    streamSpy.mockImplementation(
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the fixture yields only the SDK fields consumed by the scanner before the stream error.
-      stream as unknown as typeof SocketSdk.prototype.batchPackageStream,
-    )
-    const scan = authenticated('example-api-key')([...mockPackages])[
+  test('fetches 1025 packages in sequential batches of 1024 and 1', async () => {
+    mockArtifacts()
+    const packages = createPackages(1025)
+    const scan =
+      authenticated('example-api-key')(packages)[Symbol.asyncIterator]()
+    expect((await scan.next()).value).toEqual([artifact])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(fetchSpy.mock.calls[0]![0].components).toHaveLength(1024)
+    expect(packages).toHaveLength(0)
+    expect((await scan.next()).value).toEqual([artifact])
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(fetchSpy.mock.calls[1]![0].components).toEqual([
+      { purl: 'pkg:npm/example-package-1024@1.0.0' },
+    ])
+    expect((await scan.next()).done).toBe(true)
+  })
+
+  test('does not start another request after the consumer stops', async () => {
+    mockArtifacts()
+    const scan = authenticated('example-api-key')(createPackages(1025))[
       Symbol.asyncIterator
     ]()
-    expect((await scan.next()).value).toEqual([mockArtifact])
+    await scan.next()
+    await scan.return?.()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  test('skips SDK control records', async () => {
+    mockArtifacts([
+      { _type: 'purlError', value: { error: 'package_not_found' } },
+      artifact,
+      { _type: 'summary', value: { purl_input: 1, resolved: 1 } },
+    ])
+    const results: SocketArtifact[][] = []
+    for await (const artifacts of authenticated('example-api-key')(
+      createPackages(1),
+    )) {
+      results.push(artifacts)
+    }
+    expect(results).toEqual([[artifact]])
+  })
+
+  test('propagates a later batch failure after yielding earlier artifacts', async () => {
+    mockArtifacts()
+    const failure = new Error('fixture batch interrupted')
+    const scan = authenticated('example-api-key')(createPackages(1025))[
+      Symbol.asyncIterator
+    ]()
+    expect((await scan.next()).value).toEqual([artifact])
+    fetchSpy.mockRejectedValueOnce(failure)
     let caught: unknown
     try {
       await scan.next()
@@ -169,27 +155,61 @@ describe('authenticated', () => {
     expect(caught).toBe(failure)
   })
 
-  test('authenticated scanner should handle API errors', async () => {
-    mockStreamResults([{ success: false, status: 500 }])
-
-    const scanner = authenticated('test-api-key-123')
-    const results = scanner([...mockPackages])
-
-    // try/catch instead of `await expect(…).rejects.toThrow(…)` — bun-types
-    // declares the rejects matchers as returning void, so awaiting them trips
-    // typescript/await-thenable even though Bun's runtime hands back a promise.
-    let thrown: unknown
+  test('rejects API failures without yielding artifacts', async () => {
+    fetchSpy.mockResolvedValue({
+      success: false,
+      status: 500,
+      error: 'fixture failure',
+    })
+    const results: SocketArtifact[][] = []
+    let caught: unknown
     try {
-      for await (const artifacts of results) {
-        // The throw is the behavior under test.
-        void artifacts
+      for await (const artifacts of authenticated('example-api-key')(
+        createPackages(1),
+      )) {
+        results.push(artifacts)
       }
-    } catch (e) {
-      thrown = e
+    } catch (error) {
+      caught = error
     }
-    expect(thrown).toBeInstanceOf(Error)
-    expect(errorMessage(thrown)).toContain(
-      'Socket Security Scanner: Received 500 from server',
+    expect(results).toEqual([])
+    expect(caught).toBeInstanceOf(Error)
+  })
+
+  test('rejects responses beyond the buffered response bound', async () => {
+    const paddingBytes = 10 * 1024 * 1024
+    const sdk = new SocketSdk('example-api-key', { retries: 0 })
+    fetchSpy.mockImplementation((payload, query) =>
+      fetchPackages.call(sdk, payload, query),
     )
+    nock('https://purl-api.socket.dev')
+      .post('/batch')
+      .query({ actions: 'error,warn', compact: 'false' })
+      .reply(
+        200,
+        `${JSON.stringify({
+          type: 'npm',
+          name: 'example-package',
+          ...artifact,
+          padding: ' '.repeat(paddingBytes),
+        })}\n`,
+        {
+          'content-type': 'application/x-ndjson',
+          'content-encoding': 'identity',
+        },
+      )
+    const results: SocketArtifact[][] = []
+    let caught: unknown
+    try {
+      for await (const artifacts of authenticated('example-api-key')(
+        createPackages(1),
+      )) {
+        results.push(artifacts)
+      }
+    } catch (error) {
+      caught = error
+    }
+    expect(results).toEqual([])
+    expect(caught).toBeInstanceOf(Error)
   })
 })
