@@ -3,6 +3,8 @@ import type { ScannerImplementation } from '../types.mts'
 import { createScanner } from '../scanner-factory.mts'
 import { userAgent } from './user-agent.mts'
 
+export const firewallApiBaseUrl = 'https://firewall-api.socket.dev'
+
 /**
  * Free-mode scanner. The public firewall endpoint answers a single purl per
  * `GET /purl/<purl>` — it has no batch form, so one purl costs one request and
@@ -16,8 +18,7 @@ export function unauthenticated(): ScannerImplementation {
     maxBatchLength: 10,
     fetchStrategy: async (purls, artifacts) => {
       const urls = purls.map(
-        purl =>
-          `https://firewall-api.socket.dev/purl/${encodeURIComponent(purl)}`,
+        purl => `${firewallApiBaseUrl}/purl/${encodeURIComponent(purl)}`,
       )
       // One failed batch aborts the whole scan on purpose.
       // oxlint-disable-next-line socket/prefer-all-settled -- fail-fast scan
