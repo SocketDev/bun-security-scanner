@@ -45130,10 +45130,9 @@ function hostProbeTimeoutMs(requested) {
   if (requested === void 0 || !Number.isFinite(requested)) return 5e3
   return Math.max(1, Math.min(5e3, Math.floor(requested)))
 }
-function evaluateHostMemory(
-  snapshot,
-  minimumHeadroomBytes = MINIMUM_HOST_HEADROOM_BYTES,
-) {
+function evaluateHostMemory(snapshot, options = {}) {
+  const minimumHeadroomBytes =
+    options.minimumHeadroomBytes ?? MINIMUM_HOST_HEADROOM_BYTES
   if (
     !isFinitePositive(minimumHeadroomBytes) ||
     !isValidPressure(snapshot.pressure) ||
