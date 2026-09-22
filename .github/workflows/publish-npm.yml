@@ -113,7 +113,7 @@ jobs:
     outputs:
       runner: ${{ steps.coverage_plan.outputs.runner }}
     name: Coverage plan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
       - name: Bootstrap checkout
@@ -188,8 +188,8 @@ jobs:
     outputs:
       shard-count: ${{ strategy.job-total }}
     name: Coverage collection
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -240,8 +240,6 @@ jobs:
           payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
           payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
           checkout-ref: ${{ inputs.checkout-ref || github.sha }}
-      - name: Build
-        run: pnpm run build
       - name: Restore reserved coverage tooling
         if: ${{ inputs.resume-reserved == true }}
         shell: bash
@@ -309,8 +307,8 @@ jobs:
     needs: [coverage-plan, coverage-shards]
     if: ${{ !cancelled() && inputs.scan-stage-id == '' && inputs.backfill-version == '' }}
     name: Coverage gate
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
     steps:
       - name: Require successful coverage prerequisites
         shell: bash
@@ -397,8 +395,6 @@ jobs:
           }
           fs.appendFileSync(process.env.GITHUB_PATH, `${path.dirname(result.binPath)}\n`)
           NODE
-      - name: Build
-        run: pnpm run build
       - name: 'Download coverage artifacts'
         if: ${{ needs.coverage-plan.outputs.runner == 'vitest' }}
         uses: ./.github/actions/fleet/download-artifact
@@ -445,7 +441,7 @@ jobs:
     if: ${{ always() && inputs.scan-stage-id == '' && (inputs.backfill-version != '' || needs.coverage.result == 'success') }}
     cache-mode: read
     name: Publish npm
-    runs-on: ${{ vars.NPM_PUBLISH_RUNNER || vars.ODAI_RUNNER || 'ubuntu-latest' }}
+    runs-on: ${{ vars.NPM_PUBLISH_RUNNER || vars.ODAI_RUNNER || 'ubuntu-26.04' }}
     # npm's trusted-publisher config pins this GitHub environment name; the
     # OIDC token exchange 404s if the job runs outside it.
     environment: publish-npm
@@ -687,8 +683,8 @@ jobs:
   scan-staged-package:
     if: ${{ inputs.scan-stage-id != '' }}
     name: Scan staged npm package
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
     permissions:
       actions: read
       contents: read

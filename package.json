@@ -211,7 +211,8 @@
     "github:browser": "node scripts/fleet/browser/github-auth.mts",
     "npm:trust:browser": "node scripts/fleet/registry-infra/npm/settings/trusted-publisher/browser.mts",
     "remote:github:release": "node scripts/fleet/release/github/remote.mts",
-    "worktree:create": "node scripts/fleet/worktree/create/run.mts"
+    "worktree:create": "node scripts/fleet/worktree/create/run.mts",
+    "sweep": "node scripts/fleet/sweep.mts"
   },
   "devDependencies": {
     "@bcoe/v8-coverage": "catalog:",

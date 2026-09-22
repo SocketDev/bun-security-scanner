@@ -211,6 +211,13 @@ runs:
         private-key: ${{ inputs.payload-token-private-key }}
         repositories: socket-wheelhouse
 
+    - name: Prepare runner resources
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        FLEET_SETUP_ACTION_PATH: ${{ github.action_path }}
+      run: node "$FLEET_SETUP_ACTION_PATH/setup-runner-resources.mts"
+
     - name: Install dependencies
       uses: ./.github/actions/fleet/install
       with:
