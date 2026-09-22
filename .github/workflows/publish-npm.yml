@@ -235,6 +235,9 @@ jobs:
           fi
       - name: 'Set up and install'
         uses: ./.github/actions/fleet/setup-and-install
+        with:
+          payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
+          payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
         with: *coverage-setup-inputs
       - name: Build
         run: pnpm run build
@@ -379,6 +382,20 @@ jobs:
           payload-token-client-id: ${{ secrets.SOCKET_RELEASE_CLIENT_ID || vars.SOCKET_RELEASE_CLIENT_ID }}
           payload-token-private-key: ${{ secrets.SOCKET_RELEASE_APP_PRIVATE_KEY }}
           checkout-ref: ${{ inputs.checkout-ref || github.sha }}
+      - name: Setup Bun coverage runtime
+        if: ${{ needs.coverage-plan.outputs.runner == 'bun' }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          import path from 'node:path'
+          import { ensureTool } from './scripts/fleet/external-tools/manager.mts'
+          const result = await ensureTool('bun')
+          if (!result.available || !result.binPath) {
+            throw new Error(`Bun coverage runtime installation failed. Where: npm coverage setup. Saw: ${result.error ?? 'no executable returned'}. Wanted: the configured Bun executable. Fix: check the member tool configuration and retry.`)
+          }
+          fs.appendFileSync(process.env.GITHUB_PATH, `${path.dirname(result.binPath)}\n`)
+          NODE
       - name: Build
         run: pnpm run build
       - name: 'Download coverage artifacts'
