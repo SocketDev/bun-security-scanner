@@ -29,7 +29,8 @@ const artifact: SocketArtifact = {
   inputPurl: 'pkg:npm/example-package-0@1.0.0',
 }
 type BatchPackageFetch = SocketSdk['batchPackageFetch']
-// oxlint-disable-next-line typescript/unbound-method -- captured to exercise the SDK parser with a real response.
+// Capture the SDK method to exercise its response parser with a real response.
+// oxlint-disable-next-line typescript/unbound-method -- intentional capture
 const fetchPackages = SocketSdk.prototype.batchPackageFetch
 
 describe('authenticated', () => {
