@@ -38,45 +38,31 @@ Add to your `bunfig.toml`:
 scanner = "@socketsecurity/bun-security-scanner"
 ```
 
-### Authentication (Optional)
+Without a token, the scanner runs in free mode using Socket's public API.
 
-For enhanced scanning with your Socket organization settings, set the `SOCKET_API_TOKEN` environment variable:
+<details>
+<summary>Authentication (optional)</summary>
 
-```bash
-export SOCKET_API_TOKEN="xyz"
+Use the [Socket CLI](https://www.npmjs.com/package/socket) to save a token for your Socket organization:
 
+```sh
+pnpm add --global socket
+socket login
 bun install
 ```
 
-> [!NOTE]
-> The token needs the `packages` scope. The legacy `SOCKET_API_KEY` name is also read.
+Enter a token with the `packages` scope when prompted. The scanner reads the saved token from your user-level Socket CLI settings.
 
-The scanner will automatically read your token from:
-
-1. `SOCKET_API_TOKEN` environment variable (or the legacy `SOCKET_API_KEY`)
-2. Socket CLI settings file (if available)
-
-Without a token, the scanner runs in free mode using Socket's public API.
+</details>
 
 ## Development
 
-<details>
-<summary>Contributor commands</summary>
-
-```sh
-pnpm install
-pnpm run build
-pnpm run check
-pnpm run test
-```
-
-</details>
+See [Contributing](CONTRIBUTING.md) for setup and validation commands.
 
 ### Support
 
 - [Socket Documentation](https://docs.socket.dev)
 - [Bun Security Scanner API](https://bun.com/docs/install/security-scanner-api)
-- [Report Issues](https://github.com/SocketDev/bun-security-scanner/issues)
 
 ## License
 
