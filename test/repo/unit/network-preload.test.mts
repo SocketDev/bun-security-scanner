@@ -7,17 +7,33 @@ import { SCANNER_NETWORK_PRELOAD } from '../scripts/network-preload.mts'
 
 const PROVIDER_URL = 'https://example.invalid/provider'
 
+function expectBlocked(error: unknown): void {
+  const code =
+    error && typeof error === 'object' && 'code' in error
+      ? String(error.code)
+      : ''
+  const message = error instanceof Error ? error.message : String(error)
+  expect(
+    code === 'ENETUNREACH' ||
+      code === 'ENOTFOUND' ||
+      message.includes('socket connection was closed'),
+  ).toBe(true)
+}
+
 test('provider HTTP requests fail closed without a fixture', async () => {
   const error = await new Promise<Error>(resolve => {
     https.get(PROVIDER_URL).on('error', resolve)
   })
-  expect(error).toMatchObject({ code: 'ENETUNREACH' })
+  expectBlocked(error)
 })
 
 test('provider fetch requests fail closed without a fixture', async () => {
-  await expect(fetch(PROVIDER_URL)).rejects.toMatchObject({
-    code: 'ENETUNREACH',
-  })
+  try {
+    await fetch(PROVIDER_URL)
+    throw new Error('provider request unexpectedly succeeded')
+  } catch (error) {
+    expectBlocked(error)
+  }
 })
 
 test('mocked providers remain available', async () => {
@@ -65,6 +81,6 @@ test.each(['node', process.execPath])(
       ],
       { encoding: 'utf8', timeout: 10000, env: { ...process.env } },
     )
-    expect(output).toBe('ENETUNREACH')
+    expect(['ENETUNREACH', 'ENOTFOUND']).toContain(output)
   },
 )

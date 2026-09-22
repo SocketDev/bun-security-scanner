@@ -227,15 +227,10 @@ describe('index settings-file token fallback', () => {
       )
 
       // Prove the authenticated (SDK) path is taken rather than free-mode fetch.
-      const streamSpy = spyOn(
+      const fetchSpySdk = spyOn(
         SocketSdk.prototype,
-        'batchPackageStream',
-      ).mockImplementation(
-        // Empty stream — this test only proves the SDK path runs, not what it
-        // yields. An empty async generator is assignable to the method type, so
-        // no cast is needed.
-        async function* () {},
-      )
+        'batchPackageFetch',
+      ).mockResolvedValue({ success: true, status: 200, data: [] })
       const fetchSpy = spyOn(global, 'fetch')
 
       try {
@@ -252,10 +247,10 @@ describe('index settings-file token fallback', () => {
         })
 
         expect(advisories).toEqual([])
-        expect(streamSpy).toHaveBeenCalledTimes(1)
+        expect(fetchSpySdk).toHaveBeenCalledTimes(1)
         expect(fetchSpy).not.toHaveBeenCalled()
       } finally {
-        streamSpy.mockRestore()
+        fetchSpySdk.mockRestore()
         fetchSpy.mockRestore()
       }
     },

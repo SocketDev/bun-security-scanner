@@ -28,6 +28,8 @@ const artifact: SocketArtifact = {
   ],
   inputPurl: 'pkg:npm/example-package-0@1.0.0',
 }
+type BatchPackageFetch = SocketSdk['batchPackageFetch']
+// oxlint-disable-next-line typescript/unbound-method -- captured to exercise the SDK parser with a real response.
 const fetchPackages = SocketSdk.prototype.batchPackageFetch
 
 describe('authenticated', () => {
@@ -37,7 +39,7 @@ describe('authenticated', () => {
     fetchSpy.mockResolvedValue(
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- fixtures contain the SDK fields consumed by the scanner, including control records.
       { success: true, status: 200, data: records } as Awaited<
-        ReturnType<typeof fetchPackages>
+        ReturnType<BatchPackageFetch>
       >,
     )
   }
@@ -203,8 +205,8 @@ describe('authenticated', () => {
     fetchSpy.mockImplementation((payload, query) =>
       fetchPackages.call(sdk, payload, query),
     )
-    nock('https://purl-api.socket.dev')
-      .post('/batch')
+    nock('https://api.socket.dev')
+      .post('/v0/purl')
       .query({ actions: 'error,warn', compact: 'false' })
       .reply(
         200,

@@ -20,6 +20,9 @@ const PACKAGE = {
 }
 const PURL = 'pkg:npm/example-package@1.0.0'
 const ARTIFACT = {
+  type: 'npm',
+  name: 'example-package',
+  version: '1.0.0',
   inputPurl: PURL,
   alerts: [
     {
@@ -69,7 +72,8 @@ export function scannerTransportTests(config: {
             !options ||
             typeof options !== 'object' ||
             !('hostname' in options) ||
-            options.hostname !== 'api.socket.dev'
+            (options.hostname !== 'api.socket.dev' &&
+              options.hostname !== 'purl-api.socket.dev')
           ) {
             throw new Error('Unmocked HTTPS request in scanner transport test')
           }

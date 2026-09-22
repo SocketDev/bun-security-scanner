@@ -62,7 +62,7 @@ describe('thin-member session bootstrap', () => {
       expect(ensurePayload(root)).toBe(0)
       expect(
         JSON.parse(readFileSync(path.join(root, 'invoked.json'), 'utf8')),
-      ).toEqual(['--quiet'])
+      ).toEqual(['--quiet', '--cached'])
     },
   )
 
