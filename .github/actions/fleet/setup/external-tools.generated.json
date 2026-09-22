@@ -651,12 +651,7 @@
       },
       "version": "0.5.1563",
       "versionDate": "2026-09-14",
-      "notes": "The wheelhouse producer publishes verified toolchains. Renderer builds consume immutable toolchain artifacts.",
-      "soakBypass": {
-        "version": "0.5.1563",
-        "published": "2026-09-14",
-        "removable": "2026-09-21"
-      }
+      "notes": "The wheelhouse producer publishes verified toolchains. Renderer builds consume immutable toolchain artifacts."
     },
     "pgbot": {
       "version": "0.8.1",
@@ -758,12 +753,7 @@
           "integrity": "sha512-/+vikx8ZMcvZT12+KdCAUDi93Urbee75fiUeJxSnowq3QEP6tpU3F9u58+fk9ymd2Y+xI7hKU8NYtJRi7gCx2Q=="
         }
       },
-      "origin": "gh-asset",
-      "soakBypass": {
-        "published": "2026-09-15",
-        "removable": "2026-09-22",
-        "version": "12.4.2"
-      }
+      "origin": "gh-asset"
     },
     "rustup": {
       "notes": [
@@ -883,12 +873,7 @@
           "integrity": "sha512-xXhch+OLtqYjatxThlqOv+HY2ooSoyA0B/hujjjSLyQ7xz8LLcJtc+Db0iBB/2mOKYc4KqQT4ukeTtxz3g0+xQ=="
         }
       },
-      "origin": "gh-asset",
-      "soakBypass": {
-        "published": "2026-09-15",
-        "removable": "2026-09-22",
-        "version": "1.15.2"
-      }
+      "origin": "gh-asset"
     },
     "sfw-free": {
       "notes": [
@@ -930,12 +915,7 @@
           "integrity": "sha512-vPOL88R3H75j0rHg6lRv53rwtRxFxDo7rzjXU0rWWPDY1U1e3hQzAmvsloS19uo6noWeCXIBJ8ZAbZxQf7EFxA=="
         }
       },
-      "origin": "gh-asset",
-      "soakBypass": {
-        "published": "2026-09-15",
-        "removable": "2026-09-22",
-        "version": "1.15.2"
-      }
+      "origin": "gh-asset"
     },
     "uv": {
       "notes": [
@@ -974,12 +954,7 @@
           "integrity": "sha512-sSjnNsmzOB+6d6yvegbwumNJhOSsdEM8ZT8qxnDoUpp4CLym3t00OrImSCCW8dyqh6IUPs6uB7NKY+F1A4D3dQ=="
         }
       },
-      "origin": "gh-asset",
-      "soakBypass": {
-        "published": "2026-09-15",
-        "removable": "2026-09-22",
-        "version": "0.12.15"
-      }
+      "origin": "gh-asset"
     },
     "zizmor": {
       "description": "GitHub Actions security linter — audits .github/ for workflow-injection / credential-leak patterns.",
