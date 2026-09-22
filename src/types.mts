@@ -3,7 +3,7 @@ import type Bun from 'bun'
 export type SocketArtifact = {
   inputPurl: string
   alerts: Array<{
-    action: 'error' | 'warn'
+    action: 'error' | 'warn' | 'monitor'
     type: string
     props: {
       note?: string | undefined

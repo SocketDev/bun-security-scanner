@@ -138,6 +138,27 @@ describe('authenticated', () => {
     expect(results).toEqual([[artifact]])
   })
 
+  test('preserves an organization monitor action for advisory filtering', async () => {
+    const monitored = {
+      ...artifact,
+      alerts: [
+        {
+          action: 'monitor' as const,
+          type: 'licenseSpdxDisj',
+          props: { description: 'Observed license expression' },
+        },
+      ],
+    }
+    mockArtifacts([monitored])
+    const results: SocketArtifact[][] = []
+    for await (const artifacts of authenticated('example-api-key')(
+      createPackages(1),
+    )) {
+      results.push(artifacts)
+    }
+    expect(results).toEqual([[monitored]])
+  })
+
   test('propagates a later batch failure after yielding earlier artifacts', async () => {
     mockArtifacts()
     const failure = new Error('fixture batch interrupted')

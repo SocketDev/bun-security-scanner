@@ -92,6 +92,22 @@ describe('artifactsToAdvisories', () => {
     expect(advisories[0]!.level).toBe('warn')
   })
 
+  test('suppresses alerts whose organization action is monitor', () => {
+    const advisories = artifactsToAdvisories([
+      artifact({
+        alerts: [
+          {
+            action: 'monitor',
+            type: 'licenseSpdxDisj',
+            props: { description: 'Observed license expression' },
+          },
+        ],
+      }),
+    ])
+
+    expect(advisories).toEqual([])
+  })
+
   test('builds the scoped socket.dev overview URL', () => {
     const advisories = artifactsToAdvisories([
       artifact({

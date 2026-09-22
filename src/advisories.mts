@@ -35,8 +35,9 @@ export function alertNotes(
  *   `github:`/`file:` version spec, a non-npm ecosystem) degrades the overview
  *   URL to `FALLBACK_OVERVIEW_URL` and reports the raw `inputPurl` as the
  *   package identifier — a security signal is never gated on URL construction.
- * - `action: 'error'` maps to `level: 'fatal'`; anything else maps to `'warn'`
- *   (Bun only recognizes `'fatal' | 'warn'`).
+ * - `action: 'error'` maps to `level: 'fatal'`; `warn` maps to `'warn'`; and
+ *   `monitor` contributes no advisory because the organization chose to
+ *   monitor.
  * - The description is assembled from the typo-squat hint, the alert description,
  *   the note, and the fix, joined by blank lines with a trailing newline.
  */
@@ -60,6 +61,9 @@ export function artifactsToAdvisories(
 
     for (let j = 0, alertCount = alerts.length; j < alertCount; j += 1) {
       const alert = alerts[j]!
+      if (alert.action === 'monitor') {
+        continue
+      }
       const description = ['']
 
       if (alert.type === 'didYouMean' && alert.props.alternatePackage) {
