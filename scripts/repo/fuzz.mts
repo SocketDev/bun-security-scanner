@@ -13,8 +13,8 @@ import { scannerFuzzOptions } from './fuzz-options.mts'
 import type { ScannerFuzzParameters } from './fuzz-options.mts'
 import { REPO_CACHE_DIR, REPO_ROOT } from '../fleet/paths.mts'
 import { isMainModule } from '../fleet/process/is-main-module.mts'
-import { runMain } from '../fleet/process/run-main.mts'
-import type { ScriptMeta } from '../fleet/process/run-main.mts'
+import { runMain } from '../fleet/process/main/run.mts'
+import type { ScriptMeta } from '../fleet/process/main/run.mts'
 
 const logger = getScriptLogger()
 

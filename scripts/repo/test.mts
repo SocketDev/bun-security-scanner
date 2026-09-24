@@ -6,8 +6,8 @@ import { normalizePath } from '@socketsecurity/lib-stable/paths/normalize'
 import { REPO_ROOT } from '../fleet/paths.mts'
 import { coverBudgetMs } from '../fleet/constants/test-budget.mts'
 import { isMainModule } from '../fleet/process/is-main-module.mts'
-import { runMain } from '../fleet/process/run-main.mts'
-import type { ScriptMeta } from '../fleet/process/run-main.mts'
+import { runMain } from '../fleet/process/main/run.mts'
+import type { ScriptMeta } from '../fleet/process/main/run.mts'
 import { getScriptArgs, scriptStdio } from '../fleet/process/script-output.mts'
 
 export function collectScannerTests(root: string): string[] {

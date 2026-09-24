@@ -9,7 +9,7 @@
 import { globSync } from 'node:fs'
 
 import { isMainModule } from '../fleet/process/is-main-module.mts'
-import { runMain } from '../fleet/process/run-main.mts'
+import { runMain } from '../fleet/process/main/run.mts'
 import path from 'node:path'
 
 import { parseArgs } from 'node:util'
@@ -21,7 +21,7 @@ import {
 
 import { REPO_ROOT } from '../fleet/paths.mts'
 
-import type { ScriptMeta } from '../fleet/process/run-main.mts'
+import type { ScriptMeta } from '../fleet/process/main/run.mts'
 
 const logger = getScriptLogger()
 
