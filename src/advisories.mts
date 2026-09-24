@@ -13,6 +13,9 @@ export function alertNotes(
   props: SocketArtifact['alerts'][number]['props'],
 ): string[] {
   const values: string[] = []
+  if (!props) {
+    return values
+  }
   const notes = props['notes']
   if (typeof notes === 'string' && notes) {
     values.push(notes)
@@ -65,18 +68,19 @@ export function artifactsToAdvisories(
         continue
       }
       const description = ['']
+      const { props } = alert
 
-      if (alert.type === 'didYouMean' && alert.props.alternatePackage) {
+      if (alert.type === 'didYouMean' && props?.alternatePackage) {
         description.push(
-          `This package could be a typo-squatting attempt of another package (${alert.props.alternatePackage}).`,
+          `This package could be a typo-squatting attempt of another package (${props.alternatePackage}).`,
         )
       }
 
-      if (alert.props.description) {
-        description.push(alert.props.description)
+      if (props?.description) {
+        description.push(props.description)
       }
 
-      description.push(...alertNotes(alert.props))
+      description.push(...alertNotes(props))
 
       const fix = alert.fix?.description
 

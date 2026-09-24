@@ -92,6 +92,26 @@ describe('artifactsToAdvisories', () => {
     expect(advisories[0]!.level).toBe('warn')
   })
 
+  test('retains advisories when alert props are absent', () => {
+    const advisories = artifactsToAdvisories([
+      artifact({
+        alerts: [
+          { action: 'error', type: 'malware' },
+          { action: 'warn', type: 'deprecation' },
+        ],
+      }),
+    ])
+
+    expect(advisories.map(advisory => advisory.level)).toEqual([
+      'fatal',
+      'warn',
+    ])
+    expect(advisories.map(advisory => advisory.description)).toEqual([
+      '\n',
+      '\n',
+    ])
+  })
+
   test('suppresses alerts whose organization action is monitor', () => {
     const advisories = artifactsToAdvisories([
       artifact({
