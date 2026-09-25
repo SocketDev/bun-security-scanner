@@ -48,6 +48,7 @@ import {
 import { scanSignedCommits } from '../_shared/push-signatures.mts'
 import { isDurableBackupPush } from '../_shared/push-durable-ref.mts'
 import { isSquashHistoryRepo } from '../_shared/push-squash-history.mts'
+import { checkPrCommitCount } from '../_shared/push-pr-commit-count.mts'
 
 const logger = getDefaultLogger()
 
@@ -93,6 +94,11 @@ const main = async (): Promise<number> => {
       continue
     }
     pushedRemoteRefs.push(remoteRef)
+    const prCommitError = checkPrCommitCount(remote, localSha, remoteRef)
+    if (prCommitError) {
+      logger.fail(prCommitError)
+      totalErrors += 1
+    }
     const range = computeRange(remote, localRef, localSha, remoteSha)
     // `computeRange` returns `undefined` for skip cases (tags, deletions, new
     // branches); use loose equality so both `null` and `undefined` skip. A

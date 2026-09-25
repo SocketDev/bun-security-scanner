@@ -879,5 +879,5 @@ runs:
         ACTION_DIR: ${{ github.action_path }}
       run: |
         set -euo pipefail
-        BOOTSTRAP="${ACTION_DIR}/../../../../scripts/fleet/setup/bootstrap-zero-dep-packages.mjs"
+        BOOTSTRAP="${ACTION_DIR}/../../../../scripts/fleet/setup/bootstrap/zero-dep-packages.mjs"
         node "$BOOTSTRAP" --repo-root "$PWD"

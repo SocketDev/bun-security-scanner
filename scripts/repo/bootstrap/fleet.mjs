@@ -16148,7 +16148,7 @@ function parseYamlEntryChunks(bodyLines) {
  * inside the fleet-owned `hooks` key. Fleet-shipped entries (present in the
  * bundle block) take the bundle's text, comments included; member-local
  * entries that appear only in the consumer block survive in their original
- * order after the fleet set. Scalar-shaped blocks (`saveExact: true`) have no
+ * order after the fleet set. Scalar-shaped workspace settings have no
  * nested entries, so the bundle block replaces wholesale. Trailing blank lines
  * follow the consumer block so inter-block spacing is preserved. The merged
  * block's head (the separator run above its key) is the BUNDLE's when the
@@ -16486,10 +16486,20 @@ function readConditionalSettings(dest) {
     return {}
   }
 }
+function conditionalMarkerHolds(dest, marker) {
+  const markerPath = path.join(dest, marker)
+  if (!existsSync(markerPath)) return false
+  if (marker !== 'test') return true
+  try {
+    return readdirSync(markerPath).some(entry => entry !== 'fleet')
+  } catch {
+    return true
+  }
+}
 function conditionalManifestGroupHolds(group, raw, dest) {
   if (group.dependency !== void 0)
     return dependencyGraphRequires(dest, group.dependency)
-  if (group.marker !== void 0) return existsSync(path.join(dest, group.marker))
+  if (group.marker !== void 0) return conditionalMarkerHolds(dest, group.marker)
   if (group.configFlag !== void 0) return configFlagHolds(group.configFlag, raw)
   if (group.capability !== void 0) {
     const capabilities = raw['capabilities']
@@ -16573,10 +16583,17 @@ const ALWAYS_TRACKED_PREFIXES = [
   'patches/fleet/minimatch@10.2.6.patch',
   'patches/fleet/run-local-ci@0.18.1.patch',
   'patches/fleet/vitest@5.0.0.patch',
+  'patches/fleet/vitest@5.0.1.patch',
   'scripts/fleet/npm/scan-ci.mts',
   'scripts/fleet/npm/scan-receipt.mts',
   'scripts/fleet/registry-infra/npm/scan-ndjson.mts',
   'scripts/fleet/registry-infra/npm/scan.mts',
+  'scripts/fleet/setup/bootstrap/zero-dep-packages.mjs',
+  'scripts/fleet/setup/lib/check-firewall.mjs',
+  'scripts/fleet/setup/lib/error-message.mjs',
+  'scripts/fleet/setup/lib/install-tool.mjs',
+  'scripts/fleet/setup/lib/read-package-integrity.mjs',
+  'scripts/fleet/setup/lib/read-pinned-version.mjs',
   'scripts/repo/bootstrap/',
 ]
 /**
@@ -16985,12 +17002,16 @@ function filterManifestForShape(manifest, shape) {
  */
 function fleetPackOwnedPaths(manifest) {
   const hybridPaths = computeHybridPaths(manifest)
+  const repoOwnedPaths = new Set(
+    (manifest.repoOwnedFiles ?? []).map(normalizeBundlePath),
+  )
   const entries = /* @__PURE__ */ new Set()
   const files = Object.keys(manifest.files)
   for (let i = 0, { length } = files; i < length; i += 1) {
     const p = normalizeBundlePath(files[i])
     if (
       hybridPaths.has(p) ||
+      repoOwnedPaths.has(p) ||
       isFleetCanonicalSpliceFile(p) ||
       isAlwaysTrackedSurface(p)
     )
@@ -18654,6 +18675,9 @@ function pruneStaleFleetFiles(dest, manifest, previousFiles, options) {
   }
   const { archiveManifest } = opts
   const candidates = new Set(previousFiles)
+  const repoOwnedPaths = new Set(
+    (manifest.repoOwnedFiles ?? []).map(normalizeBundlePath),
+  )
   for (const group of archiveManifest?.conditionalScopedFiles ?? [])
     for (const file of group.files) {
       const absolute = path.join(dest, normalizeBundlePath(file))
@@ -18677,6 +18701,7 @@ function pruneStaleFleetFiles(dest, manifest, previousFiles, options) {
     const rel = normalizeBundlePath(file)
     if (
       kept.has(rel) ||
+      repoOwnedPaths.has(rel) ||
       [...(opts.preservedPaths ?? [])].some(
         file => file === rel || file.startsWith(`${rel}/`),
       )
@@ -18957,20 +18982,33 @@ function installFiles(filesDir, dest, manifest, options) {
   const generatedPaths = new Set(
     (manifest.generatedPaths ?? []).map(normalizeBundlePath),
   )
+  const repoOwnedPaths = new Set(
+    (manifest.repoOwnedFiles ?? []).map(normalizeBundlePath),
+  )
   const hybridPaths = computeHybridPaths(manifest)
   const rels = Object.keys(manifest.files)
   let placed = 0
   let unchanged = 0
   let skippedAlwaysTracked = 0
+  let skippedRepoOwned = 0
   const refreshedTracked = []
   for (let i = 0, { length } = rels; i < length; i += 1) {
     const rel = rels[i]
+    const target = path.join(dest, rel)
+    const stat = repoOwnedPaths.has(normalizeBundlePath(rel))
+      ? lstatSync(target, { throwIfNoEntry: false })
+      : void 0
+    if (stat !== void 0) {
+      if (stat.isFile() && (stat.mode & 128) === 0)
+        chmodSync(target, (stat.mode & 511) | 128)
+      skippedRepoOwned += 1
+      continue
+    }
     if (isPreservedInstallPath(rel, { preservedPaths: opts.preservedPaths })) {
       skippedAlwaysTracked += 1
       continue
     }
     const source = path.join(filesDir, rel)
-    const target = path.join(dest, rel)
     const rewritten =
       opts.templateDir === void 0
         ? void 0
@@ -18997,6 +19035,7 @@ function installFiles(filesDir, dest, manifest, options) {
       if (!refreshTracked && spliced === void 0) {
         if (
           locking &&
+          !repoOwnedPaths.has(normalizeBundlePath(rel)) &&
           isLockablePlacement({
             generatedPaths,
             hybridPaths,
@@ -19027,6 +19066,7 @@ function installFiles(filesDir, dest, manifest, options) {
       unchanged += 1
       if (
         locking &&
+        !repoOwnedPaths.has(normalizeBundlePath(rel)) &&
         isLockablePlacement({
           generatedPaths,
           hybridPaths,
@@ -19043,6 +19083,7 @@ function installFiles(filesDir, dest, manifest, options) {
     placed += 1
     if (
       locking &&
+      !repoOwnedPaths.has(normalizeBundlePath(rel)) &&
       isLockablePlacement({
         generatedPaths,
         hybridPaths,
@@ -19054,6 +19095,7 @@ function installFiles(filesDir, dest, manifest, options) {
   return {
     placed,
     skippedAlwaysTracked,
+    skippedRepoOwned,
     refreshedTracked,
     unchanged,
   }
@@ -19069,7 +19111,7 @@ function installFiles(filesDir, dest, manifest, options) {
  *
  * Why it must live in this dep-0 entry and not in the cascade: the cascade
  * cannot load without the payload it would be materializing.
- * `template/base/universal/scripts/fleet/land-work.mts` and its siblings import
+ * `template/base/universal/scripts/fleet/land.mts` and its siblings import
  * the LIVE `.claude/hooks/fleet/_shared/**`, so a checkout whose mirrors are
  * absent dies at module resolution before any fixer runs. Same reason the
  * fetcher cannot ship inside the bundle it fetches.
@@ -19093,11 +19135,28 @@ function materializeFromLocalTemplate(dest, manifest, options) {
       )
     : options?.preservedPaths
   migrateRuleFile(dest, { preservedPaths })
-  const shaped = effectiveMemberManifest(manifest, dest)
+  const localRepoOwnedFiles = Object.entries(manifest.files)
+    .filter(([, entry]) => {
+      if (entry === null || typeof entry !== 'object') return false
+      const metadata = entry
+      return metadata.owner === 'repo' && metadata.seedIfAbsent === true
+    })
+    .map(([rel]) => normalizeBundlePath(rel))
+  const shaped = effectiveMemberManifest(
+    {
+      ...manifest,
+      repoOwnedFiles: [
+        ...(manifest.repoOwnedFiles ?? []),
+        ...localRepoOwnedFiles,
+      ],
+    },
+    dest,
+  )
   const total = {
     placed: 0,
     unchanged: 0,
     skippedAlwaysTracked: 0,
+    skippedRepoOwned: 0,
     refreshedTracked: [],
   }
   for (const source of localTemplateManifests(filesDir, shaped, dest)) {
@@ -19109,6 +19168,7 @@ function materializeFromLocalTemplate(dest, manifest, options) {
     total.placed += result.placed
     total.unchanged += result.unchanged
     total.skippedAlwaysTracked += result.skippedAlwaysTracked
+    total.skippedRepoOwned += result.skippedRepoOwned
     total.refreshedTracked.push(...result.refreshedTracked)
   }
   const mirrorEntries = loadMirrorEntriesFromBundle(dest)
@@ -45814,6 +45874,32 @@ function canonicalMcpConfigPath(repoRoot) {
 
 var import_predicates = require_predicates$3()
 const MCP_PROVIDERS = {
+  linear: {
+    connectOrder: 5,
+    serverName: 'fleet-linear',
+    url: 'https://mcp.linear.app/mcp',
+    auth: 'oauth',
+    setupUrl: 'https://linear.app',
+    allowedAuthorizationHosts: ['linear.app', 'mcp.linear.app'],
+    clients: {
+      claude: { kind: 'oauth' },
+      codex: { kind: 'oauth' },
+      opencode: { kind: 'oauth' },
+    },
+  },
+  notion: {
+    connectOrder: 4,
+    serverName: 'fleet-notion',
+    url: 'https://mcp.notion.com/mcp',
+    auth: 'oauth',
+    setupUrl: 'https://mcp.notion.com',
+    allowedAuthorizationHosts: ['app.notion.com', 'mcp.notion.com'],
+    clients: {
+      claude: { kind: 'oauth' },
+      codex: { kind: 'oauth' },
+      opencode: { kind: 'oauth' },
+    },
+  },
   readme: {
     connectOrder: 1,
     serverName: 'fleet-readme',
@@ -45884,8 +45970,14 @@ const MCP_PROVIDER_NAMES = Object.entries(MCP_PROVIDERS)
   .toSorted(([, left], [, right]) => left.connectOrder - right.connectOrder)
   .map(([name]) => name)
 function findMcpProviderForServer(name) {
-  return Object.values(MCP_PROVIDERS).find(
-    provider => provider.serverName === name,
+  const providerName = findMcpProviderNameForServer(name)
+  return providerName === void 0 ? void 0 : MCP_PROVIDERS[providerName]
+}
+function findMcpProviderNameForServer(name) {
+  return (
+    MCP_PROVIDER_NAMES.find(
+      provider => MCP_PROVIDERS[provider].serverName === name,
+    ) ?? MCP_PROVIDER_NAMES.find(provider => provider === name)
   )
 }
 const CREDENTIAL_KEY_PATTERN =
@@ -46168,10 +46260,7 @@ function codexMcpOAuth(name, server) {
   if (support?.kind !== 'oauth') return server.oauth
   return support.clientId || support.callbackPort ? support : void 0
 }
-/**
- * Render OpenCode's project-root `opencode.json`.
- */
-function renderOpenCodeMcpConfig(servers) {
+function createOpenCodeMcpConfig(servers) {
   const entries = {}
   for (const [name, server] of clientMcpServers(servers, 'opencode'))
     entries[name] =
@@ -46193,17 +46282,16 @@ function renderOpenCodeMcpConfig(servers) {
             command: [server.command, ...server.args],
             type: 'local',
           }
-  return `${compactOpenCodeCommandArrays(
-    JSON.stringify(
-      {
-        $schema: 'https://opencode.ai/config.json',
-        mcp: entries,
-      },
-      void 0,
-      2,
-    ),
-    servers,
-  )}\n`
+  return {
+    $schema: 'https://opencode.ai/config.json',
+    mcp: entries,
+  }
+}
+function formatOpenCodeMcpConfig(config, servers) {
+  return `${compactOpenCodeCommandArrays(JSON.stringify(config, void 0, 2), servers)}\n`
+}
+function renderOpenCodeMcpConfig(servers) {
+  return formatOpenCodeMcpConfig(createOpenCodeMcpConfig(servers), servers)
 }
 const CODEX_ADAPTERS = [
   {
@@ -46254,21 +46342,17 @@ function writeMcpClientConfigs(repoRoot) {
     throw new TypeError(
       'Cannot update opencode.json: expected an object. Fix the existing config before regenerating MCP servers.',
     )
-  const generated = JSON.parse(renderOpenCodeMcpConfig(servers))
+  const generated = createOpenCodeMcpConfig(servers)
   writeThroughMirrorLock(
     configPath,
-    `${compactOpenCodeCommandArrays(
-      JSON.stringify(
-        {
-          ...generated,
-          ...existing,
-          mcp: generated.mcp,
-        },
-        null,
-        2,
-      ),
+    formatOpenCodeMcpConfig(
+      {
+        ...generated,
+        ...existing,
+        mcp: generated.mcp,
+      },
       servers,
-    )}\n`,
+    ),
   )
 }
 const SCRIPT_META$1 = {
@@ -46910,13 +46994,17 @@ async function installFleet(config) {
       installResult.skippedAlwaysTracked > 0
         ? ` ${installResult.skippedAlwaysTracked} always-tracked file(s) left to the cascade (run commit-cascade to refresh them).`
         : ''
+    const repoOwnedNote =
+      installResult.skippedRepoOwned > 0
+        ? ` ${installResult.skippedRepoOwned} repo-owned file(s) preserved.`
+        : ''
     const refreshedNote =
       installResult.refreshedTracked.length > 0
         ? ` Refreshed ${installResult.refreshedTracked.length} always-tracked file(s) from the bundle — commit these changes:\n` +
           installResult.refreshedTracked.map(rel => `  • ${rel}`).join('\n')
         : ''
     logger.log(
-      `install-fleet: placed ${installResult.placed} (+${installResult.unchanged} already current) of ${fileCount} file(s) + ${segmentCount} segment(s)${prunedNote} from ${sourceRef} (template ${manifest.templateSha}) → ${dest}.${skippedNote}${refreshedNote}`,
+      `install-fleet: placed ${installResult.placed} (+${installResult.unchanged} already current) of ${fileCount} file(s) + ${segmentCount} segment(s)${prunedNote} from ${sourceRef} (template ${manifest.templateSha}) → ${dest}.${skippedNote}${repoOwnedNote}${refreshedNote}`,
     )
     return 0
   } finally {
@@ -46966,7 +47054,7 @@ function runFromTemplate(config) {
   }
   if (!config.quiet)
     logger.log(
-      `install-fleet: materialized ${result.placed} file(s) from template/base/universal (${result.unchanged} already current, ${result.skippedAlwaysTracked} always-tracked left alone).`,
+      `install-fleet: materialized ${result.placed} file(s) from template/base/universal (${result.unchanged} already current, ${result.skippedAlwaysTracked} always-tracked left alone, ${result.skippedRepoOwned} repo-owned preserved).`,
     )
   return 0
 }
