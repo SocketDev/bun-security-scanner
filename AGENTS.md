@@ -64,6 +64,7 @@
 - Never name leftover work and drop it: fix it, or leave a `Follow-up:` handle. (`.claude/hooks/fleet/deferred-residue-guard/`) [`no-deferred-residue`](docs/fleet/agents.md/no-deferred-residue.md)
 - Verified admins push default-branch commits with `--no-verify`, without a bypass phrase. [`push-policy`](docs/fleet/agents.md/push-policy.md)
 - PRs stay small, one logical feature/fix around 200 changed lines. [`commit-cadence-format`](docs/fleet/agents.md/commit-cadence-format.md)
+- PR branches carry one commit; squash updates to an open PR branch before merge. [`commit-cadence-format`](docs/fleet/agents.md/commit-cadence-format.md)
 - Never create a PR whose source is `main`, `master`, or the repository default branch. (`no-pr-from-default-branch-guard`) [`commit-cadence-format`](docs/fleet/agents.md/commit-cadence-format.md)
 - Never set `"rule-name": "off"`/`"warn"` in an oxlint config; fix the code instead. [`no-disable-lint-rule`](docs/fleet/agents.md/no-disable-lint-rule.md)
 - Rebuild the fleet hook bundle after source changes. [`hook-bundle`](docs/fleet/agents.md/hook-bundle.md)

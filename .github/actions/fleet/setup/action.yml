@@ -21,9 +21,9 @@ inputs:
     required: false
     default: 'false'
   node-version:
-    description: 'Node.js version'
+    description: 'Node.js version; defaults to the checked-out repository .node-version'
     required: false
-    default: '26.8.1'
+    default: ''
   socket-api-token:
     description: 'Socket API token — when provided, uses sfw-enterprise instead of sfw-free'
     required: false
@@ -291,6 +291,8 @@ runs:
         # Map the input to env so the run block reads $NODE_WANTED instead of
         # interpolating ${{ inputs.* }} into shell (zizmor template-injection).
         NODE_WANTED: ${{ inputs.node-version }}
+        NODE_VERSION_FILE: .node-version
+      working-directory: ${{ inputs.working-directory }}
       run: | # zizmor: ignore[github-env]
         set -euo pipefail
         # Native port of actions/setup-node (reference pin
