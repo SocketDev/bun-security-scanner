@@ -7,7 +7,7 @@ catalog:
   # actions is its GitHub-Actions parser, pinned explicitly (not left
   # transitive) so its version is uniform fleet-wide.
   '@ultrathink/acorn.rs.wasm': 0.2.0
-  'ata-validator': 1.27.0
+  'ata-validator': 1.27.1
   'brace-expansion': 5.0.12
   'dtu-github-actions': 0.18.1
   # shadscan — shadcn UI audit CLI for the design skills (missing UI
