@@ -202,6 +202,16 @@ pnpm-debug.log
 !/.git-hooks/_shared/push-repo-gates.mts
 !/.git-hooks/_shared/push-signatures.mts
 !/.git-hooks/_shared/push-squash-history.mts
+!/.git-hooks/_shared/push/
+!/.git-hooks/_shared/push/commit-messages.mts
+!/.git-hooks/_shared/push/durable-ref.mts
+!/.git-hooks/_shared/push/file-scan.mts
+!/.git-hooks/_shared/push/pr-commit-count.mts
+!/.git-hooks/_shared/push/range.mts
+!/.git-hooks/_shared/push/release-tags.mts
+!/.git-hooks/_shared/push/repo-gates.mts
+!/.git-hooks/_shared/push/signatures.mts
+!/.git-hooks/_shared/push/squash-history.mts
 !/.git-hooks/_shared/repo-containment.mts
 !/.git-hooks/_shared/repository-source-root.mts
 !/.git-hooks/_shared/resolve-node.sh
@@ -308,6 +318,7 @@ pnpm-debug.log
 !/.github/workflows/cron-weekly-odai-cache.yml
 !/.github/workflows/cron-weekly-update.yml
 !/.github/workflows/github-release.yml
+!/.github/workflows/nightly-npm.yml
 !/.github/workflows/publish-npm.yml
 !/.github/workflows/release-github.yml
 !/.github/workflows/sweep-jobs.yml

@@ -31,7 +31,7 @@
  *     string, converted from the release's SHASUMS256.txt hex line.
  */
 
-import { realpathSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
@@ -87,6 +87,10 @@ export function parseNodeVersionSpec(wanted) {
   }
   // `X`, `X.x`, or `X.x.x` — resolve the newest release of that major.
   return { __proto__: null, kind: 'prefix', prefix: `v${major}.` }
+}
+
+export function selectNodeVersion(wanted, nodeVersionFile) {
+  return wanted.trim() || nodeVersionFile.trim()
 }
 
 // Numeric [major, minor, patch] of a `vX.Y.Z` index entry, for the
@@ -208,7 +212,11 @@ async function main() {
   const subcommand = process.argv[2]
   switch (subcommand) {
     case 'resolve-version': {
-      const wanted = env('NODE_WANTED')
+      const nodeWanted = env('NODE_WANTED')
+      const wanted = selectNodeVersion(
+        nodeWanted,
+        nodeWanted ? '' : readFileSync(env('NODE_VERSION_FILE'), 'utf8'),
+      )
       const spec = parseNodeVersionSpec(wanted)
       if (spec.kind === 'unsupported') {
         process.stderr.write(
