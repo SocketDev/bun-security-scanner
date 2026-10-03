@@ -400,29 +400,34 @@
       "origin": "gh-asset"
     },
     "mbx": {
-      "version": "1.15.0",
-      "tag": "v1.15.0",
+      "version": "1.22.0",
+      "tag": "v1.22.0",
       "repository": "github:jdx/mr-boxington",
       "origin": "gh-asset",
       "platforms": {
         "darwin-arm64": {
           "asset": "mbx-aarch64-apple-darwin.tar.gz",
-          "integrity": "sha512-5ZpyeIOfWhyQCYNQoUwgba9ccVrjfJ85EyfoWmfzadUIsQzyMcnlZ3lYpR2hU3MZWWt+ZVxcCq74j8bgqOK7AA=="
+          "integrity": "sha512-Tjab3gdmPQtkmEvsjgjOqMzEWWxBCsAlQifXCcN/mv8oRH1BN8RRthm8jVdQ9PsNQjEhIhyYYlnhcysJ4+1YRg=="
         },
         "linux-arm64-musl": {
           "asset": "mbx-aarch64-unknown-linux-musl.tar.gz",
-          "integrity": "sha512-hDjzbyKeeocK6RLaJVCIiOzHOcE1bs5foEpqcs2rK1CyZ1Dw0tZ7rwGenTs34w2xLgitXK3rnmiWLfz2p/Gfyg=="
+          "integrity": "sha512-qgsbEFeo6J9K7tH4K2hfFJjV6Rm6s26na2eEd8nw/qsSLzw/8E26rWrhTqsyXPog7f160iWG3/u6XV2sgSaYvg=="
         },
         "linux-x64-musl": {
           "asset": "mbx-x86_64-unknown-linux-musl.tar.gz",
-          "integrity": "sha512-iFjaZF14RQkCoiO/M33kABPDL/ci5uc7iYfdHhGARuZm9OGFz4Z7S3ORuSDbXjdznTAvwRvw9S+1ck4L8uNOgw=="
+          "integrity": "sha512-tdOgq9JazUqnPrDkwsCd77mZpao5kNCaXSun1QdV690X/LneoSzh0AK0z/609n6X8awdg4JNGsHolJs7WNbU2g=="
         },
         "win32-x64": {
           "asset": "mbx-x86_64-pc-windows-msvc.zip",
-          "integrity": "sha512-HaE49dPf5ZWQ/LrZ3nJmH1H+v8rH7v4QMbCa0qTFZHQPmUhrMtoLU7+Tv6BwV+0fsp12F9LeSoqTUdQlMY03QA=="
+          "integrity": "sha512-BflfuUwzGfNGYPnbhIjs2bDXTSjpNqpXUjZ4AjPQhN/Eklpg1K2dlnyfeJX2ZQCikLknO02e5QnowSxuFgiihw=="
         }
       },
-      "description": "Cache front-end for cargo: put mbx in front of any cargo command and one cache warms every worktree and CI run, pruning itself to a size budget."
+      "description": "Cache front-end for cargo: put mbx in front of any cargo command and one cache warms every worktree and CI run, pruning itself to a size budget.",
+      "soakBypass": {
+        "published": "2026-10-03",
+        "removable": "2026-10-10",
+        "version": "1.22.0"
+      }
     },
     "mise": {
       "binaryName": "mise",
