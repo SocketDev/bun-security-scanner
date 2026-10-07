@@ -42,7 +42,7 @@ import {
 // One owner for the path, per `paths-are-constructed-once`: a cascaded file is
 // tracked twice (source + live mirror), so a literal spelled here counts as
 // two construction sites on its own.
-import { HEAVY_JOB_BUSY_EXIT_CODE } from '../../../scripts/fleet/process/heavy-job/admission.mts'
+import { HEAVY_JOB_BUSY_EXIT_CODE } from '../../../scripts/fleet/process/job/heavy/admission.mts'
 import {
   FLEET_TYPE_SCRIPT,
   TYPECHECK_CACHE_DIR,

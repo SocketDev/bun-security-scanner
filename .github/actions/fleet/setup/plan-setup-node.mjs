@@ -13,7 +13,7 @@
  *   `//<registry>/:_authToken=${NODE_AUTH_TOKEN}` into the runner .npmrc and
  *   leaves a placeholder NODE_AUTH_TOKEN in every later step's env; fleet npm
  *   publishes authenticate via OIDC trusted publishing and the preflight
- *   refuses any set token (scripts/fleet/registry-infra/npm/auth-posture.mts),
+ *   refuses any set token (scripts/fleet/registry/npm/auth-posture.mts),
  *   so the port removes that credential surface instead of reproducing it.
  *   Pure decision functions are exported for the wheelhouse unit suite; the
  *   thin CLI shell at the bottom reads inputs from env and prints decisions
