@@ -9,30 +9,27 @@ import process from 'node:process'
 
 import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
 
-import { isMainModule } from '../process/is-main-module.mts'
-import { runMain } from '../process/main/run.mts'
-import type { ScriptMeta } from '../process/main/run.mts'
-import type { ScriptResult } from '../process/script-result.mts'
-import { resolveReleaseSubject } from '../release/subject.mts'
-import { scanStagedEntryDetailed } from '../registry-infra/npm/scan.mts'
-import type { StagedScanVerdict } from '../registry-infra/npm/scan.mts'
+import { isMainModule } from '../../process/is-main-module.mts'
+import { runMain } from '../../process/main/run.mts'
+import type { ScriptMeta } from '../../process/main/run.mts'
+import type { ScriptResult } from '../../process/script-result.mts'
+import { resolveReleaseSubject } from '../../release/subject.mts'
+import { scanStagedEntryDetailed } from '../../registry/npm/scan/run.mts'
+import type { StagedScanVerdict } from '../../registry/npm/scan/run.mts'
 import {
   defaultDownloadStagedTarball,
   defaultPackTarball,
-} from '../registry-infra/npm/staged.mts'
-import { resolveNpmWorkspaceLayout } from '../registry-infra/npm/workspace.mts'
-import { rootPath, runCapture } from '../registry-infra/shared.mts'
-import {
-  NPM_SCAN_RECEIPT_FILE,
-  parseNpmRemoteScanReceipt,
-} from './scan-receipt.mts'
-import type { NpmRemoteScanReceipt } from './scan-receipt.mts'
+} from '../../registry/npm/staged.mts'
+import { resolveNpmWorkspaceLayout } from '../../registry/npm/workspace.mts'
+import { rootPath, runCapture } from '../../registry/shared.mts'
+import { NPM_SCAN_RECEIPT_FILE, parseNpmRemoteScanReceipt } from './receipt.mts'
+import type { NpmRemoteScanReceipt } from './receipt.mts'
 
 const SHA_RE = /^[0-9a-f]{40}$/u
 const STAGE_ID_RE = /^[0-9a-f-]{36}$/u
 const RECEIPT_PATH = path.join(
   rootPath,
-  '.cache/fleet/npm-scan-ci',
+  '.cache/fleet/npm-socket-staged-scan',
   NPM_SCAN_RECEIPT_FILE,
 )
 
@@ -139,6 +136,7 @@ function receiptFrom(
     packageVersion: config.packageVersion,
     policy: {
       errorAlerts: verdict.errorAlerts.length,
+      totalAlerts: verdict.totalAlerts,
       warnAlerts: verdict.warnAlerts.length,
     },
     publishRunId: config.originalPublishRunId,
@@ -240,5 +238,5 @@ const SCRIPT_META: ScriptMeta = {
 }
 
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(() => main(), SCRIPT_META)
 }

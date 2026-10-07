@@ -11,6 +11,7 @@ export declare function migrateWorkspaceSettings(dest: string, yaml: string): st
  * `main()` actually parses.
  */
 interface ScriptMeta {
+  readonly commandBoundary?: '--exec' | undefined;
   readonly heavyJob?: 'test' | 'coverage' | 'build' | 'type' | undefined;
   readonly json?: 'native' | 'result' | undefined;
   readonly describe: string;
@@ -72,6 +73,7 @@ export declare function ociManifestReceipt(body: Buffer, manifest: OciManifest):
 export declare function sameOciManifestReceipt(left: OciManifestReceipt, right: OciManifestReceipt): boolean;
 export interface PullBundleConfig {
   readonly destDir: string;
+  readonly manifestPath?: string | undefined;
   readonly expectedReceipt?: OciManifestReceipt | undefined;
   readonly httpFn?: GhcrHttpGetFn | undefined;
   readonly registry?: string | undefined;
@@ -141,11 +143,7 @@ export declare function fetchOciManifestEnvelope(repo: string, ref: string, toke
   readonly body: Buffer;
   readonly manifest: OciManifest;
 }>;
-/**
- * Choose the tarball layer from an artifact manifest: prefer a layer whose
- * `org.opencontainers.image.title` ends in `.tar.gz`, then a gzip/tar media
- * type, else the sole layer. Throws when no usable layer exists.
- */
+export declare function pickFleetManifestLayer(manifest: OciManifest): OciLayer;
 export declare function pickBundleLayer(manifest: OciManifest): OciLayer;
 /**
  * GET a blob by digest, following the storage redirect that GHCR issues for
@@ -560,15 +558,11 @@ export interface FetchedBundle extends FetchedFiles {
  */
 export declare function ghcrBundleRepo(repo: string): string;
 /**
- * Extract just the release-bundle manifest from the bundle tarball root (the
+ * Extract just the publish-bundle manifest from the bundle tarball root (the
  * tarball ships it beside files/ + segments/), so the GHCR path yields the same
  * on-disk `sourceManifest` file the gh-release path downloads separately.
  */
 export declare function extractManifestFromTarball(tarball: string, destDir: string): string;
-/**
- * Default GHCR fetch: anonymous OCI pull of the fleet-pack tarball, then pull
- * the manifest out of it. Throws on any failure so the selector can fall back.
- */
 export declare function ghcrFetchBundle(config: {
   readonly expectedReceipt?: OciManifestReceipt | undefined;
   readonly ref: string;
@@ -578,12 +572,8 @@ export declare function ghcrFetchBundle(config: {
 /**
  * Fetch the fleet bundle from GHCR.
  *
- * GHCR is the only source. A GitHub-Release fallback used to sit behind this,
- * described in its own comment as transitional until the public GHCR package
- * existed. That package exists, and the pack no longer publishes a Release at
- * all, so the fallback could only ever fail now: it turned a clear GHCR error
- * into a confusing `gh` one and hid the real cause. The injected `ghcrFetch`
- * lets tests drive it without network.
+ * GHCR supplies the tarball and the separate verified JSON manifest layer.
+ * The injected fetch function lets tests run without network access.
  */
 export declare function fetchBundleSource(config: {
   readonly expectedReceipt?: OciManifestReceipt | undefined;

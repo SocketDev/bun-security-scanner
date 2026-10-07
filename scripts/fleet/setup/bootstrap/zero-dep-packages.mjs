@@ -262,7 +262,7 @@ export function bootstrapZeroDepPackages(repoRoot) {
     }
 
     const firewall = runNode(
-      'check-firewall.mjs',
+      'check/sfw.mjs',
       [fetchPkg, version],
       repoRoot,
       'inherit',

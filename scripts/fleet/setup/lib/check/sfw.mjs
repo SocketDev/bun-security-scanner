@@ -9,17 +9,17 @@
  *   Exits 0 if the firewall returned no alerts, OR if the firewall is
  *   unreachable / non-2xx (non-fatal so a network blip doesn't break a fresh
  *   clone). Exits 1 if the firewall returned any alert at all. Usage: node
- *   check-firewall.mjs <package-name> <version>
+ *   check/sfw.mjs <package-name> <version>
  */
 
 import { argv, exit, stderr, stdout } from 'node:process'
 
-import { errorMessage } from './error-message.mjs'
+import { errorMessage } from '../error-message.mjs'
 
 const pkgName = argv[2]
 const version = argv[3]
 if (!pkgName || !version) {
-  stderr.write('Usage: node check-firewall.mjs <package-name> <version>\n')
+  stderr.write('Usage: node check/sfw.mjs <package-name> <version>\n')
   exit(2)
 }
 
