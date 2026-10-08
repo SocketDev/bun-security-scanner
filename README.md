@@ -1,6 +1,6 @@
 # <picture><img width="48" height="48" alt="bun-security-scanner" src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/logomark.svg"></picture> Socket Bun Security Scanner
 
-[![Socket Badge](https://badge.socket.dev/npm/package/@socketsecurity/bun-security-scanner)](https://badge.socket.dev/npm/package/@socketsecurity/bun-security-scanner)
+[![Socket Badge](https://badge.socket.dev/npm/package/@socketsecurity/bun-security-scanner)](https://socket.dev/npm/package/@socketsecurity/bun-security-scanner)
 <picture><img src="https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/repo/coverage.svg?v=4b7ce6d0e5bf" height="20" alt="Coverage" /></picture>
 
 [![Follow @SocketSecurity](https://raw.githubusercontent.com/SocketDev/bun-security-scanner/HEAD/assets/fleet/badge-follow-x.svg)](https://twitter.com/SocketSecurity)
