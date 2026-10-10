@@ -38,10 +38,10 @@ Add to your `bunfig.toml`:
 scanner = "@socketsecurity/bun-security-scanner"
 ```
 
-Without a token, the scanner runs in free mode using Socket's public API.
+Without a token in the environment or Socket CLI settings, the scanner runs in free mode using Socket's public API. Invalid configured settings stop startup with an error.
 
 <details>
-<summary>Authentication (optional)</summary>
+<summary>Authentication</summary>
 
 Use the [Socket CLI](https://www.npmjs.com/package/socket) to save a token for your Socket organization:
 
@@ -51,7 +51,7 @@ socket login
 bun install
 ```
 
-Enter a token with the `packages` scope when prompted. The scanner reads the saved token from your user-level Socket CLI settings.
+Enter a token with the `packages` scope when prompted. The scanner checks `SOCKET_API_TOKEN` first, then the saved token in your user-level Socket CLI settings. It supports `socket/settings` and `socket/settings/config.json` under the platform data directory. A missing credential keeps free mode available. An unreadable or invalid configured file fails with an actionable error unless a later supported settings file contains a valid token. Remove the invalid saved file to restore free mode.
 
 </details>
 
