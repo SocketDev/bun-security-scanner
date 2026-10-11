@@ -57,10 +57,17 @@ test('ignore policy admits source and rejects runtime files by default', () => {
   }
 })
 
-test('ignore rules have one fleet owner and one repository owner', () => {
+test('ignore file keeps the canonical prologue and owned blocks', () => {
   const content = readFileSync(path.join(REPO_ROOT, '.gitignore'), 'utf8')
-  expect(content.match(/^# <fleet>$/gm)).toHaveLength(1)
-  expect(content.match(/^# <repo>$/gm)).toHaveLength(1)
-  expect(content.trim().startsWith('# <fleet>')).toBe(true)
-  expect(content.trim().endsWith('# </repo>')).toBe(true)
+  expect(content.split(/\r?\n/u).slice(0, 2)).toEqual(['*', '!*/'])
+  expect(
+    content.match(/^# <\/?(?:fleet(?:-pack|-allowlist)?|repo)>$/gmu),
+  ).toEqual([
+    '# <fleet-pack>',
+    '# </fleet-pack>',
+    '# <repo>',
+    '# </repo>',
+    '# <fleet-allowlist>',
+    '# </fleet-allowlist>',
+  ])
 })

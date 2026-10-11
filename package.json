@@ -215,7 +215,7 @@
     "sync-global-hooks": "node scripts/fleet/sync-global-hooks.mts",
     "sync-oxlint-rules": "node scripts/fleet/sync-oxlint-rules.mts",
     "sync-package-manager-pins": "node scripts/fleet/sync-package-manager-pins.mts",
-    "test": "node scripts/fleet/test.mts",
+    "test": "node scripts/repo/test-all.mts",
     "test:allowance": "node scripts/fleet/test/allowance.mts",
     "test:balance": "node scripts/fleet/test/balance.mts",
     "test:check": "node scripts/fleet/commands/run.mts test check",

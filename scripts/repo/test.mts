@@ -9,8 +9,17 @@ import { isMainModule } from '../fleet/process/is-main-module.mts'
 import { runMain } from '../fleet/process/main/run.mts'
 import type { ScriptMeta } from '../fleet/process/main/run.mts'
 import { getScriptArgs, scriptStdio } from '../fleet/process/script-output.mts'
+import { repoNodeTestExcludeGlobs } from '../../.config/repo/vitest.settings.mts'
 
-export function collectScannerTests(root: string): string[] {
+export function collectScannerTests(
+  root: string,
+  ownershipGlobs: readonly string[] = repoNodeTestExcludeGlobs(),
+): string[] {
+  if (ownershipGlobs.length === 0) {
+    throw new Error(
+      'Bun test ownership is missing from vitest.nodeTestExclude.',
+    )
+  }
   const files: string[] = []
   function visit(directory: string): void {
     for (const entry of readdirSync(path.join(root, directory), {
@@ -22,12 +31,19 @@ export function collectScannerTests(root: string): string[] {
           visit(relative)
         }
       } else if (entry.isFile() && entry.name.endsWith('.test.mts')) {
-        files.push(relative)
+        const normalized = normalizePath(relative)
+        if (ownershipGlobs.some(glob => path.matchesGlob(normalized, glob))) {
+          files.push(normalized)
+        }
       }
     }
   }
   visit('test')
-  return files.toSorted()
+  const sorted = files.toSorted()
+  if (sorted.length === 0) {
+    throw new Error('Bun test ownership matched no repository tests.')
+  }
+  return sorted
 }
 
 function matchesScannerTest(file: string, selector: string): boolean {
