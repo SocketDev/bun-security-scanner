@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test'
 
 import { spawnSync } from '@socketsecurity/lib-stable/process/spawn/child'
 import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
+import '../../../.git-hooks/_shared/isolate-git-env.mts'
 import { REPO_ROOT } from '../../../scripts/fleet/paths.mts'
 
 test('ignore policy admits source and rejects runtime files by default', () => {
