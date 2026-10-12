@@ -73,6 +73,7 @@ function explicitPlan(
   const valueOptions = new Set([
     '--reporter',
     '--reporter-outfile',
+    '--test-name-pattern',
     '--timeout',
   ])
   for (let index = 0; index < argv.length; index += 1) {
