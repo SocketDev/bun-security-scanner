@@ -13,8 +13,10 @@ import { repoNodeTestExcludeGlobs } from '../../.config/repo/vitest.settings.mts
 
 export function collectScannerTests(
   root: string,
-  ownershipGlobs: readonly string[] = repoNodeTestExcludeGlobs(),
+  options?: { ownershipGlobs?: readonly string[] | undefined } | undefined,
 ): string[] {
+  const opts = { __proto__: null, ...options }
+  const ownershipGlobs = opts.ownershipGlobs ?? repoNodeTestExcludeGlobs()
   if (ownershipGlobs.length === 0) {
     throw new Error(
       'Bun test ownership is missing from vitest.nodeTestExclude.',

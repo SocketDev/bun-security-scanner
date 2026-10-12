@@ -163,7 +163,7 @@ export async function main(): Promise<number> {
   })
   const plan = buildTestPlan(
     getScriptArgs(),
-    collectScannerTests(REPO_ROOT, ownership),
+    collectScannerTests(REPO_ROOT, { ownershipGlobs: ownership }),
     vitestFiles,
     ownership,
   )
