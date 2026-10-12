@@ -32,15 +32,24 @@ test('test discovery follows exact ownership and excludes fixture and fleet test
       mkdirSync(path.dirname(file), { recursive: true })
       writeFileSync(file, '')
     }
-    expect(collectScannerTests(root, ownership)).toEqual([
+    const expectedFiles = [
       'test/index.test.mts',
       'test/modes/free.test.mts',
       'test/repo/unit/build.test.mts',
-    ])
-    expect(() => collectScannerTests(root, [])).toThrow(/ownership/u)
-    expect(() => collectScannerTests(root, ['test/missing.test.mts'])).toThrow(
-      /matched no/u,
+    ]
+    expect(collectScannerTests(root)).toEqual(expectedFiles)
+    expect(collectScannerTests(root, {})).toEqual(expectedFiles)
+    expect(collectScannerTests(root, { ownershipGlobs: ownership })).toEqual(
+      expectedFiles,
     )
+    expect(() => collectScannerTests(root, { ownershipGlobs: [] })).toThrow(
+      /ownership/u,
+    )
+    expect(() =>
+      collectScannerTests(root, {
+        ownershipGlobs: ['test/missing.test.mts'],
+      }),
+    ).toThrow(/matched no/u)
   } finally {
     await safeDelete(root)
   }
@@ -48,7 +57,9 @@ test('test discovery follows exact ownership and excludes fixture and fleet test
 
 test('Bun ownership excludes every bun:test repository suite from Vitest', () => {
   const ownership = repoNodeTestExcludeGlobs()
-  const scannerTests = collectScannerTests(path.resolve('.'), ownership)
+  const scannerTests = collectScannerTests(path.resolve('.'), {
+    ownershipGlobs: ownership,
+  })
   const bunFiles = scannerTests.filter(file =>
     /from\s+['"]bun:test['"]/u.test(readFileSync(file, 'utf8')),
   )

@@ -11,10 +11,19 @@ import type { ScriptMeta } from '../fleet/process/main/run.mts'
 import { getScriptArgs, scriptStdio } from '../fleet/process/script-output.mts'
 import { repoNodeTestExcludeGlobs } from '../../.config/repo/vitest.settings.mts'
 
+export interface CollectScannerTestsOptions {
+  ownershipGlobs?: readonly string[] | undefined
+}
+
 export function collectScannerTests(
   root: string,
-  ownershipGlobs: readonly string[] = repoNodeTestExcludeGlobs(),
+  options?: CollectScannerTestsOptions | undefined,
 ): string[] {
+  const config = {
+    __proto__: null,
+    ...options,
+  }
+  const { ownershipGlobs = repoNodeTestExcludeGlobs() } = config
   if (ownershipGlobs.length === 0) {
     throw new Error(
       'Bun test ownership is missing from vitest.nodeTestExclude.',
