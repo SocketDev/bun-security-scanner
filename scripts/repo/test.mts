@@ -11,19 +11,10 @@ import type { ScriptMeta } from '../fleet/process/main/run.mts'
 import { getScriptArgs, scriptStdio } from '../fleet/process/script-output.mts'
 import { repoNodeTestExcludeGlobs } from '../../.config/repo/vitest.settings.mts'
 
-export interface CollectScannerTestsOptions {
-  ownershipGlobs?: readonly string[] | undefined
-}
-
 export function collectScannerTests(
   root: string,
-  options?: CollectScannerTestsOptions | undefined,
+  ownershipGlobs: readonly string[] = repoNodeTestExcludeGlobs(),
 ): string[] {
-  const config = {
-    __proto__: null,
-    ...options,
-  }
-  const { ownershipGlobs = repoNodeTestExcludeGlobs() } = config
   if (ownershipGlobs.length === 0) {
     throw new Error(
       'Bun test ownership is missing from vitest.nodeTestExclude.',
@@ -140,6 +131,7 @@ export async function main(): Promise<number> {
 
 const SCRIPT_META: ScriptMeta = {
   describe: 'runs the scanner Bun tests with explicit offline and fuzz scopes',
+  heavyJob: 'test',
   help: 'Usage: pnpm test [--all | <test paths and Bun options>]\nSet FLEET_TEST_FUZZ=1 to select the scanner fuzz harness. All provider requests must be mocked.',
   json: 'result',
 }

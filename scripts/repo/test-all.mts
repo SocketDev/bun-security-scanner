@@ -163,7 +163,7 @@ export async function main(): Promise<number> {
   })
   const plan = buildTestPlan(
     getScriptArgs(),
-    collectScannerTests(REPO_ROOT, { ownershipGlobs: ownership }),
+    collectScannerTests(REPO_ROOT, ownership),
     vitestFiles,
     ownership,
   )
@@ -187,6 +187,7 @@ export async function main(): Promise<number> {
 
 const SCRIPT_META: ScriptMeta = {
   describe: 'runs the fleet Vitest and repository Bun test owners',
+  heavyJob: 'test',
   help: 'Usage: pnpm test [--ci | --all | --staged | <test paths> [--timeout <ms> | --reporter <name>]]; --staged runs fleet staged tests plus the owned non-fuzz Bun suite; use test:fast or test:mid for fleet-only lanes and test:fuzz for the separate fuzz runner.',
   json: 'result',
 }
