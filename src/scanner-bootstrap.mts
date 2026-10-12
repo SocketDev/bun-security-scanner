@@ -7,15 +7,27 @@ import process from 'node:process'
 import { TextDecoder } from 'node:util'
 import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
 import { getXdgDataHome } from '@socketsecurity/lib/env/xdg'
-import { readSocketApiTokenSync } from '@socketsecurity/lib/secrets/socket-api-token'
+import { resolveSync } from '@socketsecurity/lib/secrets/find'
 import { artifactsToAdvisories } from './advisories.mts'
 import { authenticated } from './modes/authenticated.mts'
 import { unauthenticated } from './modes/unauthenticated.mts'
+import { throwIfRetiredApiToken } from './retired-api-token.mts'
 import type { ScannerImplementation } from './types.mts'
 
 const logger = getDefaultLogger()
 const scannerCredentialReadError =
   'Socket Security Scanner: Socket credentials could not be read. Run socket login or set SOCKET_API_TOKEN.'
+const SOCKET_API_TOKEN_ALIASES = [
+  'SOCKET_API_TOKEN',
+  // socket-api-token-env: bootstrap -- aliases normalize to this canonical name.
+  'SOCKET_API_KEY',
+  'SOCKET_CLI_API_TOKEN',
+  'SOCKET_CLI_API_KEY',
+  // socket-api-token-env: bootstrap -- aliases normalize to this canonical name.
+  'SOCKET_SECURITY_API_TOKEN',
+  // socket-api-token-env: bootstrap -- aliases normalize to this canonical name.
+  'SOCKET_SECURITY_API_KEY',
+] as const
 
 export interface ScannerTokenConfig {
   envToken: string | undefined
@@ -50,7 +62,7 @@ export function advanceScannerTokenResolution(
 
 export async function bootstrapScanner(): Promise<Bun.Security.Scanner> {
   const token = await resolveScannerToken({
-    envToken: readSocketApiTokenSync({ allowEnvOnly: true }),
+    envToken: readScannerApiTokenSync(),
     platform: process.platform,
     home: os.homedir(),
     xdgDataHome: getXdgDataHome(),
@@ -142,6 +154,14 @@ export async function missingScannerSettingsAreAbsent(
   }
 }
 
+export function readScannerApiTokenSync(): string | undefined {
+  return resolveSync({
+    service: 'socketsecurity',
+    accounts: SOCKET_API_TOKEN_ALIASES,
+    allowEnvOnly: true,
+  })?.value
+}
+
 export async function readScannerSettings(filename: string): Promise<string> {
   return await readFile(filename, 'utf8')
 }
@@ -155,15 +175,13 @@ export async function resolveScannerSettingsCandidates(
   }
   let flatSettingsWasRead = false
   for (const [index, filename] of filenames.entries()) {
+    let result: ScannerSettingsResult
     try {
       const raw = await readScannerSettings(filename)
       if (index === 0) {
         flatSettingsWasRead = true
       }
-      state = advanceScannerTokenResolution(state, decodeScannerSettings(raw))
-      if (state.token) {
-        return state.token
-      }
+      result = decodeScannerSettings(raw)
     } catch (error) {
       const code = errorCode(error)
       if (
@@ -176,7 +194,12 @@ export async function resolveScannerSettingsCandidates(
       if (index === 0 && code === 'EISDIR') {
         continue
       }
-      state = advanceScannerTokenResolution(state, { kind: 'invalid' })
+      result = { kind: 'invalid' }
+    }
+    state = advanceScannerTokenResolution(state, result)
+    if (state.token) {
+      throwIfRetiredApiToken(state.token)
+      return state.token
     }
   }
   if (state.hadFailure) {
@@ -189,6 +212,7 @@ export async function resolveScannerToken(
   config: ScannerTokenConfig,
 ): Promise<string | undefined> {
   if (config.envToken?.trim()) {
+    throwIfRetiredApiToken(config.envToken)
     return config.envToken
   }
   let dataHome =

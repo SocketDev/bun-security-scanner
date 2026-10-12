@@ -17,6 +17,7 @@ import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
 import { SocketSdk } from '@socketsecurity/sdk'
 import type { SocketArtifact } from '../src/types.mts'
+import { retiredApiTokenFixture } from './retired-api-token.fixture.mts'
 
 // Every alias the token bootstrap consults, cleared before each test so a
 // stray local export can't flip the module into authenticated mode.
@@ -29,6 +30,17 @@ const SOCKET_API_TOKEN_ALIASES = [
   'SOCKET_SECURITY_API_TOKEN',
   'SOCKET_SECURITY_API_KEY',
 ] as const
+const SCANNER_BOOTSTRAP_SCRIPT = `
+try {
+  const { scanner } = await import('./src/index.mts')
+  if (scanner.version !== '1') process.exitCode = 2
+} catch (error) {
+  const code = error instanceof Error && 'code' in error ? String(error.code) : ''
+  const message = error instanceof Error ? error.message : ''
+  process.stdout.write(JSON.stringify({ code, message }))
+  process.exitCode = 1
+}
+`
 
 // The bootstrap also falls back to `<dataHome>/socket/settings`; `dataHome`
 // comes from XDG_DATA_HOME (posix) or LOCALAPPDATA (win32). Point both at an
@@ -75,24 +87,28 @@ async function freshScannerModule(): Promise<ScannerModule> {
   return await import(`../src/index.mts?index-test=${importCounter++}`)
 }
 
-async function runScannerBootstrapProcess(home: string, dataHome: string) {
-  const childEnv: NodeJS.ProcessEnv = Object.fromEntries(
-    Object.keys(process.env).map(key => [key, undefined]),
-  )
-  childEnv['PATH'] = [
-    path.dirname(process.execPath),
-    process.env['PATH'] ?? '',
-  ].join(path.delimiter)
-  childEnv['HOME'] = home
-  childEnv['XDG_DATA_HOME'] = dataHome
-  childEnv['LOCALAPPDATA'] = dataHome
+async function runScannerBootstrapProcess(
+  home: string,
+  dataHome: string,
+  retiredTokenAlias?: (typeof SOCKET_API_TOKEN_ALIASES)[number] | undefined,
+) {
+  const childEnv: NodeJS.ProcessEnv = {
+    PATH: [path.dirname(process.execPath), process.env['PATH'] ?? ''].join(
+      path.delimiter,
+    ),
+    HOME: home,
+    XDG_DATA_HOME: dataHome,
+    LOCALAPPDATA: dataHome,
+  }
+  for (const alias of SOCKET_API_TOKEN_ALIASES) {
+    childEnv[alias] = undefined
+  }
+  if (retiredTokenAlias) {
+    childEnv[retiredTokenAlias] = retiredApiTokenFixture
+  }
   const result = await spawn(
     process.execPath,
-    [
-      '--no-env-file',
-      '--eval',
-      'const { scanner } = await import("./src/index.mts"); if (scanner.version !== "1") process.exit(2)',
-    ],
+    ['--no-env-file', '--eval', SCANNER_BOOTSTRAP_SCRIPT],
     {
       cwd: process.cwd(),
       env: childEnv,
@@ -142,6 +158,77 @@ describe('index (Bun.Security.Scanner conformance)', () => {
       name: 'lodash',
       version: '4.17.21',
     })
+  })
+
+  test('rejects retired tokens from every supported environment alias', async () => {
+    for (const alias of SOCKET_API_TOKEN_ALIASES) {
+      const scratchHome = mkdtempSync(
+        path.join(os.tmpdir(), 'bun-scanner-retired-home-'),
+      )
+      const dataHome = mkdtempSync(
+        path.join(os.tmpdir(), 'bun-scanner-retired-data-'),
+      )
+      try {
+        const result = await runScannerBootstrapProcess(
+          scratchHome,
+          dataHome,
+          alias,
+        )
+        expect(result.code).toBe(1)
+        const diagnostics = `${result.stdout}\n${result.stderr}`
+        if (diagnostics.includes('sktsec_')) {
+          throw new Error('The scanner bootstrap emitted a token-like value.')
+        }
+        expect(diagnostics.includes('free mode')).toBe(false)
+        const report: unknown = JSON.parse(result.stdout)
+        const code =
+          typeof report === 'object' && report !== null && 'code' in report
+            ? report.code
+            : undefined
+        expect(code === 'SOCKET_RETIRED_API_TOKEN').toBe(true)
+      } finally {
+        await safeDelete(scratchHome)
+        await safeDelete(dataHome)
+      }
+    }
+  })
+
+  test('checks a retired secondary token after a blank canonical token', async () => {
+    const scratchHome = mkdtempSync(
+      path.join(os.tmpdir(), 'bun-scanner-retired-home-'),
+    )
+    const dataHome = mkdtempSync(
+      path.join(os.tmpdir(), 'bun-scanner-retired-data-'),
+    )
+    try {
+      const childEnv: NodeJS.ProcessEnv = {
+        PATH: [path.dirname(process.execPath), process.env['PATH'] ?? ''].join(
+          path.delimiter,
+        ),
+        HOME: scratchHome,
+        XDG_DATA_HOME: dataHome,
+        LOCALAPPDATA: dataHome,
+        SOCKET_API_TOKEN: '   ',
+        SOCKET_CLI_API_TOKEN: retiredApiTokenFixture,
+      }
+      const result = await spawn(
+        process.execPath,
+        ['--no-env-file', '--eval', SCANNER_BOOTSTRAP_SCRIPT],
+        {
+          cwd: process.cwd(),
+          env: childEnv,
+          timeout: 10_000,
+          throws: false,
+        },
+      )
+      const diagnostics = `${result.stdout}\n${result.stderr}`
+      expect(result.code).toBe(1)
+      expect(diagnostics.includes('free mode')).toBe(false)
+      expect(result.stdout.includes('SOCKET_RETIRED_API_TOKEN')).toBe(true)
+    } finally {
+      await safeDelete(scratchHome)
+      await safeDelete(dataHome)
+    }
   })
 
   describe('scan() end-to-end in free mode', () => {

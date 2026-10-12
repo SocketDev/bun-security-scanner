@@ -1,5 +1,12 @@
 import { Buffer } from 'node:buffer'
-import { chmod, mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises'
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  symlink,
+  writeFile,
+} from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, test } from 'bun:test'
@@ -14,6 +21,7 @@ import type {
   ScannerTokenConfig,
   ScannerTokenResolutionState,
 } from '../src/scanner-bootstrap.mts'
+import { retiredApiTokenFixture } from './retired-api-token.fixture.mts'
 
 const scratchDirectories: string[] = []
 
@@ -72,6 +80,59 @@ describe('scanner credential bootstrap', () => {
     config.envToken = ' socket-test-env-token '
     await writeFlatSettings(dataHome, 'not valid settings')
     expect(await resolveScannerToken(config)).toBe(config.envToken)
+  })
+
+  test('a retired environment token stops before settings fallback', async () => {
+    const dataHome = await createScratchDirectory()
+    const settingsPath = await writeFlatSettings(
+      dataHome,
+      settingsContents({ apiToken: 'socket-test-settings-token' }),
+    )
+    const originalSettings = await readFile(settingsPath)
+    await expect(
+      resolveScannerToken({
+        ...tokenConfig(dataHome),
+        envToken: retiredApiTokenFixture,
+      }),
+    ).rejects.toMatchObject({ code: 'SOCKET_RETIRED_API_TOKEN' })
+    expect((await readFile(settingsPath)).equals(originalSettings)).toBe(true)
+  })
+
+  test('a valid environment token takes precedence over a retired stored token', async () => {
+    const dataHome = await createScratchDirectory()
+    const settingsPath = await writeFlatSettings(
+      dataHome,
+      settingsContents({ apiToken: retiredApiTokenFixture }),
+    )
+    const originalSettings = await readFile(settingsPath)
+    const config = {
+      ...tokenConfig(dataHome),
+      envToken: 'socket-test-env-token',
+    }
+    expect(await resolveScannerToken(config)).toBe(config.envToken)
+    expect((await readFile(settingsPath)).equals(originalSettings)).toBe(true)
+  })
+
+  test('a retired flat-file token rejects without changing its file', async () => {
+    const dataHome = await createScratchDirectory()
+    const contents = settingsContents({ apiToken: retiredApiTokenFixture })
+    const settingsPath = await writeFlatSettings(dataHome, contents)
+    const originalSettings = await readFile(settingsPath)
+    await expect(
+      resolveScannerToken(tokenConfig(dataHome)),
+    ).rejects.toMatchObject({ code: 'SOCKET_RETIRED_API_TOKEN' })
+    expect((await readFile(settingsPath)).equals(originalSettings)).toBe(true)
+  })
+
+  test('a retired stored token rejects without changing its file', async () => {
+    const dataHome = await createScratchDirectory()
+    const contents = settingsContents({ apiToken: retiredApiTokenFixture })
+    const settingsPath = await writeDirectorySettings(dataHome, contents)
+    const originalSettings = await readFile(settingsPath)
+    await expect(
+      resolveScannerToken(tokenConfig(dataHome)),
+    ).rejects.toMatchObject({ code: 'SOCKET_RETIRED_API_TOKEN' })
+    expect((await readFile(settingsPath)).equals(originalSettings)).toBe(true)
   })
 
   test.each([undefined, '', ' ', '\t'])(

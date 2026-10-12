@@ -1,8 +1,10 @@
 import { SocketSdk } from '@socketsecurity/sdk'
+import { throwIfRetiredApiToken } from '../retired-api-token.mts'
 import type { ScannerImplementation, SocketArtifact } from '../types.mts'
 import { userAgent } from './user-agent.mts'
 
 export function authenticated(apiToken: string): ScannerImplementation {
+  throwIfRetiredApiToken(apiToken)
   const sdk = new SocketSdk(apiToken, { userAgent })
 
   return async function* (packages) {
