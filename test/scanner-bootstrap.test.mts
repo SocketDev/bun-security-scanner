@@ -256,13 +256,25 @@ describe('scanner credential bootstrap', () => {
     )
   })
 
-  test('a file blocking the socket settings directory rejects', async () => {
-    const dataHome = await createScratchDirectory()
-    await writeFile(path.join(dataHome, 'socket'), 'not a directory')
-    await expect(resolveScannerToken(tokenConfig(dataHome))).rejects.toThrow(
-      'Socket credentials could not be read',
-    )
-  })
+  test.each([
+    { blockerSegments: ['socket'], dataHomeSegments: [] },
+    {
+      blockerSegments: ['blocked'],
+      dataHomeSegments: ['blocked', 'ancestor'],
+    },
+  ])(
+    'a file blocking the settings path rejects: $blockerSegments',
+    async ({ blockerSegments, dataHomeSegments }) => {
+      const root = await createScratchDirectory()
+      const blocker = path.join(root, ...blockerSegments)
+      const dataHome = path.join(root, ...dataHomeSegments)
+      await mkdir(path.dirname(blocker), { recursive: true })
+      await writeFile(blocker, 'not a directory')
+      await expect(resolveScannerToken(tokenConfig(dataHome))).rejects.toThrow(
+        'Socket credentials could not be read',
+      )
+    },
+  )
 
   test.skipIf(process.platform === 'win32' || process.getuid?.() === 0)(
     'a permission-denied real settings file rejects without exposing its path or contents',

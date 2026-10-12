@@ -1,6 +1,6 @@
 import Bun from 'bun'
 import { Buffer } from 'node:buffer'
-import { readFile } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
@@ -120,6 +120,28 @@ export function errorCode(error: unknown): string | undefined {
   return undefined
 }
 
+export async function missingScannerSettingsAreAbsent(
+  filename: string,
+): Promise<boolean> {
+  let directory = path.dirname(filename)
+  while (true) {
+    try {
+      const parentStats = await stat(directory)
+      return parentStats.isDirectory()
+    } catch (error) {
+      const code = errorCode(error)
+      if (code !== 'ENOENT') {
+        return false
+      }
+      const parent = path.dirname(directory)
+      if (parent === directory) {
+        return false
+      }
+      directory = parent
+    }
+  }
+}
+
 export async function readScannerSettings(filename: string): Promise<string> {
   return await readFile(filename, 'utf8')
 }
@@ -131,16 +153,24 @@ export async function resolveScannerSettingsCandidates(
     hadFailure: false,
     token: undefined,
   }
+  let flatSettingsWasRead = false
   for (const [index, filename] of filenames.entries()) {
     try {
       const raw = await readScannerSettings(filename)
+      if (index === 0) {
+        flatSettingsWasRead = true
+      }
       state = advanceScannerTokenResolution(state, decodeScannerSettings(raw))
       if (state.token) {
         return state.token
       }
     } catch (error) {
       const code = errorCode(error)
-      if (code === 'ENOENT' || (index === 1 && code === 'ENOTDIR')) {
+      if (
+        (code === 'ENOENT' || code === 'ENOTDIR') &&
+        ((index === 1 && flatSettingsWasRead) ||
+          (await missingScannerSettingsAreAbsent(filename)))
+      ) {
         continue
       }
       if (index === 0 && code === 'EISDIR') {
