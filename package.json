@@ -92,14 +92,14 @@
     "cover:types": "node scripts/fleet/cover/types/run.mts",
     "cover:update": "node scripts/fleet/commands/run.mts cover update",
     "crates:auth": "node scripts/fleet/registry/cargo/auth.mts",
+    "credentials": "node scripts/fleet/credentials/run.mts",
+    "credentials:gh": "node scripts/fleet/credentials/gh/run.mts",
     "credentials:migrate": "node scripts/fleet/credentials/migrate.mts",
-    "credentials:run": "node scripts/fleet/credentials/run.mts",
     "depot:auth": "node scripts/fleet/registry/depot/browser-auth.mts",
     "doctor": "node scripts/fleet/doctor.mts",
     "doctor:auth": "node scripts/fleet/check/setup-is-prompt-less.mts",
     "doctor:credentials": "node scripts/fleet/credentials/doctor.mts",
     "fix": "node scripts/fleet/fix.mts",
-    "fix:github": "node scripts/repo/fix/github/run.mts",
     "fix:js": "node scripts/fleet/fix.mts --js",
     "fix:repo": "node scripts/fleet/fix.mts --repo",
     "fleet:update": "node scripts/repo/bootstrap/fleet.mjs",
@@ -146,10 +146,10 @@
     "mcp:schemas:save": "node scripts/fleet/mcp/schemas.mts save",
     "mcp:status": "node scripts/fleet/mcp/connect.mts --status",
     "npm:approve": "node scripts/fleet/npm/approve.mts",
-    "npm:auth": "node scripts/fleet/npm-auth.mts",
+    "npm:auth": "node scripts/fleet/npm/auth/run.mts",
     "npm:auth:browser": "node scripts/fleet/npm-auth-browser.mts",
     "npm:dispatch": "node scripts/fleet/npm/publish/run.mts",
-    "npm:inventory": "node scripts/fleet/registry/npm/account-inventory-read.mts",
+    "npm:inventory": "node scripts/fleet/registry/npm/account/inventory/read.mts",
     "npm:release-record": "node scripts/fleet/release/record/run.mts",
     "npm:scan": "node scripts/fleet/npm/scan.mts",
     "npm:staged": "node scripts/fleet/npm/staged.mts",
@@ -306,7 +306,7 @@
       },
       {
         "name": "pnpm",
-        "version": "^11.25.0 || >=12.3.4",
+        "version": ">=12.12.0",
         "onFail": "error"
       }
     ]
@@ -314,7 +314,7 @@
   "engines": {
     "node": ">=24",
     "npm": "^11.19.0 || >=12.0.2",
-    "pnpm": "^11.25.0 || >=12.3.4"
+    "pnpm": ">=12.12.0"
   },
   "allowScripts": {
     "cpu-features": false,
