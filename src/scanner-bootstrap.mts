@@ -1,17 +1,21 @@
 import Bun from 'bun'
 import { Buffer } from 'node:buffer'
+import { readFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
+import { TextDecoder } from 'node:util'
 import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
-import { readSocketApiTokenSync } from '@socketsecurity/lib/secrets/socket-api-token'
 import { getXdgDataHome } from '@socketsecurity/lib/env/xdg'
+import { readSocketApiTokenSync } from '@socketsecurity/lib/secrets/socket-api-token'
 import { artifactsToAdvisories } from './advisories.mts'
 import { authenticated } from './modes/authenticated.mts'
 import { unauthenticated } from './modes/unauthenticated.mts'
 import type { ScannerImplementation } from './types.mts'
 
 const logger = getDefaultLogger()
+const scannerCredentialReadError =
+  'Socket Security Scanner: Socket credentials could not be read. Run socket login or set SOCKET_API_TOKEN.'
 
 export interface ScannerTokenConfig {
   envToken: string | undefined
@@ -19,8 +23,29 @@ export interface ScannerTokenConfig {
   home: string
   xdgDataHome: string | undefined
   localAppData: string | undefined
-  readSettings: (filename: string) => Promise<string | undefined>
-  warn: (message: string) => void
+}
+
+export type ScannerSettingsResult =
+  | { kind: 'absent' }
+  | { kind: 'invalid' }
+  | { kind: 'token'; token: string }
+
+export interface ScannerTokenResolutionState {
+  hadFailure: boolean
+  token: string | undefined
+}
+
+export function advanceScannerTokenResolution(
+  state: ScannerTokenResolutionState,
+  result: ScannerSettingsResult,
+): ScannerTokenResolutionState {
+  if (result.kind === 'token') {
+    return { hadFailure: state.hadFailure, token: result.token }
+  }
+  return {
+    hadFailure: state.hadFailure || result.kind === 'invalid',
+    token: undefined,
+  }
 }
 
 export async function bootstrapScanner(): Promise<Bun.Security.Scanner> {
@@ -30,11 +55,6 @@ export async function bootstrapScanner(): Promise<Bun.Security.Scanner> {
     home: os.homedir(),
     xdgDataHome: getXdgDataHome(),
     localAppData: Bun.env['LOCALAPPDATA'],
-    async readSettings(filename) {
-      const file = Bun.file(filename)
-      return (await file.exists()) ? await file.text() : undefined
-    },
-    warn: message => logger.warn(message),
   })
   if (!token) {
     logger.warn(
@@ -61,6 +81,80 @@ export function createSecurityScanner(
   }
 }
 
+export function decodeScannerSettings(raw: string): ScannerSettingsResult {
+  let settings: unknown
+  try {
+    const decoded = new TextDecoder('utf-8', {
+      fatal: true,
+      ignoreBOM: true,
+    }).decode(Buffer.from(raw, 'base64'))
+    settings = JSON.parse(decoded.trim())
+  } catch {
+    return { kind: 'invalid' }
+  }
+  if (
+    typeof settings !== 'object' ||
+    settings === null ||
+    Array.isArray(settings)
+  ) {
+    return { kind: 'invalid' }
+  }
+  if (!Object.hasOwn(settings, 'apiToken')) {
+    return { kind: 'absent' }
+  }
+  const token: unknown = Reflect.get(settings, 'apiToken')
+  return typeof token === 'string' && token.trim()
+    ? { kind: 'token', token }
+    : { kind: 'invalid' }
+}
+
+export function errorCode(error: unknown): string | undefined {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string'
+  ) {
+    return error.code
+  }
+  return undefined
+}
+
+export async function readScannerSettings(filename: string): Promise<string> {
+  return await readFile(filename, 'utf8')
+}
+
+export async function resolveScannerSettingsCandidates(
+  filenames: readonly string[],
+): Promise<string | undefined> {
+  let state: ScannerTokenResolutionState = {
+    hadFailure: false,
+    token: undefined,
+  }
+  for (const [index, filename] of filenames.entries()) {
+    try {
+      const raw = await readScannerSettings(filename)
+      state = advanceScannerTokenResolution(state, decodeScannerSettings(raw))
+      if (state.token) {
+        return state.token
+      }
+    } catch (error) {
+      const code = errorCode(error)
+      if (code === 'ENOENT' || (index === 1 && code === 'ENOTDIR')) {
+        continue
+      }
+      if (index === 0 && code === 'EISDIR') {
+        continue
+      }
+      state = advanceScannerTokenResolution(state, { kind: 'invalid' })
+    }
+  }
+  if (state.hadFailure) {
+    throw new Error(scannerCredentialReadError)
+  }
+  return undefined
+}
+
 export async function resolveScannerToken(
   config: ScannerTokenConfig,
 ): Promise<string | undefined> {
@@ -81,33 +175,8 @@ export async function resolveScannerToken(
     )
   }
   const settingsPath = path.join(dataHome, 'socket', 'settings')
-  for (const filename of [
+  return await resolveScannerSettingsCandidates([
     settingsPath,
     path.join(settingsPath, 'config.json'),
-  ]) {
-    try {
-      const raw = await config.readSettings(filename)
-      if (raw === undefined) {
-        continue
-      }
-      const settings: unknown = JSON.parse(
-        Buffer.from(raw, 'base64').toString('utf8').trim(),
-      )
-      if (
-        typeof settings === 'object' &&
-        settings !== null &&
-        'apiToken' in settings &&
-        typeof settings.apiToken === 'string' &&
-        settings.apiToken.trim()
-      ) {
-        return settings.apiToken
-      }
-      throw new Error('Invalid token shape')
-    } catch {
-      config.warn(
-        `Socket Security Scanner: cannot read the Socket settings file.\n  Where: ${filename}\n  Saw: unreadable or invalid settings.\n  Wanted: base64-encoded JSON with a nonempty string "apiToken" field.\n  Fix: re-run \`socket login\` or set SOCKET_API_TOKEN in the environment.\n  Continuing to the next credential source.`,
-      )
-    }
-  }
-  return undefined
+  ])
 }

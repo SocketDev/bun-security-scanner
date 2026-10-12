@@ -13,14 +13,10 @@ import {
 import type { Mock } from 'bun:test'
 import type Bun from 'bun'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
+import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
-// The same specifier src/index.ts uses, so the spy lands on the instance the
-// module under test writes to.
-import { getDefaultLogger } from '@socketsecurity/lib/logger/default'
 import { SocketSdk } from '@socketsecurity/sdk'
 import type { SocketArtifact } from '../src/types.mts'
-
-const logger = getDefaultLogger()
 
 // Every alias the token bootstrap consults, cleared before each test so a
 // stray local export can't flip the module into authenticated mode.
@@ -77,6 +73,38 @@ type ScannerModule = {
 }
 async function freshScannerModule(): Promise<ScannerModule> {
   return await import(`../src/index.mts?index-test=${importCounter++}`)
+}
+
+async function runScannerBootstrapProcess(home: string, dataHome: string) {
+  const childEnv: NodeJS.ProcessEnv = Object.fromEntries(
+    Object.keys(process.env).map(key => [key, undefined]),
+  )
+  childEnv['PATH'] = [
+    path.dirname(process.execPath),
+    process.env['PATH'] ?? '',
+  ].join(path.delimiter)
+  childEnv['HOME'] = home
+  childEnv['XDG_DATA_HOME'] = dataHome
+  childEnv['LOCALAPPDATA'] = dataHome
+  const result = await spawn(
+    process.execPath,
+    [
+      '--no-env-file',
+      '--eval',
+      'const { scanner } = await import("./src/index.mts"); if (scanner.version !== "1") process.exit(2)',
+    ],
+    {
+      cwd: process.cwd(),
+      env: childEnv,
+      timeout: 10_000,
+      throws: false,
+    },
+  )
+  return {
+    code: result.code ?? 1,
+    stdout: result.stdout,
+    stderr: result.stderr,
+  }
 }
 
 describe('index (Bun.Security.Scanner conformance)', () => {
@@ -256,85 +284,55 @@ describe('index settings-file token fallback', () => {
     },
   )
 
-  test('degrades to free mode with an actionable warning when the settings file is unreadable', async () => {
-    // Not valid base64-of-JSON → the JSON.parse in the fallback throws.
-    writeSettings('%%% not base64 json %%%')
-
-    const warnSpy = spyOn(logger, 'warn')
-    const fetchSpy = spyOn(global, 'fetch').mockImplementation(
-      Object.assign(() => Promise.resolve(new Response('')), {
-        preconnect: () => undefined,
-      }) as typeof fetch,
-    )
+  test('a malformed configured settings file rejects module bootstrap in a clean process', async () => {
+    const malformedContents = 'socket-private-malformed-settings'
+    writeSettings(malformedContents)
+    const scratchHome = mkdtempSync(path.join(os.tmpdir(), 'bun-scanner-home-'))
 
     try {
-      // Module init completes: an unreadable local settings file must not halt
-      // the install the scanner is gating.
-      const { scanner } = await freshScannerModule()
-
-      expect(scanner.version).toBe('1')
-
-      const warnings = warnSpy.mock.calls.map(call => String(call[0]))
-      const settingsWarning = warnings.find(text =>
-        text.includes('cannot read the Socket settings file'),
-      )
-
-      // What / Where / Saw vs. wanted / Fix.
-      expect(settingsWarning).toBeDefined()
-      expect(settingsWarning).toContain(
-        path.join(dataHome, 'socket', 'settings'),
-      )
-      expect(settingsWarning).toContain('Saw:')
-      expect(settingsWarning).toContain('Wanted:')
-      expect(settingsWarning).toContain('Fix:')
-      expect(settingsWarning).toContain('SOCKET_API_TOKEN')
-
-      // Free mode, not authenticated mode: the scan goes over plain fetch.
-      await scanner.scan({
-        packages: [
-          {
-            name: 'lodash',
-            version: '4.17.21',
-            requestedRange: '^4.0.0',
-            tarball: 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
-          },
-        ],
-      })
-
-      expect(fetchSpy).toHaveBeenCalled()
+      const result = await runScannerBootstrapProcess(scratchHome, dataHome)
+      expect(result.code).not.toBe(0)
+      const diagnostics = `${result.stdout}\n${result.stderr}`
+      expect(diagnostics).toContain('Socket credentials could not be read')
+      expect(diagnostics).toContain('SOCKET_API_TOKEN')
+      expect(diagnostics).not.toContain(malformedContents)
+      expect(diagnostics).not.toContain(dataHome)
+      expect(diagnostics).not.toContain(scratchHome)
     } finally {
-      warnSpy.mockRestore()
-      fetchSpy.mockRestore()
+      await safeDelete(scratchHome)
     }
   })
 
+  test.each(['absent settings', 'valid nested token'])(
+    'a clean process constructs the scanner with %s',
+    async fixture => {
+      if (fixture === 'valid nested token') {
+        writeSettings(
+          Buffer.from(
+            JSON.stringify({ apiToken: 'socket-test-child-token' }),
+          ).toString('base64'),
+          { directory: true },
+        )
+      }
+      const scratchHome = mkdtempSync(
+        path.join(os.tmpdir(), 'bun-scanner-home-'),
+      )
+      try {
+        const result = await runScannerBootstrapProcess(scratchHome, dataHome)
+        expect(result.code).toBe(0)
+        expect(`${result.stdout}\n${result.stderr}`).not.toContain(
+          'Socket credentials could not be read',
+        )
+      } finally {
+        await safeDelete(scratchHome)
+      }
+    },
+  )
+
   test('ignores a settings file whose JSON carries no apiToken', async () => {
     writeSettings(Buffer.from(JSON.stringify({})).toString('base64'))
-
-    const fetchSpy = spyOn(global, 'fetch').mockImplementation(
-      Object.assign(() => Promise.resolve(new Response('')), {
-        preconnect: () => undefined,
-      }) as typeof fetch,
-    )
-
-    try {
-      const { scanner } = await freshScannerModule()
-
-      await scanner.scan({
-        packages: [
-          {
-            name: 'lodash',
-            version: '4.17.21',
-            requestedRange: '^4.0.0',
-            tarball: 'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
-          },
-        ],
-      })
-
-      expect(fetchSpy).toHaveBeenCalled()
-    } finally {
-      fetchSpy.mockRestore()
-    }
+    const { scanner } = await freshScannerModule()
+    expect(await scanner.scan({ packages: [] })).toEqual([])
   })
 })
 
