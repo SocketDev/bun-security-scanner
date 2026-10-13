@@ -31,6 +31,13 @@ bun add -d @socketsecurity/bun-security-scanner
 
 ## Usage
 
+### Documentation
+
+- [Scanner reference](docs/scanner.md): setup, modes, configuration, request
+  behavior, and troubleshooting.
+- [Development commands](docs/development.md): contributor setup and
+  maintenance workflows.
+
 Add to your `bunfig.toml`:
 
 ```toml
