@@ -15,7 +15,7 @@ during `bun install`, blocking malware, typosquats, and other supply-chain
 attacks before they reach your machine. It runs with no configuration in free
 mode, and applies your Socket organization's policy when a token is present.
 
-## Features
+### Features
 
 - 🛡️ Real-time security scanning during package installation
 - 🔍 Detects malware, typosquatting, and supply chain attacks
