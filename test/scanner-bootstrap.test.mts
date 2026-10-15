@@ -16,6 +16,7 @@ import {
   createSecurityScanner,
   errorCode,
   missingScannerSettingsAreAbsent,
+  nextScannerSettingsAncestor,
   readScannerSettings,
   resolveScannerToken,
 } from '../src/scanner-bootstrap.mts'
@@ -98,7 +99,31 @@ describe('scanner credential bootstrap', () => {
     expect(
       await missingScannerSettingsAreAbsent(path.join(blocker, 'settings')),
     ).toBe(false)
+    expect(
+      await missingScannerSettingsAreAbsent(
+        path.join(blocker, 'child', 'settings'),
+      ),
+    ).toBe(false)
   })
+
+  test.each([
+    {
+      directory: path.join('root', 'child'),
+      code: 'ENOENT',
+      expected: path.join('root'),
+    },
+    { directory: path.parse(path.resolve(path.sep)).root, code: 'ENOENT' },
+    { directory: '.', code: 'ENOENT' },
+    { directory: path.join('root', 'child'), code: 'EACCES' },
+    { directory: path.join('root', 'child'), code: 'ENOTDIR' },
+    { directory: path.join('root', 'child'), code: 'ELOOP' },
+    { directory: path.join('root', 'child'), code: undefined },
+  ])(
+    'selects the next settings ancestor for $directory and $code',
+    ({ directory, code, expected }) => {
+      expect(nextScannerSettingsAncestor(directory, code)).toBe(expected)
+    },
+  )
 
   test('a nonblank environment token takes precedence without reading settings', async () => {
     const dataHome = await createScratchDirectory()

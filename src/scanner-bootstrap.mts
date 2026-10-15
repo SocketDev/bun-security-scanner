@@ -141,17 +141,24 @@ export async function missingScannerSettingsAreAbsent(
       const parentStats = await stat(directory)
       return parentStats.isDirectory()
     } catch (error) {
-      const code = errorCode(error)
-      if (code !== 'ENOENT') {
-        return false
-      }
-      const parent = path.dirname(directory)
-      if (parent === directory) {
+      const parent = nextScannerSettingsAncestor(directory, errorCode(error))
+      if (parent === undefined) {
         return false
       }
       directory = parent
     }
   }
+}
+
+export function nextScannerSettingsAncestor(
+  directory: string,
+  code: string | undefined,
+): string | undefined {
+  if (code !== 'ENOENT') {
+    return undefined
+  }
+  const parent = path.dirname(directory)
+  return parent === directory ? undefined : parent
 }
 
 export function readScannerApiTokenSync(): string | undefined {
