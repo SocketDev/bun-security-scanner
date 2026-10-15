@@ -10,35 +10,35 @@
       "platforms": {
         "darwin-arm64": {
           "asset": "bun-darwin-aarch64.zip",
-          "integrity": "sha256-kJh6OhbX21VtiGrD1VHnttPt8KHPQ6yu1iLoZ2vh0S8="
+          "integrity": "sha512-uhAxGmAhtxO7Le+Jr34WCtXRuA4wwOkAThkYKr/t79uBxP7aP7yyJSBmg2oMAaiXmXTlckzkJJGMOkcIRZofEA=="
         },
         "darwin-x64": {
           "asset": "bun-darwin-x64.zip",
-          "integrity": "sha256-gFINfhdSYwjJGF0mFnmsbSd5jTgDoOn3/5Ehq4r/sBI="
+          "integrity": "sha512-4+hvbfmFztAqMzjhWHJubMdTIk7cx9OK2ApcarbMHq1FL6GxiWenCMEm8834mg53n0/cE/Ggj/dbmWMsABdVUw=="
         },
         "linux-arm64": {
           "asset": "bun-linux-aarch64.zip",
-          "integrity": "sha256-VDKLvC2cjgyfiSxUTWbFeoO4QTnjSQnl7oF1jxrI/ac="
+          "integrity": "sha512-eT1ChCtUpunmqaTwHslVzvS/3jCWzLVo/OTTzukW+dRpmJaRWoZqEdO8HsS3J0h27FoUeaJK1PwqTzbIPSXNRQ=="
         },
         "linux-arm64-musl": {
           "asset": "bun-linux-aarch64-musl.zip",
-          "integrity": "sha256-cXYLbI6jBiO4GkkHy4FdSOLqJm8uc+dRU0pEoGB5UN8="
+          "integrity": "sha512-qp6U7ooz94Pb667ZSwZS/DS0IU2jn9ORv8wEoMnMyWWIg2CSMPPN30FYxhnKpV0cWfGCAblXJF/K0kdcgmBi6Q=="
         },
         "linux-x64": {
           "asset": "bun-linux-x64.zip",
-          "integrity": "sha256-NjaPrvdSeHXV/6UuU81IAhdB8qg+tiCKjdZAaNQiqRM="
+          "integrity": "sha512-aJ4/M5sTwlIYm305Q3Vflb2zHk1Ku016qJpfj+8CqtoJo3jqmUpzB2ZIt11UbTGbJigof0nIec/WLk5Kq589hA=="
         },
         "linux-x64-musl": {
           "asset": "bun-linux-x64-musl.zip",
-          "integrity": "sha256-SDXspZ1tpw9GdPVkL25Fncrat3NpWy7Zki0TEFeYl0I="
+          "integrity": "sha512-sQwSY7Vsv4+yQq0HJ7yS+E1EWg7BiJJQnafhMrMVD7heDfmBUBqrrqEVVedY5swxqsyHiRXMcoE/uC1HMyLS0g=="
         },
         "win32-arm64": {
           "asset": "bun-windows-aarch64.zip",
-          "integrity": "sha256-p6Frh2owX9ECnGbb0nAHtPYRKuiWUy9nWHhzGiHlDP0="
+          "integrity": "sha512-MraeB20K74TTqAFhmPJi5RK2IS2eahsGOOp9A4BBJvsigi7vDVXD5S1u82keugmXIbnmFIIcPlZ+dmeeS6G+Cw=="
         },
         "win32-x64": {
           "asset": "bun-windows-x64.zip",
-          "integrity": "sha256-zkwXSXsvKXEqmdPVPwKN4ozULjusuFiVmefwAOSbZAU="
+          "integrity": "sha512-RueeSnqQXoa1lptEWbvBBAkmj+anWb7htTj8VMS57gk6Om445Ac5egHEDUt1fyIT/qTVRKZkhbOQ/28anMDCEw=="
         }
       },
       "origin": "gh-asset",

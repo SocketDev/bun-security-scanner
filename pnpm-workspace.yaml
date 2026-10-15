@@ -1,5 +1,5 @@
 catalog:
-  '@mdn/browser-compat-data': 8.1.4
+  '@mdn/browser-compat-data': 8.1.5
   '@modelcontextprotocol/client': 2.3.1
   # run-local-ci (bin: local-ci, formerly published as @redwoodjs/agent-ci)
   # runs a repo's GitHub Actions workflows locally in Docker so a change can
@@ -7,7 +7,7 @@ catalog:
   # actions is its GitHub-Actions parser, pinned explicitly (not left
   # transitive) so its version is uniform fleet-wide.
   '@ultrathink/acorn.rs.wasm': 0.2.0
-  'ata-validator': 1.46.0
+  'ata-validator': 1.47.0
   'brace-expansion': 5.0.12
   'dtu-github-actions': 0.18.1
   # shadscan — shadcn UI audit CLI for the design skills (missing UI
@@ -16,7 +16,7 @@ catalog:
   '@shadscan/cli': 0.17.0
   '@sinclair/typebox': 0.34.52
   'ecc-agentshield': 1.6.0
-  'fallow': 3.31.0
+  'fallow': 3.32.0
   'mcp-tada': 0.5.0
   'run-local-ci': 0.18.1
   'sharp': 0.35.5
@@ -24,7 +24,7 @@ catalog:
   # pinned while the fleet migrates; the 0.x entry is deleted once no member
   # imports the scoped name. 1.3.10 is inside the 7-day soak, so it carries a
   # dated minimumReleaseAgeExclude entry above.
-  'typebox': 1.3.35
+  'typebox': 1.3.36
   '@socketregistry/packageurl-js': 1.6.0
   # -stable aliases: pnpm `overrides:` can't redirect a package's own
   # name when used INSIDE that same package — Node ESM treats it as a
@@ -90,7 +90,7 @@ catalog:
   # playwright-core — headless Chromium driver for the seeing-rendered-output
   # skill (render a page / unpacked MV3 extension popup to PNG). Fleet-canonical
   # catalog dep; source of truth is template/pnpm-workspace.fleet.yaml.
-  'playwright-core': 1.63.0
+  'playwright-core': 1.64.0
   # portless — stable HTTPS `.localhost` URLs for local page tests and rendered UI checks.
   'portless': 0.15.7
   # Direct bundler pin for repos that run rolldown as their build
@@ -101,7 +101,7 @@ catalog:
   # vite-bundled rolldown (8.0.14 → 1.0.2); the per-platform
   # @rolldown/binding-* + @oxc-project/types stay as soak-excluded
   # transitives (consumers depend on `rolldown` only).
-  'regjsparser': 0.13.3
+  'regjsparser': 0.13.4
   # Held at 1.2.8: 1.2.9 SIGSEGVs on darwin-x64 in build-hook-bundle.mts,
   # confirmed deterministic (retry doesn't help). rolldown/rolldown#10926.
   # DO NOT bump past 1.2.8 until that issue is resolved.
@@ -114,7 +114,7 @@ catalog:
   # high, GHSA-v6wh-96g9-6wx3 medium). Tracked here so the pnpm
   # override below pins every transitive `vite` (vitest, @vitest/*,
   # plugin authors) to it.
-  'typescript': 7.1.0-dev.20261005.1
+  'typescript': 7.1.0-dev.20261008.1
   'vitest': 5.0.3
   '@vitest/coverage-v8': 5.0.3
   '@bcoe/v8-coverage': 1.0.2
@@ -124,7 +124,7 @@ catalog:
   # init script (see .config/fleet/playwright/).
   '@playwright/mcp': 0.0.83
   '@vitest/ui': 5.0.3
-  'bun-types': 1.4.0
+  'bun-types': 1.4.2
   c8: 12.0.0
   # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
   # change can be validated before it's pushed (see the `agent-ci` skill).
@@ -132,7 +132,7 @@ catalog:
   # platform-binary optionalDependencies, despite the monorepo's internal
   # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
   # explicitly (not left transitive) so its version is uniform fleet-wide.
-  '@anthropic-ai/claude-code': 2.1.251
+  '@anthropic-ai/claude-code': 2.1.294
   # comptime 0.1.0 — Zig-inspired build-time evaluation for Rolldown/Vite.
   # Wraps comptime(() => expr) calls; the Rolldown plugin evaluates them at
   # build time and replaces the call site with the serialized literal result.
@@ -141,10 +141,10 @@ catalog:
   'comptime': 0.1.0
   'rolldown-plugin-dts': 0.28.6
   'svgo': 4.1.0
-  'vite': 8.3.1
+  'vite': 8.3.4
   'vitiate': 0.3.1
   '@vitiate/core': 0.3.1
-  'yaml': 2.9.0
+  'yaml': 2.9.1
 
 # pnpm `overrides` block — two purposes:
 #
@@ -184,14 +184,14 @@ overrides:
   'hasown': 'npm:@socketregistry/hasown@1.0.7'
   'iconv-lite': '0.7.3'
   'isexe@>=3': '4.0.0'
-  'js-yaml@>=5.0.0 <5.2.2': '5.4.2'
+  'js-yaml@>=5.0.0 <5.2.2': '5.4.3'
   'lru-cache@>=10': '11.5.3'
-  'magic-string': '1.4.2'
+  'magic-string': '1.4.3'
   'mime-db': '1.54.0'
   'mime-types@>=3': '3.0.2'
   'minimatch@>=3': '10.2.6'
   'minipass@>=4': '7.1.3'
-  'postcss@>=8': '8.5.28'
+  'postcss@>=8': '8.5.29'
   'safe-buffer': 'npm:@socketregistry/safe-buffer@1.0.9'
   'safer-buffer': 'npm:@socketregistry/safer-buffer@1.0.10'
   'semver@>=5.0.0 <7.6.0': '7.8.5'
@@ -220,7 +220,7 @@ overrides:
   '@types/unist@2': '3.0.3'
   # Dedup compat shim: ansi-regex 5 (CJS yargs@17 cluster) vs 6 (ESM,
   # markdownlint). See the patchedDependencies comment for the shim.
-  'ansi-regex': '6.3.0'
+  'ansi-regex': '6.4.0'
   # Dedup: color-convert 0.5.3 is a declared-but-unused dependency of
   # css-color-converter@2.0.0 (badge-maker) — its lib/index.js never
   # `require`s color-convert at all, so the 0.5.3 resolution is dead weight.
@@ -251,7 +251,7 @@ overrides:
   'is-unicode-supported': 'npm:@socketregistry/is-unicode-supported@1.0.5'
   'json-stable-stringify': 'npm:@socketregistry/json-stable-stringify@1.0.14'
   # Dependabot transitive-advisory pin (soaked, semver-compatible).
-  'markdown-it': '14.3.1'
+  'markdown-it': '14.3.2'
   # Dedup: picomatch 2 (micromatch, via fast-glob -> globby ->
   # markdownlint-cli2) vs 4 (fdir/tinyglobby, via vite/vitest). micromatch's
   # `picomatch(glob, options, returnState)` call and its
@@ -265,15 +265,15 @@ overrides:
   # sharp 0.35.0 dropped its install script (source compile is opt-in); pin the
   # logo generator's sharp to 0.35.3 so it stays on a no-build-script line — its
   # prebuilt @img/sharp-* binaries cover the rasterize + animated-GIF encode.
-  'sharp': '0.35.4'
-  'string-width': '8.2.2'
+  'sharp': '0.35.5'
+  'string-width': '8.3.0'
   # Dedup compat shim: strip-ansi 6 (CJS yargs@17 cluster) vs 7 (ESM,
   # via string-width@8 -> markdownlint). See the patchedDependencies comment
   # for the shim.
   'strip-ansi': '7.2.0'
   'vite': 'catalog:'
   'which@>=4': '7.0.0'
-  'yaml': '2.9.0'
+  'yaml': '2.9.1'
 
 packages:
   - .claude/hooks/fleet/*
