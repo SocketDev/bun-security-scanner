@@ -46,11 +46,17 @@ export function scannerTransportTests(config: {
       body: string
       authorization: string | null
     }> = []
+    let destinations: Array<{
+      hostname: string
+      method: string
+      path: string
+    }> = []
     let server: ReturnType<typeof Bun.serve>
     let requestSpy: ReturnType<typeof spyOn<typeof https, 'request'>>
     beforeEach(() => {
       status = 200
       requests = []
+      destinations = []
       server = Bun.serve({
         hostname: '127.0.0.1',
         port: 0,
@@ -77,6 +83,20 @@ export function scannerTransportTests(config: {
           ) {
             throw new Error('Unmocked HTTPS request in scanner transport test')
           }
+          if (
+            typeof options.hostname !== 'string' ||
+            typeof options.method !== 'string' ||
+            typeof options.path !== 'string'
+          ) {
+            throw new Error(
+              'Incomplete HTTPS request options in scanner transport test',
+            )
+          }
+          destinations.push({
+            hostname: options.hostname,
+            method: options.method,
+            path: options.path,
+          })
           return http.request(
             {
               ...(options as http.RequestOptions),
@@ -120,8 +140,12 @@ export function scannerTransportTests(config: {
           components: [{ purl: PURL }],
         })
         const requestedUrl = new URL(requests[0]!.url)
-        expect(requestedUrl.pathname).toBe('/v0/purl')
+        expect(destinations).toHaveLength(1)
+        expect(destinations[0]!.hostname).toBe('purl-api.socket.dev')
+        expect(destinations[0]!.method).toBe('POST')
+        expect(requestedUrl.pathname).toBe('/batch')
         expect(requestedUrl.searchParams.get('actions')).toBe('error,warn')
+        expect(requestedUrl.searchParams.get('compact')).toBe('false')
         expect(requests[0]!.authorization).toBe(
           `Basic ${Buffer.from('EXAMPLE_API_TOKEN:').toString('base64')}`,
         )

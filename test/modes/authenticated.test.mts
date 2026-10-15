@@ -202,38 +202,72 @@ describe('authenticated', () => {
 
   test('rejects responses beyond the buffered response bound', async () => {
     const paddingBytes = 10 * 1024 * 1024
-    const sdk = new SocketSdk('example-api-key', { retries: 0 })
+    const requests: Array<{ body: string; method: string; url: string }> = []
+    const server = Bun.serve({
+      hostname: '127.0.0.1',
+      port: 0,
+      async fetch(request) {
+        requests.push({
+          body: await request.text(),
+          method: request.method,
+          url: request.url,
+        })
+        return new Response(
+          `${JSON.stringify({
+            type: 'npm',
+            name: 'example-package',
+            ...artifact,
+            padding: ' '.repeat(paddingBytes),
+          })}\n`,
+          {
+            headers: {
+              'content-type': 'application/x-ndjson',
+              'content-encoding': 'identity',
+            },
+          },
+        )
+      },
+    })
+    nock.enableNetConnect(
+      /^(?:127\.\d+\.\d+\.\d+|\[::1\]|localhost)(?::\d+)?$/u,
+    )
+    const sdk = new SocketSdk('example-api-key', {
+      baseUrl: `http://127.0.0.1:${server.port}/`,
+      retries: 0,
+    })
     fetchSpy.mockImplementation((payload, query) =>
       fetchPackages.call(sdk, payload, query),
     )
-    nock('https://api.socket.dev')
-      .post('/v0/purl')
-      .query({ actions: 'error,warn', compact: 'false' })
-      .reply(
-        200,
-        `${JSON.stringify({
-          type: 'npm',
-          name: 'example-package',
-          ...artifact,
-          padding: ' '.repeat(paddingBytes),
-        })}\n`,
-        {
-          'content-type': 'application/x-ndjson',
-          'content-encoding': 'identity',
-        },
-      )
     const results: SocketArtifact[][] = []
     let caught: unknown
     try {
-      for await (const artifacts of authenticated('example-api-key')(
-        createPackages(1),
-      )) {
-        results.push(artifacts)
+      try {
+        for await (const artifacts of authenticated('example-api-key')(
+          createPackages(1),
+        )) {
+          results.push(artifacts)
+        }
+      } catch (error) {
+        caught = error
       }
-    } catch (error) {
-      caught = error
+    } finally {
+      server.stop(true)
     }
     expect(results).toEqual([])
     expect(caught).toBeInstanceOf(Error)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(requests).toHaveLength(1)
+    const request = requests[0]
+    if (!request) {
+      throw new Error('Local PURL request fixture did not receive a request')
+    }
+    const requestedUrl = new URL(request.url)
+    expect(request.method).toBe('POST')
+    expect(requestedUrl.pathname).toBe('/batch')
+    expect(requestedUrl.searchParams.get('actions')).toBe('error,warn')
+    expect(requestedUrl.searchParams.get('compact')).toBe('false')
+    expect(JSON.parse(request.body)).toEqual({
+      components: [{ purl: 'pkg:npm/example-package-0@1.0.0' }],
+    })
   })
 })
