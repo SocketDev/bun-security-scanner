@@ -14,6 +14,8 @@ import { safeDelete } from '@socketsecurity/lib-stable/fs/safe'
 import {
   advanceScannerTokenResolution,
   createSecurityScanner,
+  errorCode,
+  missingScannerSettingsAreAbsent,
   readScannerSettings,
   resolveScannerToken,
 } from '../src/scanner-bootstrap.mts'
@@ -74,6 +76,30 @@ afterEach(async () => {
 })
 
 describe('scanner credential bootstrap', () => {
+  test('extracts only string error codes', () => {
+    expect(errorCode({ code: 'ENOENT' })).toBe('ENOENT')
+    expect(errorCode({ code: 7 })).toBeUndefined()
+    expect(errorCode({})).toBeUndefined()
+    // oxlint-disable-next-line socket/prefer-undefined-over-null -- Exercise null error input.
+    expect(errorCode(null)).toBeUndefined()
+    expect(errorCode('ENOENT')).toBeUndefined()
+  })
+
+  test('finds absent settings below existing directories and rejects files', async () => {
+    const root = await createScratchDirectory()
+    expect(
+      await missingScannerSettingsAreAbsent(
+        path.join(root, 'missing', 'settings'),
+      ),
+    ).toBe(true)
+
+    const blocker = path.join(root, 'not-a-directory')
+    await writeFile(blocker, 'synthetic file')
+    expect(
+      await missingScannerSettingsAreAbsent(path.join(blocker, 'settings')),
+    ).toBe(false)
+  })
+
   test('a nonblank environment token takes precedence without reading settings', async () => {
     const dataHome = await createScratchDirectory()
     const config = tokenConfig(dataHome)
