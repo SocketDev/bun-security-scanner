@@ -1,11 +1,6 @@
 catalog:
   '@mdn/browser-compat-data': 8.1.5
   '@modelcontextprotocol/client': 2.3.1
-  # run-local-ci (bin: local-ci, formerly published as @redwoodjs/agent-ci)
-  # runs a repo's GitHub Actions workflows locally in Docker so a change can
-  # be validated before it's pushed (see the `agent-ci` skill). dtu-github-
-  # actions is its GitHub-Actions parser, pinned explicitly (not left
-  # transitive) so its version is uniform fleet-wide.
   '@ultrathink/acorn.rs.wasm': 0.2.0
   'ata-validator': 1.47.0
   'brace-expansion': 5.0.12
@@ -20,10 +15,6 @@ catalog:
   'mcp-tada': 0.5.0
   'run-local-ci': 0.18.1
   'sharp': 0.35.5
-  # typebox 1.x — the unscoped rewrite of @sinclair/typebox. Both names are
-  # pinned while the fleet migrates; the 0.x entry is deleted once no member
-  # imports the scoped name. 1.3.10 is inside the 7-day soak, so it carries a
-  # dated minimumReleaseAgeExclude entry above.
   'typebox': 1.3.36
   '@socketregistry/packageurl-js': 1.6.0
   # -stable aliases: pnpm `overrides:` can't redirect a package's own
@@ -48,9 +39,6 @@ catalog:
   '@types/semver': 7.8.0
   '@types/shell-quote': 1.7.5
   'compromise': 14.18.0
-  # fast-check — property-based testing for pure fleet-script logic (pin
-  # derivation, version compare, config validation). Runs standalone in vitest.
-  # published: 2026-07-08 (past 7-day soak). See .claude/skills/fleet/property-testing.
   'fast-check': 4.10.2
   'magic-string': 1.4.3
   'markdownlint-cli2': 0.23.3
@@ -66,17 +54,7 @@ catalog:
   'micromark-extension-gfm': 3.0.0
   'minimatch': 10.2.6
   'neosanitize': 0.5.0
-  # nock — HTTP mocking for tests (disableNetConnect() + stubs). Pinned back
-  # from the @mswjs/interceptors rewrite: npm deprecates 15.0.0 ("released
-  # accidentally"), so the catalog-drift automation skips it and this pin is
-  # hand-aligned with the canonical fleet catalog; bump to the stabilized 15.x
-  # when it ships.
   'nock': 14.0.17
-  # npm-high-impact 1.13.0 — wooorm's high-impact npm package lists
-  # (npmHighImpact + npmTopDependents + npmTopDownloads); the ecosystem-reach
-  # input for scripts/fleet/measure-ecosystem-impact.mts, which ranks override
-  # candidates before simulating what a port actually cuts. Published
-  # 2026-06-08, past the 7-day soak.
   'npm-high-impact': 1.13.0
   'oxfmt': 0.72.0
   'oxlint': 1.87.0
@@ -87,9 +65,6 @@ catalog:
   # on a real attribute value instead of a string match. Paired with the mdast
   # + micromark GFM entries above; see lib/markdown-ast.mts.
   'parse5': 8.0.1
-  # playwright-core — headless Chromium driver for the seeing-rendered-output
-  # skill (render a page / unpacked MV3 extension popup to PNG). Fleet-canonical
-  # catalog dep; source of truth is template/pnpm-workspace.fleet.yaml.
   'playwright-core': 1.64.0
   # portless — stable HTTPS `.localhost` URLs for local page tests and rendered UI checks.
   'portless': 0.15.7
@@ -120,18 +95,10 @@ catalog:
   '@bcoe/v8-coverage': 1.0.2
   ast-v8-to-istanbul: 1.0.7
   'chrome-devtools-mcp': 1.10.1
-  # Playwright MCP server — agent-driven browsing with the fleet agent-banner
-  # init script (see .config/fleet/playwright/).
   '@playwright/mcp': 0.0.83
   '@vitest/ui': 5.0.3
   'bun-types': 1.4.2
   c8: 12.0.0
-  # agent-ci runs a repo's GitHub Actions workflows locally in Docker so a
-  # change can be validated before it's pushed (see the `agent-ci` skill).
-  # The published package is a self-contained Node CLI (`dist/cli.js`) — no
-  # platform-binary optionalDependencies, despite the monorepo's internal
-  # workspace layout. dtu-github-actions is its GitHub-Actions parser, pinned
-  # explicitly (not left transitive) so its version is uniform fleet-wide.
   '@anthropic-ai/claude-code': 2.1.294
   # comptime 0.1.0 — Zig-inspired build-time evaluation for Rolldown/Vite.
   # Wraps comptime(() => expr) calls; the Rolldown plugin evaluates them at
@@ -163,7 +130,6 @@ catalog:
 #    `"@socketsecurity/lib": "workspace:*"`, pnpm rewrites it to the
 #    pinned npm version instead of a sibling working tree.
 overrides:
-  # Fleet-canonical overrides (managed by socket-wheelhouse sync; do not edit).
   '@polka/url': '1.0.0-next.29'
   '@sinclair/typebox': 'catalog:'
   '@socketregistry/packageurl-js': 'catalog:'
@@ -275,12 +241,6 @@ overrides:
   'which@>=4': '7.0.0'
   'yaml': '2.9.1'
 
-packages:
-  - .claude/hooks/fleet/*
-  - .config/fleet/oxlint-plugin
-  - .config/fleet/oxlint-plugin/fleet/*
-  - '.claude/hooks/repo/*'
-  - '.config/repo/oxlint-plugin/*'
 trustPolicyExcludePrune: true
 autoInstallPeers: true
 
@@ -314,9 +274,9 @@ blockExoticSubdeps: true
 enablePrePostScripts: true
 
 # Soak time for external-tools updates: minutes a release must have
-# existed before scripts/fleet/external-tools/update.mts will consider it
+# existed before the repository considers it
 # (mirrors pnpm's `minimumReleaseAge` for npm catalog entries). 10080
-# minutes = 7 days. Same value fleet repos use.
+# minutes = 7 days.
 minimumReleaseAge: 10080
 resolutionMode: 'highest'
 saveExact: true
@@ -402,76 +362,16 @@ allowBuilds:
   cpu-features: false
   # Ships prebuilt dist; its postinstall codegen isn't needed as a dependency.
   protobufjs: false
-  # Fleet browser automation is playwright-core (page + extension-popup PNG) and
-  # chrome-devtools-mcp; puppeteer itself is unused. Kept as a guard — no dep
-  # pulls puppeteer today, but if a transitive ever does, its Chrome-download
-  # postinstall stays declined (playwright-core already supplies the browser).
+  # Puppeteer is unused; decline a future transitive Chrome download.
   puppeteer: false
   # Native bindings are optional (cpu-features above); pure-JS paths suffice.
   ssh2: false
   # sdk 4.0.3 ships a `preinstall` bootstrap script in the published tarball;
   # it is repo-setup tooling and is unneeded when consumed as a dep.
   '@socketsecurity/sdk': false
-  # @swc/core native binding — vitiate's coverage-guided fuzz lane.
-  '@swc/core': true
 includeWorkspaceRoot: true
-pipelines:
-  fleet-prepare:
-    - build:oxlint-bundle
-tasks:
-  build:oxlint-bundle:
-    cache: false
-    dependsOn: []
 peerDependencyRules:
   allowedVersions:
     '@socketsecurity/lib>typescript': 7.0.2
     '@socketsecurity/registry>typescript': 7.0.2
     mcp-tada>typescript: 7.0.2
-
-patchedDependencies:
-  # dedup compat shim: @polka/url@1 replaced the @polka/url@0.5 default-callable
-  # export (`require('@polka/url')` itself was the parse function, returning
-  # `{query: <raw string>, search, href, path, pathname, _raw}`) with a named
-  # `parse` export returning `{pathname, search, query: <parsed object>, hash, raw}`.
-  # polka@0.5.2 (pulled by run-local-ci -> dtu-github-actions) needs the old
-  # default-callable shape; the patch ports it verbatim as the default export
-  # while leaving the modern named `parse` export (used by sirv) untouched —
-  # letting the override collapse @polka/url to one version.
-  '@polka/url@1.0.0-next.29': patches/fleet/@polka__url@1.0.0-next.29.patch
-  # default-export interop (managed by socket-wheelhouse sync; do not edit):
-  # v10's ESM build ships named exports only, so `import minimatch from
-  # 'minimatch'` throws "does not provide an export named default". That is
-  # the shape `@actions/cache` resolves through, so an unpatched member dies
-  # in the CI cache step at setup, before a single check runs. The patch adds
-  # the default to BOTH builds; patching one leaves the other broken.
-  # It also makes the `minimatch@>=3` hoist safe: a v3 consumer
-  # (`@actions/glob@0.6.1` pulls 3.1.5) default-imports a callable, and the
-  # patched v10 answers that same shape.
-  # On a bump, regenerate via `pnpm patch minimatch` + `pnpm patch-commit`.
-  minimatch@10.2.6: patches/fleet/minimatch@10.2.6.patch
-  # dedup: workflow variable presence (managed by socket-wheelhouse sync):
-  # Local CI must accept explicitly supplied empty workflow variables.
-  # The fleet payload client ID defaults to empty when no app is configured.
-  # Check own-property presence in run preflight and job validation;
-  # absent variables remain errors.
-  # Intercepted fetch records local HEAD in FETCH_HEAD so inline detached
-  # checkout preserves the pre-populated Local CI workspace.
-  run-local-ci@0.18.1: patches/fleet/run-local-ci@0.18.1.patch
-  # default-export interop (managed by socket-wheelhouse sync; do not edit):
-  # 5.0.7 dropped the default export from BOTH builds. The CJS half breaks
-  # minimatch@9's compiled `__importDefault`, which reads `.default` and
-  # skips the namespace fallback once `__esModule` is set. The ESM half
-  # breaks any `import x from 'brace-expansion'`, the shape the fleet CI
-  # cache action resolves through, so an unpatched member throws "does not
-  # provide an export named default" and dies at setup before a test runs.
-  # The patch restores `expand` as the default on each build separately;
-  # patching one build leaves the other broken.
-  # On a bump, regenerate via `pnpm patch brace-expansion` + `pnpm patch-commit`.
-  brace-expansion@5.0.12: patches/fleet/brace-expansion@5.0.12.patch
-  # dedup: coverage matcher allocation (managed by socket-wheelhouse sync):
-  # Coverage checks exclusions before matching includes.
-  # Compile exclusions once instead of once per include pattern.
-  # This preserves membership and bounds matcher memory for fleet coverage.
-  # CPU-profiled forks use the configured teardown deadline to flush profiles.
-  # Ordinary forks retain the upstream 500 ms termination grace.
-  vitest@5.0.3: patches/fleet/vitest@5.0.3.patch

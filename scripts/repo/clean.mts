@@ -1,27 +1,22 @@
 /**
- * @file Clean runner for build artifacts. Flag-scoped like the reference fleet
- *   clean scripts (socket-packageurl-js / socket-sdk-js): `--dist` removes the
- *   bundled output + tsbuildinfo, `--types` removes only the emitted
- *   declarations. Deletion uses the fleet root-refusal guard within the chosen
- *   root.
+ * @file Clean runner for build artifacts. `--dist` removes the bundled output
+ *   and tsbuildinfo; `--types` removes only the emitted declarations. Deletion
+ *   is restricted to the chosen root.
  */
 
 import { globSync } from 'node:fs'
 
-import { isMainModule } from '../fleet/process/is-main-module.mts'
-import { runMain } from '../fleet/process/main/run.mts'
 import path from 'node:path'
 
 import { parseArgs } from 'node:util'
-import { strictDeleteSync } from '../fleet/fs/strict.mts'
+import { safeDeleteSync } from '@socketsecurity/lib-stable/fs/safe'
 import {
   getScriptArgs,
   getScriptLogger,
-} from '../fleet/process/script-output.mts'
-
-import { REPO_ROOT } from '../fleet/paths.mts'
-
-import type { ScriptMeta } from '../fleet/process/main/run.mts'
+  isMainModule,
+  REPO_ROOT,
+  runMain,
+} from './runtime.mts'
 
 const logger = getScriptLogger()
 
@@ -30,9 +25,9 @@ export function cleanDist(
 ): void {
   const opts = { __proto__: null, ...options } as NonNullable<typeof options>
   const root = opts.root ?? REPO_ROOT
-  strictDeleteSync(path.join(root, 'dist'), { base: root })
+  safeDeleteSync(path.join(root, 'dist'), { allowedDirs: [root] })
   for (const info of globSync(path.join(root, '*.tsbuildinfo'))) {
-    strictDeleteSync(info, { base: root })
+    safeDeleteSync(info, { allowedDirs: [root] })
   }
 }
 
@@ -42,7 +37,7 @@ export function cleanTypes(
   const opts = { __proto__: null, ...options } as NonNullable<typeof options>
   const root = opts.root ?? REPO_ROOT
   for (const dts of globSync(path.join(root, 'dist/**/*.d.{ts,mts,cts}'))) {
-    strictDeleteSync(dts, { base: root })
+    safeDeleteSync(dts, { allowedDirs: [root] })
   }
 }
 
@@ -74,17 +69,6 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'remove build output: --dist clears dist/ + *.tsbuildinfo, --types clears only the emitted declarations',
-  help: `Usage: node scripts/repo/clean.mts [--dist] [--types] [--quiet]
-
-  --dist   Remove dist/ and *.tsbuildinfo (default when no flag is given)
-  --types  Remove only dist/**/*.d.ts
-  --quiet  Suppress the summary message`,
-  json: 'result',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

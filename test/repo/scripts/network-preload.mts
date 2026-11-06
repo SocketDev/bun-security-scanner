@@ -1,7 +1,7 @@
 import nock from 'nock'
 import { fileURLToPath } from 'node:url'
 
-import { isolateHomeEnv } from '../../fleet/_shared/lib/isolate-home-env.mts'
+import { isolateHomeEnv } from '../_shared/isolate-home-env.mts'
 
 export const SCANNER_NETWORK_PRELOAD = fileURLToPath(import.meta.url)
 
