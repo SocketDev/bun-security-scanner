@@ -13,7 +13,7 @@ import path from 'node:path'
 import process from 'node:process'
 
 import { createLibStubPlugin } from './rolldown/lib-stub.mts'
-import { REPO_ROOT } from '../../scripts/fleet/paths.mts'
+import { REPO_ROOT } from '../../scripts/repo/runtime.mts'
 
 import type { OutputOptions, Plugin, RolldownOptions } from 'rolldown'
 

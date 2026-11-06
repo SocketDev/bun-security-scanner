@@ -13,7 +13,7 @@ import path from 'node:path'
 import process from 'node:process'
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { buildTypes, isBuildNeeded } from '../../../scripts/repo/build.mts'
-import { REPO_ROOT } from '../../../scripts/fleet/paths.mts'
+import { REPO_ROOT } from '../../../scripts/repo/runtime.mts'
 
 let root: string
 beforeEach(() => {

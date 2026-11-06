@@ -4,7 +4,10 @@ import timers from 'node:timers/promises'
 import { errorMessage } from '@socketsecurity/lib-stable/errors/message'
 import { unauthenticated } from '../../src/modes/unauthenticated.mts'
 import type { SocketArtifact } from '../../src/types.mts'
-import { tolerantSleep } from '../fleet/_shared/lib/timing.mts'
+
+async function tolerantSleep(durationMs: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, durationMs))
+}
 
 describe('unauthenticated', () => {
   const mockPackages: Bun.Security.Package[] = [

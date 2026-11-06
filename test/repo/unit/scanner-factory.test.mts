@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { createScanner } from '../../../src/scanner-factory.mts'
 import type { SocketArtifact } from '../../../src/types.mts'
-import { tolerantSleep } from '../../fleet/_shared/lib/timing.mts'
+
+async function tolerantSleep(durationMs: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, durationMs))
+}
 
 const mockPackages: Bun.Security.Package[] = [
   {

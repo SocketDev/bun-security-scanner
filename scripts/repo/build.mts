@@ -1,15 +1,11 @@
 /**
- * @file Build runner. Wraps rolldown's programmatic API behind the same CLI
- *   surface (--src, --types, --needed) the reference fleet build scripts
- *   (socket-packageurl-js / socket-sdk-js) use: source bundle + TypeScript
- *   declarations both land in dist/.
+ * @file Build runner. Wraps rolldown's programmatic API so the source bundle
+ *   and TypeScript declarations both land in dist/.
  */
 
 import { existsSync, mkdtempSync } from 'node:fs'
 import os from 'node:os'
 
-import { isMainModule } from '../fleet/process/is-main-module.mts'
-import { runMain } from '../fleet/process/main/run.mts'
 import path from 'node:path'
 import process from 'node:process'
 
@@ -22,14 +18,14 @@ import { spawn } from '@socketsecurity/lib-stable/process/spawn/child'
 import {
   getScriptArgs,
   getScriptLogger,
+  isMainModule,
+  REPO_ROOT,
+  runMain,
   scriptStdio,
-} from '../fleet/process/script-output.mts'
+} from './runtime.mts'
 
 import { configs as rolldownConfigs } from '../../.config/repo/rolldown.config.mts'
 import { cleanDist, cleanTypes } from './clean.mts'
-import { REPO_ROOT } from '../fleet/paths.mts'
-
-import type { ScriptMeta } from '../fleet/process/main/run.mts'
 
 const logger = getScriptLogger()
 
@@ -204,18 +200,6 @@ async function main(): Promise<void> {
   }
 }
 
-const SCRIPT_META: ScriptMeta = {
-  describe:
-    'bundle the source with rolldown and emit TypeScript declarations into dist/',
-  help: `Usage: node scripts/repo/build.mts [--src] [--types] [--needed] [--quiet]
-
-  --src     Build the source bundle only
-  --types   Build TypeScript declarations only
-  --needed  Skip when dist artifacts already exist
-  --quiet   Suppress progress messages`,
-  json: 'result',
-}
-
 if (isMainModule(import.meta.url)) {
-  runMain(main, SCRIPT_META)
+  runMain(main)
 }

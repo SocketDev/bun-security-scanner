@@ -1,5 +1,4 @@
 {
-  "extends": "./.config/fleet/tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ESNext"],
     "target": "ESNext",
